@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KGM 解密 — 云端版</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #f0f2f5;
+  color: #1a1a2e;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 1rem;
+}
+.container { max-width: 620px; width: 100%; }
+h1 { font-size: 1.8rem; margin-bottom: .5rem; }
+.subtitle { color: #666; margin-bottom: 2rem; font-size: .95rem; }
+
+.drop-zone {
+  border: 2px dashed #ccc;
+  border-radius: 16px;
+  padding: 3rem 2rem;
+  text-align: center;
+  background: #fff;
+  cursor: pointer;
+  transition: all .25s;
+}
+.drop-zone:hover, .drop-zone.dragover {
+  border-color: #7c3aed;
+  background: #f5f3ff;
+}
+.drop-zone .icon { font-size: 3rem; margin-bottom: .5rem; }
+.drop-zone .hint { color: #999; font-size: .9rem; margin-top: .5rem; }
+
+.file-info {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: #fff;
+  border-radius: 12px;
+  display: none;
+  align-items: center;
+  gap: .75rem;
+}
+.file-info.show { display: flex; }
+.file-info .name { flex: 1; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.file-info .size { color: #888; font-size: .85rem; }
+.file-info .remove { color: #ef4444; cursor: pointer; font-size: 1.2rem; padding: 0 .3rem; }
+
+.btn {
+  display: block;
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+}
+.btn-primary { background: #7c3aed; color: #fff; }
+.btn-primary:hover { background: #6d28d9; }
+.btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+
+.progress {
+  margin-top: 1.5rem;
+  display: none;
+}
+.progress.show { display: block; }
+.progress-bar {
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #7c3aed, #a78bfa);
+  border-radius: 3px;
+  transition: width .3s;
+}
+.progress-text { margin-top: .5rem; color: #666; font-size: .9rem; text-align: center; }
+
+.result {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+  gap: .5rem; }
+.result .info { flex: 1; }
+.result .info .name { font-weight: 600; }
+.result .info .meta { color: #666; font-size: .85rem; margin-top: .2rem; }
+.result .download-btn {
+  background: #22c55e;
+  color: #fff;
+  padding: .5rem 1rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: .9rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.result .download-btn:hover { background: #16a34a; }
+
+.error {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  color: #dc2626;
+  display: none;
+}
+.error.show { display: block; }
+
+.note {
+  margin-top: 2rem;
+  padding: 1rem;
+  background: #fff;
+  border-radius: 12px;
+  font-size: .85rem;
+  color: #666;
+  line-height: 1.6;
+}
+.note strong { color: #1a1a2e; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🎵 KGM 解密</h1>
+  <p class="subtitle">在服务端解密酷狗 KGM / KGMA 加密音乐文件</p>
+
+  <div class="drop-zone" id="dropZone">
+    <div class="icon">📂</div>
+    <div class="desc"><strong>拖拽文件到此处</strong><br>或点击选择文件</div>
+    <div class="hint">支持 .kgm .kgm.flac .kgma 格式</div>
+    <input type="file" id="fileInput" accept=".kgm,.kgma,.kgm.flac,.kgma.flac" hidden>
+  </div>
+
+  <div class="file-info" id="fileInfo">
+    <span>📄</span>
+    <span class="name" id="fileName"></span>
+    <span class="size" id="fileSize"></span>
+    <span class="remove" id="removeFile" title="移除">✕</span>
+  </div>
+
+  <button class="btn btn-primary" id="decryptBtn" disabled>解密</button>
+
+  <div class="progress" id="progress">
+    <div class="progress-bar"><div class="progress-bar-fill" id="progressFill"></div></div>
+    <div class="progress-text" id="progressText">处理中…</div>
+  </div>
+
+  <div class="result" id="result">
+    <span class="icon">✅</span>
+    <div class="info">
+      <div class="name" id="resultName"></div>
+      <div class="meta" id="resultMeta"></div>
+    </div>
+    <a class="download-btn" id="downloadBtn" download>下载</a>
+  </div>
+
+  <div class="error" id="error"></div>
+
+  <div class="note">
+    <strong>说明</strong><br>
+    • 文件仅在你的浏览器和本服务器之间传输，不会存储<br>
+    • 解密后自动识别格式 (MP3 / FLAC / OGG / WAV)<br>
+    • 文件名自动去除 <code>_HQ</code> 等质量后缀<br>
+    • 单个文件最大 100MB
+  </div>
+</div>
+
+<script>
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const fileInfo = document.getElementById('fileInfo');
+const fileName = document.getElementById('fileName');
+const fileSize = document.getElementById('fileSize');
+const removeFile = document.getElementById('removeFile');
+const decryptBtn = document.getElementById('decryptBtn');
+const progress = document.getElementById('progress');
+const progressFill = document.getElementById('progressFill');
+const progressText = document.getElementById('progressText');
+const result = document.getElementById('result');
+const resultName = document.getElementById('resultName');
+const resultMeta = document.getElementById('resultMeta');
+const downloadBtn = document.getElementById('downloadBtn');
+const error = document.getElementById('error');
+
+let selectedFile = null;
+
+// ── 选择文件 ──
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', () => {
+  if (fileInput.files.length) handleFile(fileInput.files[0]);
+});
+removeFile.addEventListener('click', () => resetFile());
+
+function handleFile(file) {
+  const name = file.name;
+  const valid = /\.kgm(\.(flac|mp3))?$|\.kgma(\.(flac|mp3))?$/i.test(name);
+  if (!valid) {
+    showError('不支持的文件格式，请选择 .kgm 文件');
+    return;
+  }
+  selectedFile = file;
+  fileName.textContent = name;
+  fileSize.textContent = formatSize(file.size);
+  fileInfo.classList.add('show');
+  decryptBtn.disabled = false;
+  error.classList.remove('show');
+  result.classList.remove('show');
+}
+
+function resetFile() {
+  selectedFile = null;
+  fileInput.value = '';
+  fileInfo.classList.remove('show');
+  decryptBtn.disabled = true;
+  result.classList.remove('show');
+  error.classList.remove('show');
+  progress.classList.remove('show');
+}
+
+// ── 解密 ──
+decryptBtn.addEventListener('click', async () => {
+  if (!selectedFile) return;
+  
+  progress.classList.add('show');
+  progressFill.style.width = '0%';
+  progressText.textContent = '上传中…';
+  result.classList.remove('show');
+  error.classList.remove('show');
+  decryptBtn.disabled = true;
+  error.classList.remove('show');
+
+  try {
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+    
+    const xhr = new XMLHttpRequest();
+    
+    xhr.upload.addEventListener('progress', e => {
+      if (e.lengthComputable) {
+        const pct = Math.round(e.loaded / e.total * 100);
+        progressFill.style.width = pct + '%';
+        progressText.textContent = e.loaded === e.total ? '解密中…' : `上传中 ${pct}%`;
+      }
+    });
+    
+    await new Promise((resolve, reject) => {
+      xhr.onload = () => {
+        if (xhr.status === 200) resolve();
+        else reject(new Error(xhr.responseText || '解密失败'));
+      };
+      xhr.onerror = () => reject(new Error('网络错误'));
+      xhr.onabort = () => reject(new Error('请求已取消'));
+      
+      xhr.open('POST', '/api/decrypt-kgm');
+      xhr.send(formData);
+    });
+    
+    // 解析响应
+    const contentType = xhr.getResponseHeader('Content-Type') || '';
+    const contentDisposition = xhr.getResponseHeader('Content-Disposition') || '';
+    const audioFormat = xhr.getResponseHeader('X-Audio-Format') || 'unknown';
+    
+    // 提取文件名
+    let downloadName = 'decrypted.' + audioFormat;
+    const match = contentDisposition.match(/filename="?(.+?)"?$/);
+    if (match) downloadName = match[1];
+    
+    // 创建 Blob 下载
+    const blob = new Blob([xhr.response], { type: contentType });
+    const url = URL.createObjectURL(blob);
+    
+    progressFill.style.width = '100%';
+    progressText.textContent = '解密完成 ✓';
+    
+    result.classList.add('show');
+    resultName.textContent = downloadName;
+    resultMeta.textContent = formatSize(blob.size) + ' · ' + audioFormat.toUpperCase();
+    downloadBtn.href = url;
+    downloadBtn.download = downloadName;
+    decryptBtn.disabled = false;
+    
+  } catch (err) {
+    showError(err.message);
+    progress.classList.remove('show');
+    decryptBtn.disabled = false;
+  }
+});
+
+// ── 辅助 ──
+function showError(msg) {
+  error.textContent = msg;
+  error.classList.add('show');
+}
+
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / 1048576).toFixed(1) + ' MB';
+}
+</script>
+</body>
+</html>
