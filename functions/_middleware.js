@@ -69,7 +69,7 @@ const SKIP_EXTS = new Set([
 ]);
 
 // ── 路径配置 ──
-const NAVBAR_PATHS = ['/Tools/Metacubexd', '/Tools/zashboard'];
+const NAVBAR_PATHS = ['/Tools/Metacubexd', '/Tools/zashboard', '/Tools/KgmDecrypt'];
 const MUSIC_PATHS = ['/Music'];
 
 function shouldTransform(pathname, targets) {
