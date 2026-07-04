@@ -7,8 +7,6 @@
 <meta name="description" content="在浏览器端解密酷狗KGM加密音乐，不上传文件，保护隐私">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&" rel="stylesheet">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0">
-<link rel="stylesheet" href="/Tools/navbar.css">
-<script src="/Tools/navbar.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--p:#9fe870;--op:#0e0f0c;--pa:#cdffad;--pp:#e2f6d5;--k:#0e0f0c;--kd:#163300;--b:#454745;--m:#868685;--c:#fff;--s:#e8ebe6;--r:24px;--rs:12px;--rp:9999px;--r-sm:8px}
@@ -16,16 +14,14 @@
 body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--s);color:var(--k);min-height:100vh;display:flex;justify-content:center;padding:16px}
 .wrap{width:100%;max-width:700px;display:flex;flex-direction:column;gap:12px;margin-top:4px}
 
-/* ── Nav (同 Calculator 样式) ── */
-.nav-hdr{display:flex;align-items:center;gap:10px;padding:14px 24px;background:var(--c);border-radius:var(--r) var(--r) 0 0;box-shadow:0 1px 4px rgba(14,15,12,.04)}
-.nav-hdr .dot{width:12px;height:12px;border-radius:50%;background:var(--p);flex-shrink:0}
-.nav-hdr .lb{font-size:15px;font-weight:600;letter-spacing:-.2px}
-.nav-hdr .rt{margin-left:auto;display:flex;align-items:center;gap:8px}
-.nav-hdr .rt a{font-size:13px;font-weight:600;color:var(--k);text-decoration:none;padding:6px 16px;border-radius:999px;border:1px solid var(--k);transition:.15s}
-.nav-hdr .rt a:hover{background:var(--k);color:var(--p)}
-
 /* ── Card ── */
 .card{background:var(--c);border-radius:var(--r);box-shadow:0 4px 24px rgba(14,15,12,.06);overflow:hidden}
+.card-hdr{display:flex;align-items:center;gap:10px;padding:14px 32px;border-bottom:1px solid var(--s)}
+.card-hdr .dot{width:12px;height:12px;border-radius:50%;background:var(--p);flex-shrink:0}
+.card-hdr .lb{font-size:15px;font-weight:600;letter-spacing:-.2px}
+.card-hdr .rt{margin-left:auto;display:flex;align-items:center;gap:8px}
+.card-hdr .rt a{font-size:13px;font-weight:600;color:var(--k);text-decoration:none;padding:6px 16px;border-radius:999px;border:1px solid var(--k);transition:.15s}
+.card-hdr .rt a:hover{background:var(--k);color:var(--p)}
 .card-pad{padding:32px 32px 40px}
 
 /* ── Drop Zone ── */
@@ -84,15 +80,13 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--s);
 <body>
 <div class="wrap">
 
-  <!-- Nav -->
-  <div class="nav-hdr">
-    <span class="dot"></span>
-    <span class="lb">KGM 解密</span>
-    <span class="rt"><a href="/Music">← 音乐解锁</a></span>
-  </div>
-
   <!-- Main card -->
   <div class="card">
+    <div class="card-hdr">
+      <span class="dot"></span>
+      <span class="lb">KGM 解密</span>
+      <span class="rt"><a href="/Music">← 音乐解锁</a></span>
+    </div>
     <div class="card-pad">
 
       <div class="drop-zone" id="dropZone">
