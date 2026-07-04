@@ -2,7 +2,7 @@
  * Cloudflare Pages Middleware — 边缘层实时注入
  *
  * - Metacubexd / zashboard → 注入导航栏 + 注销 SW
- * - Music (音乐解锁)       → 注入 Wise 主题 CSS（更新不丢失）
+ * - Music (音乐解锁)       → 由 Music-unlock-injectior-wise.js 独立处理
  */
 
 // ── 导航栏静态 HTML ──
@@ -41,29 +41,6 @@ const HEAD_INJECT = [
   '<\/script>',
 ].join('\n');
 
-// ── 注入到 <head>（Wise 主题相关）──
-const WISE_HEAD_INJECT = [
-  '<!-- wise-theme -->',
-  '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">',
-  '<link href="/style/Music-unlock-injectior-wise-theme.css" rel="stylesheet">',
-  '<script>',
-  '/* 注销 Music 工具 SW，打破 PWA 缓存，确保边缘注入生效 */',
-  'if("serviceWorker" in navigator){',
-  'navigator.serviceWorker.getRegistrations().then(function(regs){',
-  'regs.forEach(function(reg){',
-  'if(reg.scope.includes("/Music/")){',
-  'reg.unregister().then(function(s){',
-  'console.log("[wise] SW unregistered:",reg.scope,s)',
-  '})',
-  '}',
-  '})',
-  '})}',
-  '<\\/script>',
-].join('\n');
-
-// ── KGM 解密入口注入到 wise-nav ──
-const KGM_LINK_HTML = '<a href="/Tools/KgmDecrypt/" class="wise-nav-kgm">KGM 解密</a>';
-
 // ── 非 HTML 资源扩展名 ──
 const SKIP_EXTS = new Set([
   'js','mjs','css','png','jpg','jpeg','gif','svg','ico','webp',
@@ -73,7 +50,6 @@ const SKIP_EXTS = new Set([
 
 // ── 路径配置 ──
 const NAVBAR_PATHS = ['/Tools/Metacubexd', '/Tools/zashboard'];
-const MUSIC_PATHS = ['/Music'];
 
 function shouldTransform(pathname, targets) {
   if (!targets.some(p => pathname.startsWith(p))) return false;
@@ -99,19 +75,6 @@ class NavbarBodyHandler {
   }
 }
 
-class WiseHeadHandler {
-  element(el) {
-    el.append(WISE_HEAD_INJECT, { html: true });
-  }
-}
-
-class WiseNavHandler {
-  element(el) {
-    // 在返回按钮之前插入 KGM 解密链接
-    el.prepend(KGM_LINK_HTML, { html: true });
-  }
-}
-
 /* ─── Middleware ─── */
 
 export async function onRequest(context) {
@@ -121,9 +84,8 @@ export async function onRequest(context) {
 
   // 判断需要哪种注入
   const needsNavbar = shouldTransform(path, NAVBAR_PATHS);
-  const needsWise = shouldTransform(path, MUSIC_PATHS);
 
-  if (!needsNavbar && !needsWise) {
+  if (!needsNavbar) {
     return next();
   }
 
@@ -134,21 +96,10 @@ export async function onRequest(context) {
   }
 
   try {
-    let rewriter = new HTMLRewriter();
-
-    if (needsNavbar) {
-      rewriter = rewriter
-        .on('head', new NavbarHeadHandler())
-        .on('body', new NavbarBodyHandler());
-    }
-
-    if (needsWise) {
-      rewriter = rewriter
-        .on('head', new WiseHeadHandler())
-        .on('.wise-nav-back', new WiseNavHandler());
-    }
-
-    return rewriter.transform(response);
+    return new HTMLRewriter()
+      .on('head', new NavbarHeadHandler())
+      .on('body', new NavbarBodyHandler())
+      .transform(response);
   } catch (e) {
     console.error('[middleware] transform error:', e);
     return response;
