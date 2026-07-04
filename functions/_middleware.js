@@ -58,8 +58,11 @@ const WISE_HEAD_INJECT = [
   '}',
   '})',
   '})}',
-  '<\/script>',
+  '<\\/script>',
 ].join('\n');
+
+// ── KGM 解密入口注入到 wise-nav ──
+const KGM_LINK_HTML = '<a href="/Tools/KgmDecrypt/" class="wise-nav-kgm">KGM 解密</a>';
 
 // ── 非 HTML 资源扩展名 ──
 const SKIP_EXTS = new Set([
@@ -102,6 +105,13 @@ class WiseHeadHandler {
   }
 }
 
+class WiseNavHandler {
+  element(el) {
+    // 在返回按钮之前插入 KGM 解密链接
+    el.prepend(KGM_LINK_HTML, { html: true });
+  }
+}
+
 /* ─── Middleware ─── */
 
 export async function onRequest(context) {
@@ -134,7 +144,8 @@ export async function onRequest(context) {
 
     if (needsWise) {
       rewriter = rewriter
-        .on('head', new WiseHeadHandler());
+        .on('head', new WiseHeadHandler())
+        .on('.wise-nav-back', new WiseNavHandler());
     }
 
     return rewriter.transform(response);
