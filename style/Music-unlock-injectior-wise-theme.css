@@ -32,10 +32,10 @@ html, body {
 }
 body { padding: 40px 16px !important; }
 
-/* white card */
+/* white card — nav merged, top flat */
 #app {
   background: var(--wca) !important;
-  border-radius: var(--rx) !important;
+  border-radius: 0 0 var(--rx) var(--rx) !important;
   max-width: 760px !important;
   margin: 0 auto !important;
   padding: 48px 48px 40px !important;
@@ -43,17 +43,18 @@ body { padding: 40px 16px !important; }
   color: var(--wik) !important;
 }
 
-/* ─── Nav ─── */
+/* ─── Nav (merged into card, KgmDecrypt 同款) ─── */
 .wise-nav {
   max-width: 760px;
-  margin: 0 auto 16px;
+  margin: 0 auto 0;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 14px 24px;
+  gap: 10px;
+  padding: 14px 32px;
   background: var(--wca);
   border-radius: var(--rx) var(--rx) 0 0;
   box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  border-bottom: 1px solid var(--wcs);
 }
 .wise-nav-brand {
   display: flex;
@@ -70,6 +71,20 @@ body { padding: 40px 16px !important; }
   flex-shrink: 0;
 }
 .wise-nav-brand .label { font-size: 15px; font-weight: 600; letter-spacing: -0.2px; }
+
+/* KGM 解密 link */
+.wise-nav-kgm {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--wbd);
+  text-decoration: none;
+  padding: 6px 14px;
+  border-radius: 999px;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.wise-nav-kgm:hover { background: var(--wp); color: var(--wop); }
+
 .wise-nav-back {
   font-size: 14px;
   font-weight: 600;
@@ -79,6 +94,7 @@ body { padding: 40px 16px !important; }
   border-radius: 999px;
   border: 1px solid var(--wik);
   transition: all 0.15s ease;
+  margin-left: auto;
 }
 .wise-nav-back:hover { background: var(--wp); border-color: var(--wp); color: var(--wop); }
 .wise-nav-back span { display: inline; }
@@ -517,8 +533,9 @@ form[data-v-670c0e2e] input { font-family: var(--fn) !important; }
 /* ─── Responsive ─── */
 @media (max-width: 768px) {
   body { padding: 20px 12px !important; }
-  #app { padding: 32px 24px !important; border-radius: 20px !important; }
-  .wise-nav { padding: 12px 16px; margin-bottom: 12px; border-radius: 20px 20px 0 0; }
+  #app { padding: 32px 24px !important; border-radius: 0 0 20px 20px !important; }
+  .wise-nav { padding: 12px 16px; margin-bottom: 0; border-radius: 20px 20px 0 0; }
+  .wise-nav-kgm { font-size: 12px; padding: 4px 10px; }
   .el-upload-dragger { padding: 48px 24px !important; min-height: 160px !important; }
   .el-upload-dragger .el-upload__text { font-size: 18px !important; }
   .el-button + .el-button { margin-left: 10px !important; }
@@ -539,7 +556,7 @@ form[data-v-670c0e2e] input { font-family: var(--fn) !important; }
     box-shadow: none !important;
   }
   .wise-nav {
-    padding: 10px 14px;
+    padding: 8px 12px;
     margin-bottom: 0;
     border-radius: 0;
     max-width: 100%;
@@ -549,9 +566,11 @@ form[data-v-670c0e2e] input { font-family: var(--fn) !important; }
     top: 0;
     z-index: 100;
     background: var(--wca);
+    gap: 6px;
   }
   .wise-nav-brand .dot { width: 10px; height: 10px; }
   .wise-nav-brand .label { font-size: 13px; }
+  .wise-nav-kgm { font-size: 11px; padding: 4px 8px; }
   .wise-nav-back { font-size: 13px; padding: 6px 14px; }
 
   .el-upload-dragger {
