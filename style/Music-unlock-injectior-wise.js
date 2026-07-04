@@ -52,8 +52,6 @@ export default {
         element(el) {
           el.setAttribute('href', '/Tools/KgmDecrypt/');
           el.setInnerContent('KGM 解密');
-          el.removeAttribute('class');
-          el.setAttribute('class', 'wise-nav-kgm');
         },
       })
       .transform(response);

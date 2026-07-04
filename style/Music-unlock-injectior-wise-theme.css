@@ -72,19 +72,7 @@ body { padding: 40px 16px !important; }
 }
 .wise-nav-brand .label { font-size: 15px; font-weight: 600; letter-spacing: -0.2px; }
 
-/* KGM 解密 link */
-.wise-nav-kgm {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--wbd);
-  text-decoration: none;
-  padding: 6px 14px;
-  border-radius: 999px;
-  transition: all .15s;
-  white-space: nowrap;
-}
-.wise-nav-kgm:hover { background: var(--wp); color: var(--wop); }
-
+/* 右侧按钮 (注入后为 KGM 解密入口) */
 .wise-nav-back {
   font-size: 14px;
   font-weight: 600;
@@ -535,7 +523,7 @@ form[data-v-670c0e2e] input { font-family: var(--fn) !important; }
   body { padding: 20px 12px !important; }
   #app { padding: 32px 24px !important; border-radius: 0 0 20px 20px !important; }
   .wise-nav { padding: 12px 16px; margin-bottom: 0; border-radius: 20px 20px 0 0; }
-  .wise-nav-kgm { font-size: 12px; padding: 4px 10px; }
+  .wise-nav-back { font-size: 13px; padding: 6px 14px; }
   .el-upload-dragger { padding: 48px 24px !important; min-height: 160px !important; }
   .el-upload-dragger .el-upload__text { font-size: 18px !important; }
   .el-button + .el-button { margin-left: 10px !important; }
@@ -570,8 +558,7 @@ form[data-v-670c0e2e] input { font-family: var(--fn) !important; }
   }
   .wise-nav-brand .dot { width: 10px; height: 10px; }
   .wise-nav-brand .label { font-size: 13px; }
-  .wise-nav-kgm { font-size: 11px; padding: 4px 8px; }
-  .wise-nav-back { font-size: 13px; padding: 6px 14px; }
+  .wise-nav-back { font-size: 12px; padding: 5px 10px; }
 
   .el-upload-dragger {
     padding: 40px 16px !important;
