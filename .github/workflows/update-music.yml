@@ -80,21 +80,6 @@ jobs:
         if: steps.check.outputs.has_new == 'true' || steps.sync.outputs.synced == 'true' || env.kgm_decrypted == 'true'
         run: node scripts/generate-music.js
 
-      - name: Copy music_list.json to public/music/ for R2
-        if: steps.check.outputs.has_new == 'true' || steps.sync.outputs.synced == 'true' || env.kgm_decrypted == 'true'
-        run: |
-          node -e "
-            var fs = require('fs');
-            var js = fs.readFileSync('scripts/music_list.js', 'utf8');
-            var start = js.indexOf('[');
-            var end = js.lastIndexOf(']');
-            if (start !== -1 && end > start) {
-              var json = js.substring(start, end + 1);
-              fs.writeFileSync('public/music/music_list.json', json, 'utf8');
-              console.log('music_list.json created');
-            }
-          "
-
       - name: Upload all files to R2
         if: steps.check.outputs.has_new == 'true' || steps.sync.outputs.synced == 'true' || env.kgm_decrypted == 'true'
         env:
@@ -149,15 +134,13 @@ jobs:
           rm -f public/music/*.jpg public/music/*.jpeg
           rm -f public/music/*.png
           rm -f public/music/*.lrc
-          # Keep music_list.json for Pages static fallback
 
-      - name: Commit music_list.js and music_list.json
+      - name: Commit music_list.js
         if: steps.check.outputs.has_new == 'true' || steps.sync.outputs.synced == 'true' || env.kgm_decrypted == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "bot@users.noreply.github.com"
           git add scripts/music_list.js
-          git add public/music/music_list.json
           touch public/music/.gitkeep
           git add public/music/.gitkeep
           git add -A

@@ -1,7 +1,7 @@
 /**
  * generate-music.js
  * 扫描 public/music 目录，提取 MP3 / FLAC / M4A / OGG 等格式的内置封面和歌词，
- * 生成 scripts/music.json
+ * 生成 scripts/music_list.js
  *
  * 用法: node scripts/generate-music.js
  */
@@ -242,26 +242,43 @@ function extractUSLT(filePath) {
     const song = {
       title,
       artist,
-      src: `./public/music/${encodeURIComponent(audioFile)}`,
+      src: `./public/music/${audioFile}`,
     };
 
     if (coverFile) {
-      song.cover = `./public/music/${encodeURIComponent(coverFile)}`;
+      song.cover = `./public/music/${coverFile}`;
     }
     if (lrcFile) {
-      song.lrc = `./public/music/${encodeURIComponent(lrcFile)}`;
+      song.lrc = `./public/music/${lrcFile}`;
     }
 
     songs.push(song);
   }
 
   // ── 合并旧歌（本地没扫到但之前已存在 R2 中的歌）──
+  // 但需要校验 cover/lrc 文件确实存在
   var newKeys = {};
   for (var i = 0; i < songs.length; i++) newKeys[songs[i].src] = true;
   for (var key in oldMap) {
     if (!newKeys[key]) {
-      songs.push(oldMap[key]);
-      console.log(`  🔄 保留: ${oldMap[key].artist} - ${oldMap[key].title}`);
+      var oldSong = oldMap[key];
+      // 清理旧歌中引用已不存在文件的 cover/lrc
+      if (oldSong.cover) {
+        var coverPath = path.join(musicDir, path.basename(oldSong.cover));
+        if (!fs.existsSync(coverPath)) {
+          console.log(`  🗑️  移除封面(文件不存在): ${oldSong.cover}`);
+          delete oldSong.cover;
+        }
+      }
+      if (oldSong.lrc) {
+        var lrcPath = path.join(musicDir, path.basename(oldSong.lrc));
+        if (!fs.existsSync(lrcPath)) {
+          console.log(`  🗑️  移除歌词(文件不存在): ${oldSong.lrc}`);
+          delete oldSong.lrc;
+        }
+      }
+      songs.push(oldSong);
+      console.log(`  🔄 保留: ${oldSong.artist} - ${oldSong.title}${oldSong.cover ? ' 🖼️' : ''}${oldSong.lrc ? ' 📝' : ''}`);
     }
   }
 
