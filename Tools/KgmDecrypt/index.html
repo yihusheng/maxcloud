@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>KGM 解密 — Wise</title>
-<meta name="description" content="在浏览器端批量解密酷狗KGM加密音乐，不上传文件，保护隐私">
+<title>音乐解密 — Wise</title>
+<meta name="description" content="在浏览器端解密多种加密音乐格式，不上传文件，保护隐私">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -19,52 +19,44 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--s);
 .card-hdr .rt a{font-size:13px;font-weight:600;color:var(--k);text-decoration:none;padding:6px 16px;border-radius:999px;border:1px solid var(--k);transition:.15s}
 .card-hdr .rt a:hover{background:var(--k);color:var(--p)}
 .card-pad{padding:32px 32px 40px}
-
-/* drop zone */
 .drop-zone{border:2px dashed var(--m);border-radius:var(--rs);padding:40px 20px;text-align:center;cursor:pointer;transition:.2s;margin-bottom:16px}
 .drop-zone:hover,.drop-zone.dragover{border-color:var(--p);background:var(--pp)}
 .drop-zone .ic{font-size:36px;line-height:1;margin-bottom:6px}
 .drop-zone .ds{font-weight:600;margin-bottom:4px}
 .drop-zone .ht{color:var(--b);font-size:13px}
-
-/* file list */
 .fl{display:none;flex-direction:column;gap:4px;margin-bottom:16px}
 .fl.show{display:flex}
 .fl .fi{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--s);border-radius:8px;font-size:13px}
 .fl .fi .st{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0}
 .fl .fi .st.pd{border:2px solid var(--m)}
 .fl .fi .st.dn{background:var(--p);color:var(--k)}
-.fl .fi .st.er{background:var(--s);color:#d03238;border:2px solid #d03238;font-size:12px;content:'!'}
-.fl .fi .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fl .fi .st.er{background:var(--s);color:#d03238;border:2px solid #d03238;font-size:12px}
+.fl .fi .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+.fl .fi .tag{display:inline-block;background:var(--m);color:var(--c);border-radius:4px;padding:0 5px;font-size:10px;font-weight:600;line-height:16px;margin-right:4px}
+.fl .fi .tag.kgm{background:#7c3aed}
+.fl .fi .tag.ncm{background:#e74c3c}
+.fl .fi .tag.qmc{background:#3498db}
+.fl .fi .tag.kwm{background:#e67e22}
+.fl .fi .tag.xm{background:#1abc9c}
 .fl .fi .sz{color:var(--m);font-size:12px;white-space:nowrap}
 .fl .fi .dl{background:var(--k);color:var(--c);padding:3px 10px;border-radius:999px;text-decoration:none;font-size:11px;font-weight:600;opacity:.3;pointer-events:none}
 .fl .fi .dl.ok{opacity:1;pointer-events:auto}
 .fl .fi .rm{color:var(--m);cursor:pointer;font-size:14px;padding:2px 6px;border-radius:4px;transition:.15s}
 .fl .fi .rm:hover{color:#d03238;background:var(--s)}
-
-/* button */
 .btn{display:block;width:100%;padding:14px;border:none;border-radius:var(--rs);font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;transition:.15s;text-align:center;background:var(--k);color:var(--c)}
 .btn:hover{background:var(--kd)}
 .btn:disabled{opacity:.3;cursor:not-allowed}
 .btn:not(:disabled):active{transform:scale(.98)}
-
-/* progress */
 .pg{margin-top:16px;display:none}
 .pg.show{display:block}
 .pb{height:6px;background:var(--s);border-radius:3px;overflow:hidden;margin-bottom:8px}
 .pf{height:100%;width:0%;background:linear-gradient(90deg,var(--p),var(--pa));border-radius:3px;transition:width .3s}
 .pt{font-size:13px;color:var(--b);text-align:center;margin-bottom:4px}
-
-/* error */
 .er{display:none;padding:12px 16px;background:var(--s);border-radius:var(--rs);margin-top:12px;color:#d03238;font-size:13px;line-height:1.5}
 .er.show{display:block}
-
-/* note */
 .nt{font-size:13px;color:var(--m);line-height:1.8;padding:14px 18px}
 .nt strong{color:var(--b)}
 .nt code{background:var(--s);padding:1px 6px;border-radius:4px;font-size:12px}
-
-/* batch actions */
 .ba{display:none;margin-top:12px;gap:8px}
 .ba.show{display:flex}
 .ba .dla{flex:1;background:var(--k);color:var(--c);padding:10px;border-radius:var(--rs);text-decoration:none;font-size:13px;font-weight:600;text-align:center;transition:.15s}
@@ -77,17 +69,17 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--s);
 <div class="card">
   <div class="card-hdr">
     <span class="dot"></span>
-    <span class="lb">KGM 解密</span>
+    <span class="lb">音乐解密</span>
     <span class="rt"><a href="/Music">← 音乐解锁</a></span>
   </div>
   <div class="card-pad">
 
     <div class="drop-zone" id="dropZone">
       <div class="ic">📂</div>
-      <div class="ds">拖拽 KGM 文件到此处</div>
-      <div class="ht">或点击选择 · 可多选 · 支持 .kgm .kgm.flac .kgma</div>
+      <div class="ds">拖拽加密音乐文件到此处</div>
+      <div class="ht">或点击选择 · 可多选</div>
       <input type="file" id="fileInput" multiple
-        accept=".kgm,.kgma,.kgm.flac,.kgma.flac" hidden>
+        accept=".kgm,.kgma,.kgm.flac,.kgma.flac,.ncm,.qmc0,.qmc2,.qmc3,.qmcflac,.qmcogg,.mflac,.mgg,.mflac0,.mgg1,.tkm,.bkcmp3,.bkcflac,.kwm,.xm,.tm0,.tm2,.tm3,.tm6" hidden>
     </div>
 
     <div class="fl" id="fl"></div>
@@ -110,27 +102,450 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--s);
 
 <div class="card">
   <div class="nt">
-    <strong>说明</strong><br>
+    <strong>支持的格式</strong><br>
+    🟣 酷狗 KGM · 🟥 网易云 NCM · 🔵 QQ音乐 QMC / MFLAC / MGG<br>
+    🟠 酷我 KWM · 🟩 虾米 XM<br>
     • 文件在浏览器本地处理，<strong>不会上传</strong>到任何服务器<br>
-    • 仅从服务器获取所需的密钥段（几十 KB ~ 几 MB）<br>
-    • 支持批量解密 · 解密后自动识别格式 · 可打包下载
+    • 仅 KGM 需要从服务器获取密钥段（几十 KB）<br>
+    • 解密后自动识别格式，可单独下载或打包 zip
   </div>
 </div>
 
 </div>
 
 <script>
-// ── constants ──
-const MAGIC = new Uint8Array([0x7c,0xd5,0x32,0xeb,0x86,0x02,0x7f,0x4b,0xa8,0xaf,0xa6,0x8e,0x0f,0xff,0x99,0x14,0x00,0x04,0x00,0x00,0x03,0x00,0x00,0x00,0x01,0x00,0x00,0x00]);
+// ══════════════════════════════════════════
+// 常量
+// ══════════════════════════════════════════
 const HL=1024,OKL=17,KSS=16;
+const KGM_MAGIC=new Uint8Array([0x7c,0xd5,0x32,0xeb,0x86,0x02,0x7f,0x4b,0xa8,0xaf,0xa6,0x8e,0x0f,0xff,0x99,0x14,0x00,0x04,0x00,0x00,0x03,0x00,0x00,0x00,0x01,0x00,0x00,0x00]);
 const PM=new Uint8Array([0xB8,0xD5,0x3D,0xB2,0xE9,0xAF,0x78,0x8C,0x83,0x33,0x71,0x51,0x76,0xA0,0xCD,0x37,0x2F,0x3E,0x35,0x8D,0xA9,0xBE,0x98,0xB7,0xE7,0x8C,0x22,0xCE,0x5A,0x61,0xDF,0x68,0x69,0x89,0xFE,0xA5,0xB6,0xDE,0xA9,0x77,0xFC,0xC8,0xBD,0xBD,0xE5,0x6D,0x3E,0x5A,0x36,0xEF,0x69,0x4E,0xBE,0xE1,0xE9,0x66,0x1C,0xF3,0xD9,0x02,0xB6,0xF2,0x12,0x9B,0x44,0xD0,0x6F,0xB9,0x35,0x89,0xB6,0x46,0x6D,0x73,0x82,0x06,0x69,0xC1,0xED,0xD7,0x85,0xC2,0x30,0xDF,0xA2,0x62,0xBE,0x79,0x2D,0x62,0x62,0x3D,0x0D,0x7E,0xBE,0x48,0x89,0x23,0x02,0xA0,0xE4,0xD5,0x75,0x51,0x32,0x02,0x53,0xFD,0x16,0x3A,0x21,0x3B,0x16,0x0F,0xC3,0xB2,0xBB,0xB3,0xE2,0xBA,0x3A,0x3D,0x13,0xEC,0xF6,0x01,0x45,0x84,0xA5,0x70,0x0F,0x93,0x49,0x0C,0x64,0xCD,0x31,0xD5,0xCC,0x4C,0x07,0x01,0x9E,0x00,0x1A,0x23,0x90,0xBF,0x88,0x1E,0x3B,0xAB,0xA6,0x3E,0xC4,0x73,0x47,0x10,0x7E,0x3B,0x5E,0xBC,0xE3,0x00,0x84,0xFF,0x09,0xD4,0xE0,0x89,0x0F,0x5B,0x58,0x70,0x4F,0xFB,0x65,0xD8,0x5C,0x53,0x1B,0xD3,0xC8,0xC6,0xBF,0xEF,0x98,0xB0,0x50,0x4F,0x0F,0xEA,0xE5,0x83,0x58,0x8C,0x28,0x2C,0x84,0x67,0xCD,0xD0,0x9E,0x47,0xDB,0x27,0x50,0xCA,0xF4,0x63,0x63,0xE8,0x97,0x7F,0x1B,0x4B,0x0C,0xC2,0xC1,0x21,0x4C,0xCC,0x58,0xF5,0x94,0x52,0xA3,0xF3,0xD3,0xE0,0x68,0xF4,0x00,0x23,0xF3,0x5E,0x0A,0x7B,0x93,0xDD,0xAB,0x12,0xB2,0x13,0xE8,0x84,0xD7,0xA7,0x9F,0x0F,0x32,0x4C,0x55,0x1D,0x04,0x36,0x52,0xDC,0x03,0xF3,0xF9,0x4E,0x42,0xE9,0x3D,0x61,0xEF,0x7C,0xB6,0xB3,0x93,0x50]);
-const ML=PM.length;
+const PML=PM.length;
 
-let files = [];
+const NCM_MAGIC=new Uint8Array([0x43,0x54,0x45,0x4E,0x46,0x44,0x41,0x4D]);
+const NCM_CORE_KEY=Uint8Array.from([0x68,0x7a,0x48,0x52,0x41,0x6d,0x73,0x6f,0x35,0x6b,0x49,0x6e,0x62,0x61,0x78,0x57]);
 
+const KWM_MAGIC=[0x79,0x65,0x65,0x6C,0x69,0x6F,0x6E,0x2D,0x6B,0x75,0x77,0x6F,0x2D,0x74,0x6D,0x65];
+const KWM_PREDEF="MoOtOiTvINGwd2E6n0E1i7L5t2IoOoNk";
+
+const XM_MAGIC1=[0x69,0x66,0x6D,0x74];
+const XM_MAGIC2=[0xfe,0xfe,0xfe,0xfe];
+const XM_TYPE={" WAV":".wav",FLAC:".flac"," MP3":".mp3"," A4M":".m4a"};
+
+const FLAC_HEADER=[0x66,0x4C,0x61,0x43];
+const OGG_HEADER=[0x4f,0x67,0x67,0x53];
+
+const QMC_DEFAULT_MASK_44=[0xde,0x51,0xfa,0xc3,0x4a,0xd6,0xca,0x90,0x7e,0x67,0x5e,0xf7,0xd5,0x52,0x84,0xd8,0x47,0x95,0xbb,0xa1,0xaa,0xc6,0x66,0x23,0x92,0x62,0xf3,0x74,0xa1,0x9f,0xf4,0xa0,0x1d,0x3f,0x5b,0xf0,0x13,0x0e,0x09,0x3d,0xf9,0xbc,0x00,0x11];
+
+const QMCOggHeader1=[0x4f,0x67,0x67,0x53,0x00,0x02,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xff,0xff,0xff,0xff,0x00,0x00,0x00,0x00,0xff,0xff,0xff,0xff,0x01,0x1e,0x01,0x76,0x6f,0x72,0x62,0x69,0x73,0x00,0x00,0x00,0x00,0x02,0x44,0xac,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xee,0x02,0x00,0x00,0x00,0x00,0x00,0xb8,0x01];
+const QMCOggHeader2=[0x03,0x76,0x6f,0x72,0x62,0x69,0x73,0x2c,0x00,0x00,0x00,0x58,0x69,0x70,0x68,0x2e,0x4f,0x72,0x67,0x20,0x6c,0x69,0x62,0x56,0x6f,0x72,0x62,0x69,0x73,0x20,0x49,0x20,0x32,0x30,0x31,0x35,0x30,0x31,0x30,0x35,0x20,0x28,0xe2,0x9b,0x84,0xe2,0x9b,0x84,0xe2,0x9b,0x84,0xe2,0x9b,0x84,0x29,0xff,0x00,0x00,0x00,0xff,0x00,0x00,0x00,0x54,0x49,0x54,0x4c,0x45,0x3d];
+
+const QMCOggConf1=[9,9,9,9,9,9,9,9,9,9,9,9,9,9,0,0,0,0,9,9,9,9,0,0,0,0,9,9,9,9,9,9,9,9,9,9,9,9,9,6,3,3,3,3,6,6,6,6,3,3,3,3,6,6,6,6,6,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,0,0,0,0,9,9,9,9,0,0,0,0];
+const QMCOggConf2=[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,0,1,3,3,0,1,3,3,3,3,3,3,3,3];
+
+// ══════════════════════════════════════════
+// 格式检测
+// ══════════════════════════════════════════
+function detectFormat(name){
+  const n=name.toLowerCase();
+  if(/\.kgm(\.(flac|mp3))?$|\.kgma/i.test(n)) return 'kgm';
+  if(/\.ncm$/i.test(n)) return 'ncm';
+  if(/\.qmc0$/i.test(n)) return 'qmc';
+  if(/\.qmc2$/i.test(n)) return 'qmc';
+  if(/\.qmc3$/i.test(n)) return 'qmc';
+  if(/\.qmcflac$/i.test(n)) return 'qmc';
+  if(/\.qmcogg$/i.test(n)) return 'qmc';
+  if(/\.mflac\d?$/i.test(n)) return 'qmc';
+  if(/\.mgg\d?$/i.test(n)) return 'qmc';
+  if(/\.tkm$/i.test(n)) return 'qmc';
+  if(/\.bkcmp3$|\.bkcflac$/i.test(n)) return 'qmc';
+  if(/\.666c6163$|\.6d7033$|\.6f6767$|\.6d3461$|\.776176$/i.test(n)) return 'qmc';
+  if(/\.kwm$/i.test(n)) return 'kwm';
+  if(/\.xm$/i.test(n)) return 'xm';
+  if(/\.tm[0236]$/i.test(n)) return 'raw';
+  return null;
+}
+
+function getFormatColor(fmt){
+  return {kgm:'kgm',ncm:'ncm',qmc:'qmc',kwm:'kwm',xm:'xm',raw:'qmc'}[fmt]||'';
+}
+function getFormatLabel(fmt){
+  return {kgm:'KGM',ncm:'NCM',qmc:'QMC',kwm:'KWM',xm:'XM',raw:'RAW'}[fmt]||fmt;
+}
+
+// ══════════════════════════════════════════
+// 工具函数
+// ══════════════════════════════════════════
+function sz(b){if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFixed(1)+' KB';return(b/1048576).toFixed(1)+' MB'}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+function bytesEq(a,b){if(a.length!==b.length)return 0;for(let i=0;i<a.length;i++)if(a[i]!==b[i])return 0;return 1}
+function u8(buf){return new Uint8Array(buf)}
+
+// ══════════════════════════════════════════
+// 格式检测（从解密后数据）
+// ══════════════════════════════════════════
+function detectAudioExt(d){
+  if(d[0]===0xFF&&(d[1]&0xE0)===0xE0||d[0]===0x49&&d[1]===0x44&&d[2]===0x33) return {ext:'mp3',mime:'audio/mpeg'};
+  if(d[0]===0x66&&d[1]===0x4C&&d[2]===0x61&&d[3]===0x43) return {ext:'flac',mime:'audio/flac'};
+  if(d[0]===0x4F&&d[1]===0x67&&d[2]===0x67&&d[3]===0x53) return {ext:'ogg',mime:'audio/ogg'};
+  if(d[0]===0x52&&d[1]===0x49&&d[2]===0x46&&d[3]===0x46) return {ext:'wav',mime:'audio/wav'};
+  if(d[0]===0x66&&d[1]===0x74&&d[2]===0x79&&d[3]===0x70||d[8]===0x6D&&d[9]===0x64&&d[10]===0x61&&d[11]===0x74) return {ext:'m4a',mime:'audio/mp4'};
+  return null;
+}
+
+function cleanName(n,fmt){
+  const suffixes={kgm:['.kgm.flac','.kgm.mp3','.kgma.flac','.kgma','.kgm'],ncm:['.ncm'],kwm:['.kwm'],xm:['.xm'],qmc:['.qmc0','.qmc2','.qmc3','.qmcflac','.qmcogg','.mflac','.mflac0','.mgg','.mgg1','.tkm','.bkcmp3','.bkcflac','.666c6163','.6d7033','.6f6767','.6d3461','.776176'],raw:['.tm0','.tm2','.tm3','.tm6']};
+  const exts=suffixes[fmt]||[];
+  let b=n;
+  for(const e of exts) if(b.toLowerCase().endsWith(e)){b=b.slice(0,-e.length);break}
+  return b.replace(/_(HQ|SQ|HiRes|HD|无损|高品质|标准|流畅)\s*$/i,'').replace(/\s*\([^)]*\)\s*$/,'').trim();
+}
+
+// ══════════════════════════════════════════
+// AES-ECB (纯 JS，不依赖外部库)
+// ══════════════════════════════════════════
+const SBOX=[0x63,0x7c,0x77,0x7b,0xf2,0x6b,0x6f,0xc5,0x30,0x01,0x67,0x2b,0xfe,0xd7,0xab,0x76,0xca,0x82,0xc9,0x7d,0xfa,0x59,0x47,0xf0,0xad,0xd4,0xa2,0xaf,0x9c,0xa4,0x72,0xc0,0xb7,0xfd,0x93,0x26,0x36,0x3f,0xf7,0xcc,0x34,0xa5,0xe5,0xf1,0x71,0xd8,0x31,0x15,0x04,0xc7,0x23,0xc3,0x18,0x96,0x05,0x9a,0x07,0x12,0x80,0xe2,0xeb,0x27,0xb2,0x75,0x09,0x83,0x2c,0x1a,0x1b,0x6e,0x5a,0xa0,0x52,0x3b,0xd6,0xb3,0x29,0xe3,0x2f,0x84,0x53,0xd1,0x00,0xed,0x20,0xfc,0xb1,0x5b,0x6a,0xcb,0xbe,0x39,0x4a,0x4c,0x58,0xcf,0xd0,0xef,0xaa,0xfb,0x43,0x4d,0x33,0x85,0x45,0xf9,0x02,0x7f,0x50,0x3c,0x9f,0xa8,0x51,0xa3,0x40,0x8f,0x92,0x9d,0x38,0xf5,0xbc,0xb6,0xda,0x21,0x10,0xff,0xf3,0xd2,0xcd,0x0c,0x13,0xec,0x5f,0x97,0x44,0x17,0xc4,0xa7,0x7e,0x3d,0x64,0x5d,0x19,0x73,0x60,0x81,0x4f,0xdc,0x22,0x2a,0x90,0x88,0x46,0xee,0xb8,0x14,0xde,0x5e,0x0b,0xdb,0xe0,0x32,0x3a,0x0a,0x49,0x06,0x24,0x5c,0xc2,0xd3,0xac,0x62,0x91,0x95,0xe4,0x79,0xe7,0xc8,0x37,0x6d,0x8d,0xd5,0x4e,0xa9,0x6c,0x56,0xf4,0xea,0x65,0x7a,0xae,0x08,0xba,0x78,0x25,0x2e,0x1c,0xa6,0xb4,0xc6,0xe8,0xdd,0x74,0x1f,0x4b,0xbd,0x8b,0x8a,0x70,0x3e,0xb5,0x66,0x48,0x03,0xf6,0x0e,0x61,0x35,0x57,0xb9,0x86,0xc1,0x1d,0x9e,0xe1,0xf8,0x98,0x11,0x69,0xd9,0x8e,0x94,0x9b,0x1e,0x87,0xe9,0xce,0x55,0x28,0xdf,0x8c,0xa1,0x89,0x0d,0xbf,0xe6,0x42,0x68,0x41,0x99,0x2d,0x0f,0xb0,0x54,0xbb,0x16];
+const RCON=[0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80,0x1b,0x36];
+const INV_SBOX=new Uint8Array(256);
+for(let i=0;i<256;i++) INV_SBOX[SBOX[i]]=i;
+
+function expandKey(key){
+  const nk=4,nb=4,nr=10;
+  const w=new Uint8Array(nb*(nr+1)*4);
+  for(let i=0;i<4*nk;i++) w[i]=key[i];
+  for(let i=nk;i<nb*(nr+1);i++){
+    let t=w.slice((i-1)*4,i*4);
+    if(i%nk===0){
+      // RotWord
+      const tmp=t[0];t[0]=t[1];t[1]=t[2];t[2]=t[3];t[3]=tmp;
+      // SubWord
+      for(let j=0;j<4;j++) t[j]=SBOX[t[j]];
+      t[0]^=RCON[Math.floor(i/nk)-1];
+    }
+    for(let j=0;j<4;j++) w[i*4+j]=w[(i-nk)*4+j]^t[j];
+  }
+  return w;
+}
+
+function addRoundKey(state,key,n){
+  for(let i=0;i<16;i++) state[i]^=key[n*16+i];
+}
+function subBytes(state){for(let i=0;i<16;i++) state[i]=SBOX[state[i]]}
+function invSubBytes(state){for(let i=0;i<16;i++) state[i]=INV_SBOX[state[i]]}
+function shiftRows(state){
+  const s=[...state];
+  state[1]=s[5];state[5]=s[9];state[9]=s[13];state[13]=s[1];
+  state[2]=s[10];state[6]=s[14];state[10]=s[2];state[14]=s[6];
+  state[3]=s[15];state[7]=s[3];state[11]=s[7];state[15]=s[11];
+}
+function invShiftRows(state){
+  const s=[...state];
+  state[1]=s[13];state[5]=s[1];state[9]=s[5];state[13]=s[9];
+  state[2]=s[10];state[6]=s[14];state[10]=s[2];state[14]=s[6];
+  state[3]=s[7];state[7]=s[11];state[11]=s[15];state[15]=s[3];
+}
+function gfMul(a,b){let r=0;for(let i=0;i<8;i++){if(b&1)r^=a;const h=a&0x80;a=(a<<1)&0xff;if(h)a^=0x1b;b>>=1}return r}
+function mixColumns(state){
+  for(let c=0;c<4;c++){
+    const i=c*4;
+    const s0=state[i],s1=state[i+1],s2=state[i+2],s3=state[i+3];
+    state[i]=gfMul(2,s0)^gfMul(3,s1)^s2^s3;
+    state[i+1]=s0^gfMul(2,s1)^gfMul(3,s2)^s3;
+    state[i+2]=s0^s1^gfMul(2,s2)^gfMul(3,s3);
+    state[i+3]=gfMul(3,s0)^s1^s2^gfMul(2,s3);
+  }
+}
+function invMixColumns(state){
+  for(let c=0;c<4;c++){
+    const i=c*4;
+    const s0=state[i],s1=state[i+1],s2=state[i+2],s3=state[i+3];
+    state[i]=gfMul(14,s0)^gfMul(11,s1)^gfMul(13,s2)^gfMul(9,s3);
+    state[i+1]=gfMul(9,s0)^gfMul(14,s1)^gfMul(11,s2)^gfMul(13,s3);
+    state[i+2]=gfMul(13,s0)^gfMul(9,s1)^gfMul(14,s2)^gfMul(11,s3);
+    state[i+3]=gfMul(11,s0)^gfMul(13,s1)^gfMul(9,s2)^gfMul(14,s3);
+  }
+}
+
+function aes128EcbDecrypt(cipherText,keyBytes){
+  const key=expandKey(keyBytes);
+  const bs=16;
+  const pt=new Uint8Array(cipherText.length);
+  for(let b=0;b<cipherText.length;b+=bs){
+    const state=new Uint8Array(bs);
+    for(let i=0;i<bs;i++) state[i]=cipherText[b+i];
+    addRoundKey(state,key,10);
+    invShiftRows(state);
+    invSubBytes(state);
+    for(let r=9;r>=1;r--){
+      addRoundKey(state,key,r);
+      invMixColumns(state);
+      invShiftRows(state);
+      invSubBytes(state);
+    }
+    addRoundKey(state,key,0);
+    for(let i=0;i<bs;i++) pt[b+i]=state[i];
+  }
+  // PKCS7 unpad
+  const pad=pt[pt.length-1];
+  if(pad>0&&pad<=16) return pt.slice(0,pt.length-pad);
+  return pt;
+}
+
+// ══════════════════════════════════════════
+// KGM 解密
+// ══════════════════════════════════════════
+async function kgmDecrypt(fileBuf){
+  const d=u8(fileBuf);
+  for(let i=0;i<28;i++) if(d[i]!==KGM_MAGIC[i]) throw new Error('无效 KGM 文件');
+  const ok=new Uint8Array(OKL);ok.set(d.subarray(0x1c,0x2c));
+  const al=d.length-HL,sn=Math.ceil(al/KSS);
+  const kr=await fetch('/api/decrypt-key?slots=0&count='+sn);
+  if(!kr.ok) throw new Error('密钥获取失败');
+  const kt=new Uint8Array(await kr.arrayBuffer());
+  const out=new Uint8Array(al);const CH=262144;let p=0;
+  while(p<al){
+    const e=Math.min(p+CH,al);
+    for(let j=p;j<e;j++){
+      let v=ok[j%OKL]^d[HL+j];
+      v=(v^((v&0xf)<<4))&0xff;
+      const sl=Math.floor(j/KSS);
+      let w=PM[j%PML]^kt[sl];
+      w=(w^((w&0xf)<<4))&0xff;
+      out[j]=v^w;
+    }
+    p=e;
+    if(p<al) await sleep(0);
+  }
+  return out;
+}
+
+// ══════════════════════════════════════════
+// NCM 解密
+// ══════════════════════════════════════════
+function ncmDecrypt(fileBuf){
+  const d=u8(fileBuf);
+  if(!bytesEq(NCM_MAGIC,d.slice(0,8))) throw new Error('无效 NCM 文件');
+
+  let off=10;
+  const keyLen=new DataView(fileBuf,off,4).getUint32(0,true);off+=4;
+  const encKey=d.slice(off,off+keyLen).map(v=>v^0x64);off+=keyLen;
+  const plainKey=aes128EcbDecrypt(encKey,NCM_CORE_KEY);
+  const keyData=plainKey.slice(17);
+  // RC4 KSA
+  const box=new Uint8Array(256);
+  for(let i=0;i<256;i++) box[i]=i;
+  let j=0;
+  for(let i=0;i<256;i++){
+    j=(j+box[i]+keyData[i%keyData.length])&0xff;
+    [box[i],box[j]]=[box[j],box[i]];
+  }
+  // RC4 PRGA
+  const keyBox=new Uint8Array(256);
+  for(let i=0;i<256;i++){
+    const ii=(i+1)&0xff;
+    const si=box[ii];
+    const sj=box[(ii+si)&0xff];
+    keyBox[i]=box[(si+sj)&0xff];
+  }
+
+  // Metadata
+  const metaLen=new DataView(fileBuf,off,4).getUint32(0,true);off+=4;
+  if(metaLen>0){
+    const encMeta=d.slice(off,off+metaLen).map(v=>v^0x63);off+=metaLen;
+    // base64 decode encMeta[22:] then AES-ECB
+    const b64str=new TextDecoder().decode(encMeta.slice(22));
+    const rawMeta=atob(b64str);
+    const metaBytes=new Uint8Array(rawMeta.length);
+    for(let i=0;i<rawMeta.length;i++) metaBytes[i]=rawMeta.charCodeAt(i);
+    const metaKey=Uint8Array.from([0x23,0x31,0x34,0x6C,0x6A,0x6B,0x5F,0x21,0x5C,0x5D,0x26,0x30,0x55,0x3C,0x27,0x28]);
+    const decMeta=aes128EcbDecrypt(metaBytes,metaKey);
+    const metaStr=new TextDecoder().decode(decMeta);
+    const ci=metaStr.indexOf(":");
+    // parse json, not needed for audio extraction
+  }
+
+  // Audio data
+  const imgLen=new DataView(fileBuf,off+5,4).getUint32(0,true);
+  const audioOff=off+5+4+imgLen+4;
+  const audioData=new Uint8Array(fileBuf,audioOff);
+  for(let cur=0;cur<audioData.length;cur++) audioData[cur]^=keyBox[cur&0xff];
+  return audioData;
+}
+
+// ══════════════════════════════════════════
+// KWM 解密
+// ══════════════════════════════════════════
+function kwmDecrypt(fileBuf){
+  const d=u8(fileBuf);
+  for(let i=0;i<16;i++) if(d[i]!==KWM_MAGIC[i]) throw new Error('无效 KWM 文件');
+  const fileKey=d.slice(0x18,0x20);
+  const keyView=new DataView(fileKey.buffer,fileKey.byteOffset,fileKey.byteLength);
+  let keyStr=keyView.getBigUint64(0,true).toString();
+  if(keyStr.length>32) keyStr=keyStr.slice(0,32);else while(keyStr.length<32) keyStr+=keyStr;
+  const mask=new Uint8Array(32);
+  for(let i=0;i<32;i++) mask[i]=KWM_PREDEF.charCodeAt(i)^keyStr.charCodeAt(i);
+  const audioData=d.slice(0x400);
+  for(let i=0;i<audioData.length;i++) audioData[i]^=mask[i%32];
+  return audioData;
+}
+
+// ══════════════════════════════════════════
+// XM 解密
+// ══════════════════════════════════════════
+function xmDecrypt(fileBuf){
+  const d=u8(fileBuf);
+  if(!bytesEq(XM_MAGIC1,d.slice(0,4))||!bytesEq(XM_MAGIC2,d.slice(8,12))) throw new Error('无效 XM 文件');
+  const typeText=new TextDecoder().decode(d.slice(4,8));
+  if(!XM_TYPE[typeText]) throw new Error('未知的 XM 文件类型');
+  const key=d[0x0f];
+  const dataOff=d[0x0c]|(d[0x0d]<<8)|(d[0x0e]<<16);
+  const audioData=d.slice(0x10);
+  for(let i=dataOff;i<audioData.length;i++) audioData[i]=(audioData[i]-key)^0xff;
+  return audioData;
+}
+
+// ══════════════════════════════════════════
+// QMC 解密
+// ══════════════════════════════════════════
+function qmcMaskFrom44(m44){
+  // Convert 44-byte mask to 128-byte mask
+  const allMapping=[];
+  for(let i=0;i<128;i++){
+    const ri=(i*i+27)%256;
+    if(allMapping[ri]) allMapping[ri].push(i);else allMapping[ri]=[i];
+  }
+  const m128=new Uint8Array(128);
+  allMapping.forEach((indices,i44)=>{
+    if(i44<m44.length) indices.forEach(idx=>m128[idx]=m44[i44]);
+  });
+  return m128;
+}
+
+function qmcMaskFrom128(m128){return new Uint8Array(m128)}
+
+function qmcDecryptWithMask(data,mask128){
+  const out=new Uint8Array(data.length);
+  let index=-1,maskIdx=-1;
+  for(let cur=0;cur<data.length;cur++){
+    index++;maskIdx++;
+    if(index===0x8000||(index>0x8000&&(index+1)%0x8000===0)){index++;maskIdx++}
+    if(maskIdx>=128) maskIdx-=128;
+    out[cur]=data[cur]^mask128[maskIdx];
+  }
+  return out;
+}
+
+function qmcDetectMflacMask(data){
+  const searchLen=Math.min(0x8000,data.length);
+  for(let block=0;block<searchLen;block+=128){
+    if(block+128>data.length) break;
+    // Try this 128-byte block as mask
+    const candidate=qmcDecryptWithMask(data.slice(0,FLAC_HEADER.length),data.slice(block,block+128));
+    if(bytesEq(FLAC_HEADER,candidate)) return new Uint8Array(data.slice(block,block+128));
+  }
+  return null;
+}
+
+function qmcGenerateOggHeader(page2){
+  const spec=[page2,0xFF];
+  for(let i=2;i<page2;i++) spec.push(0xFF);
+  spec.push(0xFF);
+  return [...QMCOggHeader1,...spec,...QMCOggHeader2];
+}
+function qmcGenerateOggConf(page2){
+  const specConf=[6,0];
+  for(let i=2;i<page2;i++) specConf.push(4);
+  specConf.push(0);
+  return [...QMCOggConf1,...specConf,...QMCOggConf2];
+}
+
+function qmcDetectMggMask(data){
+  if(data.length<0x100) return null;
+  const matrixConfidence=[];
+  for(let i=0;i<44;i++) matrixConfidence[i]={};
+
+  const page2=data[0x54]^data[0x0C]^QMCOggHeader1[0x0C];
+  const spHeader=qmcGenerateOggHeader(page2);
+  const spConf=qmcGenerateOggConf(page2);
+
+  const allMapping=[];
+  for(let i=0;i<128;i++){const ri=(i*i+27)%256;if(allMapping[ri]) allMapping[ri].push(i);else allMapping[ri]=[i];}
+  const mask128to44=[];
+  allMapping.forEach((all128,i44)=>{all128.forEach(i128=>{mask128to44[i128]=i44})});
+
+  for(let idx128=0;idx128<spHeader.length;idx128++){
+    if(spConf[idx128]===0) continue;
+    const idx44=mask128to44[idx128%128];
+    const m=data[idx128]^spHeader[idx128];
+    const conf=spConf[idx128];
+    matrixConfidence[idx44][m]=(matrixConfidence[idx44][m]||0)+conf;
+  }
+
+  const m44=[];
+  for(let i=0;i<44;i++){
+    const conf=matrixConfidence[i];
+    let bestVal=-1,bestConf=0;
+    for(const k in conf){if(conf[k]>bestConf){bestConf=conf[k];bestVal=parseInt(k)}}
+    if(bestVal===-1) return null;
+    m44[i]=bestVal;
+  }
+  const mask=qmcMaskFrom44(m44);
+  const dx=qmcDecryptWithMask(data.slice(0,OGG_HEADER.length),mask);
+  if(bytesEq(OGG_HEADER,dx)) return mask;
+  return null;
+}
+
+function qmcDecrypt(fileBuf,ext){
+  const d=u8(fileBuf);
+  const handlerMap={
+    mflac:{detect:true,defExt:'flac'},mflac0:{detect:true,defExt:'flac'},
+    mgg:{detect:true,defExt:'ogg'},mgg1:{detect:true,defExt:'ogg'},
+  };
+  const info=handlerMap[ext]||{detect:false,defExt:'mp3'};
+
+  let audioData,mask128;
+  if(info.detect){
+    // newer QMC files have key embedded at end
+    const keyLen=new DataView(fileBuf,d.length-4,4).getUint32(0,true);
+    const keyPos=d.length-4-keyLen;
+    audioData=d.slice(0,keyPos);
+    const keyData=d.slice(keyPos,keyPos+keyLen);
+    if(info.defExt==='flac'){
+      mask128=qmcDetectMflacMask(audioData);
+      if(!mask128){// try with key
+        const defMask=qmcMaskFrom44(QMC_DEFAULT_MASK_44);
+        mask128=defMask;
+      }
+    }else{
+      mask128=qmcDetectMggMask(audioData);
+      if(!mask128){
+        const defMask=qmcMaskFrom44(QMC_DEFAULT_MASK_44);
+        mask128=defMask;
+      }
+    }
+  }else{
+    audioData=d;
+    mask128=qmcMaskFrom44(QMC_DEFAULT_MASK_44);
+  }
+
+  return qmcDecryptWithMask(audioData,mask128);
+}
+
+// TM: just fix header
+function tmDecrypt(fileBuf){
+  const d=u8(fileBuf);
+  d[0]=0x00;d[1]=0x00;d[2]=0x00;d[3]=0x20;d[4]=0x66;d[5]=0x74;d[6]=0x79;d[7]=0x70;
+  return d;
+}
+
+// ══════════════════════════════════════════
+// 主逻辑
+// ══════════════════════════════════════════
 const $=s=>document.querySelector(s);
 const dz=$('#dropZone'),fi=$('#fileInput'),fl=$('#fl'),go=$('#goBtn');
 const pg=$('#pg'),pt=$('#pt'),pf=$('#pf'),er=$('#er'),ba=$('#ba'),dlAll=$('#dlAll');
+
+let files=[];
 
 dz.onclick=()=>fi.click();
 dz.ondragover=e=>{e.preventDefault();dz.classList.add('dragover')};
@@ -142,11 +557,12 @@ go.onclick=decryptAll;
 function addFiles(list){
   let added=0;
   for(const f of list){
-    if(/\.kgm(\.(flac|mp3))?$|\.kgma/i.test(f.name)){
-      files.push({file:f,name:f.name,size:f.size,status:'pending',blob:null,url:null,err:null});
-      added++;
-    }
+    const fmt=detectFormat(f.name);
+    if(!fmt) continue;
+    files.push({file:f,name:f.name,size:f.size,status:'pending',blob:null,url:null,err:null,fmt});
+    added++;
   }
+  if(added<list.length) errMsg('已跳过 '+(list.length-added)+' 个不支持的格式');
   renderList();
   go.disabled=files.length===0;
   er.classList.remove('show');
@@ -160,15 +576,18 @@ function renderList(){
     const stCls=f.status==='done'?'dn':f.status==='err'?'er':'pd';
     const stSym=f.status==='done'?'✓':f.status==='err'?'!':'';
     const dlCls=f.status==='done'?'ok':'';
+    const fmtCls=getFormatColor(f.fmt);
+    const fmtLb=getFormatLabel(f.fmt);
+    const szTxt=f.status==='done'?sz(f.blob.size):f.status==='err'?f.err:f.status==='processing'?'处理中…':sz(f.size);
     return `<div class="fi" data-i="${i}">
       <span class="st ${stCls}">${stSym}</span>
+      <span class="tag ${fmtCls}">${fmtLb}</span>
       <span class="nm">${f.name}</span>
-      <span class="sz">${f.status==='done'?sz(f.blob.size):f.status==='err'?f.err:f.status==='processing'?'处理中…':sz(f.size)}</span>
+      <span class="sz">${szTxt}</span>
       <a class="dl ${dlCls}" href="${f.url||'#'}" download="${f.dlName||''}">下载</a>
       <span class="rm" onclick="removeFile(${i})">✕</span>
     </div>`;
   }).join('');
-  // 全部完成时显示打包下载
   const allDone=files.length>0&&files.every(f=>f.status==='done');
   ba.classList.toggle('show',allDone);
 }
@@ -184,60 +603,51 @@ async function decryptAll(){
   if(!files.length)return;
   er.classList.remove('show');ba.classList.remove('show');
   go.disabled=true;pg.classList.add('show');
-  for(let i=0;i<files.length;i++){
-    if(files[i].status!=='done') files[i].status='pending';
-  }
+  for(let i=0;i<files.length;i++) if(files[i].status!=='done') files[i].status='pending';
   renderList();
-
+  let successCount=0;
   for(let i=0;i<files.length;i++){
     const f=files[i];
-    if(f.status==='done')continue;
+    if(f.status==='done'){successCount++;continue}
     f.status='processing';renderList();
-
     pt.textContent='('+(i+1)+'/'+files.length+') '+f.name;
-    pf.style.width=((i)/files.length*100)+'%';
-
+    pf.style.width=(i/files.length*100)+'%';
     try{
-      f.status='processing';
+      let outRaw;
       const buf=await f.file.arrayBuffer();
-      const d=new Uint8Array(buf);
-      for(let j=0;j<28;j++)if(d[j]!==MAGIC[j])throw new Error('无效文件');
-      const ok=new Uint8Array(OKL);ok.set(d.subarray(0x1c,0x2c));
-      const al=d.length-HL,sn=Math.ceil(al/KSS);
-      const kr=await fetch('/api/decrypt-key?slots=0&count='+sn);
-      if(!kr.ok)throw new Error('密钥获取失败');
-      const kt=new Uint8Array(await kr.arrayBuffer());
-      const out=new Uint8Array(al);const CH=262144;let p=0;
-      while(p<al){
-        const e=Math.min(p+CH,al);
-        for(let j=p;j<e;j++){
-          let v=ok[j%OKL]^d[HL+j];
-          v=(v^((v&0xf)<<4))&0xff;
-          const sl=Math.floor(j/KSS);
-          let w=PM[j%ML]^kt[sl];
-          w=(w^((w&0xf)<<4))&0xff;
-          out[j]=v^w;
+      switch(f.fmt){
+        case 'kgm':outRaw=await kgmDecrypt(buf);break;
+        case 'ncm':outRaw=ncmDecrypt(buf);break;
+        case 'kwm':outRaw=kwmDecrypt(buf);break;
+        case 'xm':outRaw=xmDecrypt(buf);break;
+        case 'qmc':{
+          const ext=f.name.split('.').pop().toLowerCase();
+          outRaw=qmcDecrypt(buf,ext);
+          break;
         }
-        p=e;
-        pt.textContent='('+(i+1)+'/'+files.length+') '+f.name+' '+Math.round(p*100/al)+'%';
-        await sleep(0);
+        case 'raw':outRaw=tmDecrypt(buf);break;
+        default:throw new Error('不支持的格式: '+f.fmt);
       }
-      const fmt=detect(out);const ext=fmt?fmt.ext:'bin';const mime=fmt?fmt.mime:'application/octet-stream';
-      const cn=clean(f.name);const dn=/\.[\w]+$/.test(cn)?cn:cn+'.'+ext;
-      const bl=new Blob([out],{type:mime});const u=URL.createObjectURL(bl);
+      const fmt=detectAudioExt(outRaw);
+      const ext=fmt?fmt.ext:'bin';
+      const mime=fmt?fmt.mime:'application/octet-stream';
+      const cn=cleanName(f.name,f.fmt);
+      const dn=/\.[\w]+$/.test(cn)?cn:cn+'.'+ext;
+      const bl=new Blob([outRaw],{type:mime});
+      const u=URL.createObjectURL(bl);
       f.blob=bl;f.url=u;f.dlName=dn;f.status='done';
+      successCount++;
       pf.style.width=((i+1)/files.length*100)+'%';
       pt.textContent='('+(i+1)+'/'+files.length+') '+dn+' ✓';
     }catch(e){
       f.status='err';f.err=e.message;
       pt.textContent='('+(i+1)+'/'+files.length+') '+f.name+' ❌ '+e.message;
+      await sleep(50);
     }
     renderList();
-    await sleep(30);
+    await sleep(10);
   }
-  go.disabled=false;
-  pg.classList.remove('show');
-  // 有成功文件时显示打包下载
+  go.disabled=false;pg.classList.remove('show');
   const done=files.filter(f=>f.status==='done');
   if(done.length>0){
     ba.classList.add('show');
@@ -249,18 +659,16 @@ async function decryptAll(){
       dlAll.href='#';dlAll.download='';
       dlAll.onclick=async(e)=>{
         e.preventDefault();
-        // Use JSZip CDN for batch download
         const JSZip=await new Promise(r=>{
           const s=document.createElement('script');
           s.src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
-          s.onload=()=>r(window.JSZip);
-          document.head.appendChild(s);
+          s.onload=()=>r(window.JSZip);document.head.appendChild(s);
         });
         const zip=new JSZip();
         for(const f of done) zip.file(f.dlName,f.blob);
         const blob=await zip.generateAsync({type:'blob'});
         const u=URL.createObjectURL(blob);
-        const a=document.createElement('a');a.href=u;a.download='kgm_decrypted.zip';a.click();
+        const a=document.createElement('a');a.href=u;a.download='decrypted.zip';a.click();
         setTimeout(()=>URL.revokeObjectURL(u),60000);
         dlAll.textContent='下载中…';
       };
@@ -268,21 +676,7 @@ async function decryptAll(){
   }
 }
 
-function detect(h){
-  if(h[0]===0xFF&&(h[1]&0xE0)===0xE0||h[0]===0x49&&h[1]===0x44&&h[2]===0x33) return {ext:'mp3',mime:'audio/mpeg'};
-  if(h[0]===0x66&&h[1]===0x4C&&h[2]===0x61&&h[3]===0x43) return {ext:'flac',mime:'audio/flac'};
-  if(h[0]===0x4F&&h[1]===0x67&&h[2]===0x67&&h[3]===0x53) return {ext:'ogg',mime:'audio/ogg'};
-  if(h[0]===0x52&&h[1]===0x49&&h[2]===0x46&&h[3]===0x46) return {ext:'wav',mime:'audio/wav'};
-  return null;
-}
-function clean(n){
-  let b=n;
-  for(const e of ['.kgm.flac','.kgm.mp3','.kgma.flac','.kgma','.kgm']) if(b.toLowerCase().endsWith(e)){b=b.slice(0,-e.length);break}
-  return b.replace(/_(HQ|SQ|HiRes|HD|无损|高品质|标准|流畅)\s*$/i,'').replace(/\s*\([^)]*\)\s*$/,'').trim();
-}
-function sz(b){if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFixed(1)+' KB';return(b/1048576).toFixed(1)+' MB'}
-function err(m){er.textContent='❌ '+m;er.classList.add('show')}
-function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+function errMsg(m){er.textContent='❌ '+m;er.classList.add('show')}
 </script>
 </body>
 </html>
