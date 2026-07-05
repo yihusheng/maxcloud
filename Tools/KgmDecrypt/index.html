@@ -32,12 +32,13 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--s);
 .fl .fi .st.dn{background:var(--p);color:var(--k)}
 .fl .fi .st.er{background:var(--s);color:#d03238;border:2px solid #d03238;font-size:12px}
 .fl .fi .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
-.fl .fi .tag{display:inline-block;background:var(--m);color:var(--c);border-radius:4px;padding:0 5px;font-size:10px;font-weight:600;line-height:16px;margin-right:4px}
-.fl .fi .tag.kgm{background:#7c3aed}
-.fl .fi .tag.ncm{background:#e74c3c}
-.fl .fi .tag.qmc{background:#3498db}
-.fl .fi .tag.kwm{background:#e67e22}
-.fl .fi .tag.xm{background:#1abc9c}
+.fl .fi .tag{display:inline-block;border-radius:999px;padding:1px 7px;font-size:10px;font-weight:600;line-height:16px;margin-right:4px;border:1px solid}
+.fl .fi .tag.kgm{color:#7c3aed;border-color:#7c3aed40;background:#7c3aed0d}
+.fl .fi .tag.ncm{color:#e74c3c;border-color:#e74c3c40;background:#e74c3c0d}
+.fl .fi .tag.qmc{color:#2563eb;border-color:#2563eb40;background:#2563eb0d}
+.fl .fi .tag.kwm{color:#d97706;border-color:#d9770640;background:#d977060d}
+.fl .fi .tag.xm{color:#059669;border-color:#05966940;background:#0596690d}
+.fl .fi .tag.raw{color:var(--b);border-color:var(--s);background:var(--s)}
 .fl .fi .sz{color:var(--m);font-size:12px;white-space:nowrap}
 .fl .fi .dl{background:var(--k);color:var(--c);padding:3px 10px;border-radius:999px;text-decoration:none;font-size:11px;font-weight:600;opacity:.3;pointer-events:none}
 .fl .fi .dl.ok{opacity:1;pointer-events:auto}
@@ -167,7 +168,7 @@ function detectFormat(name){
 }
 
 function getFormatColor(fmt){
-  return {kgm:'kgm',ncm:'ncm',qmc:'qmc',kwm:'kwm',xm:'xm',raw:'qmc'}[fmt]||'';
+  return {kgm:'kgm',ncm:'ncm',qmc:'qmc',kwm:'kwm',xm:'xm',raw:'raw'}[fmt]||'';
 }
 function getFormatLabel(fmt){
   return {kgm:'KGM',ncm:'NCM',qmc:'QMC',kwm:'KWM',xm:'XM',raw:'RAW'}[fmt]||fmt;
