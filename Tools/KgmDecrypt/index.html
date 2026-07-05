@@ -4,17 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>KGM 解密 — Wise</title>
-<meta name="description" content="在浏览器端解密酷狗KGM加密音乐，不上传文件，保护隐私">
+<meta name="description" content="在浏览器端批量解密酷狗KGM加密音乐，不上传文件，保护隐私">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&" rel="stylesheet">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--p:#9fe870;--op:#0e0f0c;--pa:#cdffad;--pp:#e2f6d5;--k:#0e0f0c;--kd:#163300;--b:#454745;--m:#868685;--c:#fff;--s:#e8ebe6;--r:24px;--rs:12px;--rp:9999px;--r-sm:8px}
-
+:root{--p:#9fe870;--op:#0e0f0c;--pa:#cdffad;--pp:#e2f6d5;--k:#0e0f0c;--kd:#163300;--b:#454745;--m:#868685;--c:#fff;--s:#e8ebe6;--r:24px;--rs:12px;--rp:9999px}
 body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--s);color:var(--k);min-height:100vh;display:flex;justify-content:center;padding:16px}
 .wrap{width:100%;max-width:700px;display:flex;flex-direction:column;gap:12px;margin-top:4px}
-
-/* ── Card ── */
 .card{background:var(--c);border-radius:var(--r);box-shadow:0 4px 24px rgba(14,15,12,.06);overflow:hidden}
 .card-hdr{display:flex;align-items:center;gap:10px;padding:14px 32px;border-bottom:1px solid var(--s)}
 .card-hdr .dot{width:12px;height:12px;border-radius:50%;background:var(--p);flex-shrink:0}
@@ -24,233 +20,269 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--s);
 .card-hdr .rt a:hover{background:var(--k);color:var(--p)}
 .card-pad{padding:32px 32px 40px}
 
-/* ── Drop Zone ── */
-.drop-zone{border:2px dashed var(--m);border-radius:var(--rs);padding:48px 20px;text-align:center;cursor:pointer;transition:.2s;margin-bottom:16px}
+/* drop zone */
+.drop-zone{border:2px dashed var(--m);border-radius:var(--rs);padding:40px 20px;text-align:center;cursor:pointer;transition:.2s;margin-bottom:16px}
 .drop-zone:hover,.drop-zone.dragover{border-color:var(--p);background:var(--pp)}
-.drop-zone .ic{font-size:40px;line-height:1;margin-bottom:8px}
+.drop-zone .ic{font-size:36px;line-height:1;margin-bottom:6px}
 .drop-zone .ds{font-weight:600;margin-bottom:4px}
 .drop-zone .ht{color:var(--b);font-size:13px}
 
-/* ── File info bar ── */
-.fi{display:none;align-items:center;gap:10px;padding:12px 16px;background:var(--pp);border-radius:var(--rs);margin-bottom:16px;font-size:14px}
-.fi.show{display:flex}
-.fi .nm{flex:1;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.fi .sz{color:var(--b);font-size:13px;white-space:nowrap}
-.fi .rm{color:var(--b);cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:.15s;font-size:16px;font-weight:600}
-.fi .rm:hover{background:var(--s);color:var(--k)}
+/* file list */
+.fl{display:none;flex-direction:column;gap:4px;margin-bottom:16px}
+.fl.show{display:flex}
+.fl .fi{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--s);border-radius:8px;font-size:13px}
+.fl .fi .st{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0}
+.fl .fi .st.pd{border:2px solid var(--m)}
+.fl .fi .st.dn{background:var(--p);color:var(--k)}
+.fl .fi .st.er{background:var(--s);color:#d03238;border:2px solid #d03238;font-size:12px;content:'!'}
+.fl .fi .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fl .fi .sz{color:var(--m);font-size:12px;white-space:nowrap}
+.fl .fi .dl{background:var(--k);color:var(--c);padding:3px 10px;border-radius:999px;text-decoration:none;font-size:11px;font-weight:600;display:none}
+.fl .fi .dl.show{display:inline}
+.fl .fi .rm{color:var(--m);cursor:pointer;font-size:14px;padding:2px 6px;border-radius:4px;transition:.15s}
+.fl .fi .rm:hover{color:#d03238;background:var(--s)}
 
-/* ── Button ── */
+/* button */
 .btn{display:block;width:100%;padding:14px;border:none;border-radius:var(--rs);font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;transition:.15s;text-align:center;background:var(--k);color:var(--c)}
 .btn:hover{background:var(--kd)}
 .btn:disabled{opacity:.3;cursor:not-allowed}
 .btn:not(:disabled):active{transform:scale(.98)}
 
-/* ── Progress steps ── */
-.pg{margin-top:20px;display:none}
+/* progress */
+.pg{margin-top:16px;display:none}
 .pg.show{display:block}
-.ps{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;margin-bottom:6px;background:var(--s);font-size:14px}
-.ps .ii{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;transition:.3s}
-.ps .ii.pd{border:2px solid var(--m);color:transparent}
-.ps .ii.ac{border:2px solid var(--k);border-top-color:transparent;animation:spin .6s linear infinite}
-.ps .ii.dn{background:var(--p);color:var(--k)}
-.ps .lb{flex:1;font-weight:500}
-.ps .mt{color:var(--m);font-size:12px}
-@keyframes spin{to{transform:rotate(360deg)}}
+.pb{height:6px;background:var(--s);border-radius:3px;overflow:hidden;margin-bottom:8px}
+.pf{height:100%;width:0%;background:linear-gradient(90deg,var(--p),var(--pa));border-radius:3px;transition:width .3s}
+.pt{font-size:13px;color:var(--b);text-align:center;margin-bottom:4px}
 
-/* ── Result ── */
-.rs{display:none;align-items:center;gap:12px;padding:16px 20px;background:var(--pp);border-radius:var(--rs);margin-top:16px}
-.rs.show{display:flex}
-.rs .ic{font-size:22px}
-.rs .nf{flex:1;min-width:0}
-.rs .nf .nn{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.rs .nf .mm{color:var(--b);font-size:13px;margin-top:2px}
-.rs .dl{background:var(--k);color:var(--c);padding:8px 18px;border-radius:999px;text-decoration:none;font-size:13px;font-weight:600;transition:.15s;white-space:nowrap}
-.rs .dl:hover{background:var(--kd)}
-
-/* ── Error ── */
-.er{display:none;padding:14px 18px;background:var(--s);border-radius:var(--rs);margin-top:16px;color:#d03238;font-size:14px;line-height:1.5}
+/* error */
+.er{display:none;padding:12px 16px;background:var(--s);border-radius:var(--rs);margin-top:12px;color:#d03238;font-size:13px;line-height:1.5}
 .er.show{display:block}
 
-/* ── Note ── */
+/* note */
 .nt{font-size:13px;color:var(--m);line-height:1.8;padding:14px 18px}
 .nt strong{color:var(--b)}
 .nt code{background:var(--s);padding:1px 6px;border-radius:4px;font-size:12px}
+
+/* batch actions */
+.ba{display:none;margin-top:12px;gap:8px}
+.ba.show{display:flex}
+.ba .dla{flex:1;background:var(--k);color:var(--c);padding:10px;border-radius:var(--rs);text-decoration:none;font-size:13px;font-weight:600;text-align:center;transition:.15s}
+.ba .dla:hover{background:var(--kd)}
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <!-- Main card -->
-  <div class="card">
-    <div class="card-hdr">
-      <span class="dot"></span>
-      <span class="lb">KGM 解密</span>
-      <span class="rt"><a href="/Music">← 音乐解锁</a></span>
-    </div>
-    <div class="card-pad">
-
-      <div class="drop-zone" id="dropZone">
-        <div class="ic">📂</div>
-        <div class="ds">拖拽 KGM 文件到此处</div>
-        <div class="ht">或点击选择 · 支持 .kgm .kgm.flac .kgma</div>
-        <input type="file" id="fileInput"
-          accept=".kgm,.kgma,.kgm.flac,.kgma.flac" hidden>
-      </div>
-
-      <div class="fi" id="fi">
-        <span>📄</span>
-        <span class="nm" id="fiNm"></span>
-        <span class="sz" id="fiSz"></span>
-        <span class="rm" id="fiRm">✕</span>
-      </div>
-
-      <button class="btn" id="goBtn" disabled>开始解密</button>
-
-      <!-- Progress -->
-      <div class="pg" id="pg">
-        <div class="ps"><span class="ii pd" id="iR">○</span><span class="lb">读取文件</span><span class="mt" id="mR"></span></div>
-        <div class="ps"><span class="ii pd" id="iK">○</span><span class="lb">获取密钥段</span><span class="mt" id="mK"></span></div>
-        <div class="ps"><span class="ii pd" id="iD">○</span><span class="lb">解密中</span><span class="mt" id="mD"></span></div>
-      </div>
-
-      <!-- Result -->
-      <div class="rs" id="rs">
-        <span class="ic">✅</span>
-        <div class="nf">
-          <div class="nn" id="rsNm"></div>
-          <div class="mm" id="rsMt"></div>
-        </div>
-        <a class="dl" id="dlBtn" download>下载</a>
-      </div>
-
-      <!-- Error -->
-      <div class="er" id="er"></div>
-
-    </div>
+<div class="card">
+  <div class="card-hdr">
+    <span class="dot"></span>
+    <span class="lb">KGM 解密</span>
+    <span class="rt"><a href="/Music">← 音乐解锁</a></span>
   </div>
+  <div class="card-pad">
 
-  <!-- Note -->
-  <div class="card">
-    <div class="nt">
-      <strong>说明</strong><br>
-      • 文件在浏览器本地处理，<strong>不会上传</strong>到任何服务器<br>
-      • 仅从服务器获取所需的密钥段（几十 KB ~ 几 MB）<br>
-      • 解密后自动识别格式（MP3 / FLAC / OGG / WAV）<br>
-      • 文件名自动去除 <code>_HQ</code> <code>_SQ</code> 等质量后缀
+    <div class="drop-zone" id="dropZone">
+      <div class="ic">📂</div>
+      <div class="ds">拖拽 KGM 文件到此处</div>
+      <div class="ht">或点击选择 · 可多选 · 支持 .kgm .kgm.flac .kgma</div>
+      <input type="file" id="fileInput" multiple
+        accept=".kgm,.kgma,.kgm.flac,.kgma.flac" hidden>
     </div>
+
+    <div class="fl" id="fl"></div>
+
+    <button class="btn" id="goBtn" disabled>开始解密</button>
+
+    <div class="pg" id="pg">
+      <div class="pt" id="pt"></div>
+      <div class="pb"><div class="pf" id="pf"></div></div>
+    </div>
+
+    <div class="ba" id="ba">
+      <a class="dla" id="dlAll">下载全部（zip）</a>
+    </div>
+
+    <div class="er" id="er"></div>
+
   </div>
+</div>
+
+<div class="card">
+  <div class="nt">
+    <strong>说明</strong><br>
+    • 文件在浏览器本地处理，<strong>不会上传</strong>到任何服务器<br>
+    • 仅从服务器获取所需的密钥段（几十 KB ~ 几 MB）<br>
+    • 支持批量解密 · 解密后自动识别格式 · 可打包下载
+  </div>
+</div>
 
 </div>
 
 <script>
-// ── KGM constants ──
-const M = new Uint8Array([0x7c,0xd5,0x32,0xeb,0x86,0x02,0x7f,0x4b,0xa8,0xaf,0xa6,0x8e,0x0f,0xff,0x99,0x14,0x00,0x04,0x00,0x00,0x03,0x00,0x00,0x00,0x01,0x00,0x00,0x00]);
-const HL = 1024, OKL = 17, KSS = 16;
-const PM = new Uint8Array([0xB8,0xD5,0x3D,0xB2,0xE9,0xAF,0x78,0x8C,0x83,0x33,0x71,0x51,0x76,0xA0,0xCD,0x37,0x2F,0x3E,0x35,0x8D,0xA9,0xBE,0x98,0xB7,0xE7,0x8C,0x22,0xCE,0x5A,0x61,0xDF,0x68,0x69,0x89,0xFE,0xA5,0xB6,0xDE,0xA9,0x77,0xFC,0xC8,0xBD,0xBD,0xE5,0x6D,0x3E,0x5A,0x36,0xEF,0x69,0x4E,0xBE,0xE1,0xE9,0x66,0x1C,0xF3,0xD9,0x02,0xB6,0xF2,0x12,0x9B,0x44,0xD0,0x6F,0xB9,0x35,0x89,0xB6,0x46,0x6D,0x73,0x82,0x06,0x69,0xC1,0xED,0xD7,0x85,0xC2,0x30,0xDF,0xA2,0x62,0xBE,0x79,0x2D,0x62,0x62,0x3D,0x0D,0x7E,0xBE,0x48,0x89,0x23,0x02,0xA0,0xE4,0xD5,0x75,0x51,0x32,0x02,0x53,0xFD,0x16,0x3A,0x21,0x3B,0x16,0x0F,0xC3,0xB2,0xBB,0xB3,0xE2,0xBA,0x3A,0x3D,0x13,0xEC,0xF6,0x01,0x45,0x84,0xA5,0x70,0x0F,0x93,0x49,0x0C,0x64,0xCD,0x31,0xD5,0xCC,0x4C,0x07,0x01,0x9E,0x00,0x1A,0x23,0x90,0xBF,0x88,0x1E,0x3B,0xAB,0xA6,0x3E,0xC4,0x73,0x47,0x10,0x7E,0x3B,0x5E,0xBC,0xE3,0x00,0x84,0xFF,0x09,0xD4,0xE0,0x89,0x0F,0x5B,0x58,0x70,0x4F,0xFB,0x65,0xD8,0x5C,0x53,0x1B,0xD3,0xC8,0xC6,0xBF,0xEF,0x98,0xB0,0x50,0x4F,0x0F,0xEA,0xE5,0x83,0x58,0x8C,0x28,0x2C,0x84,0x67,0xCD,0xD0,0x9E,0x47,0xDB,0x27,0x50,0xCA,0xF4,0x63,0x63,0xE8,0x97,0x7F,0x1B,0x4B,0x0C,0xC2,0xC1,0x21,0x4C,0xCC,0x58,0xF5,0x94,0x52,0xA3,0xF3,0xD3,0xE0,0x68,0xF4,0x00,0x23,0xF3,0x5E,0x0A,0x7B,0x93,0xDD,0xAB,0x12,0xB2,0x13,0xE8,0x84,0xD7,0xA7,0x9F,0x0F,0x32,0x4C,0x55,0x1D,0x04,0x36,0x52,0xDC,0x03,0xF3,0xF9,0x4E,0x42,0xE9,0x3D,0x61,0xEF,0x7C,0xB6,0xB3,0x93,0x50]);
-const ML = PM.length;
+// ── constants ──
+const MAGIC = new Uint8Array([0x7c,0xd5,0x32,0xeb,0x86,0x02,0x7f,0x4b,0xa8,0xaf,0xa6,0x8e,0x0f,0xff,0x99,0x14,0x00,0x04,0x00,0x00,0x03,0x00,0x00,0x00,0x01,0x00,0x00,0x00]);
+const HL=1024,OKL=17,KSS=16;
+const PM=new Uint8Array([0xB8,0xD5,0x3D,0xB2,0xE9,0xAF,0x78,0x8C,0x83,0x33,0x71,0x51,0x76,0xA0,0xCD,0x37,0x2F,0x3E,0x35,0x8D,0xA9,0xBE,0x98,0xB7,0xE7,0x8C,0x22,0xCE,0x5A,0x61,0xDF,0x68,0x69,0x89,0xFE,0xA5,0xB6,0xDE,0xA9,0x77,0xFC,0xC8,0xBD,0xBD,0xE5,0x6D,0x3E,0x5A,0x36,0xEF,0x69,0x4E,0xBE,0xE1,0xE9,0x66,0x1C,0xF3,0xD9,0x02,0xB6,0xF2,0x12,0x9B,0x44,0xD0,0x6F,0xB9,0x35,0x89,0xB6,0x46,0x6D,0x73,0x82,0x06,0x69,0xC1,0xED,0xD7,0x85,0xC2,0x30,0xDF,0xA2,0x62,0xBE,0x79,0x2D,0x62,0x62,0x3D,0x0D,0x7E,0xBE,0x48,0x89,0x23,0x02,0xA0,0xE4,0xD5,0x75,0x51,0x32,0x02,0x53,0xFD,0x16,0x3A,0x21,0x3B,0x16,0x0F,0xC3,0xB2,0xBB,0xB3,0xE2,0xBA,0x3A,0x3D,0x13,0xEC,0xF6,0x01,0x45,0x84,0xA5,0x70,0x0F,0x93,0x49,0x0C,0x64,0xCD,0x31,0xD5,0xCC,0x4C,0x07,0x01,0x9E,0x00,0x1A,0x23,0x90,0xBF,0x88,0x1E,0x3B,0xAB,0xA6,0x3E,0xC4,0x73,0x47,0x10,0x7E,0x3B,0x5E,0xBC,0xE3,0x00,0x84,0xFF,0x09,0xD4,0xE0,0x89,0x0F,0x5B,0x58,0x70,0x4F,0xFB,0x65,0xD8,0x5C,0x53,0x1B,0xD3,0xC8,0xC6,0xBF,0xEF,0x98,0xB0,0x50,0x4F,0x0F,0xEA,0xE5,0x83,0x58,0x8C,0x28,0x2C,0x84,0x67,0xCD,0xD0,0x9E,0x47,0xDB,0x27,0x50,0xCA,0xF4,0x63,0x63,0xE8,0x97,0x7F,0x1B,0x4B,0x0C,0xC2,0xC1,0x21,0x4C,0xCC,0x58,0xF5,0x94,0x52,0xA3,0xF3,0xD3,0xE0,0x68,0xF4,0x00,0x23,0xF3,0x5E,0x0A,0x7B,0x93,0xDD,0xAB,0x12,0xB2,0x13,0xE8,0x84,0xD7,0xA7,0x9F,0x0F,0x32,0x4C,0x55,0x1D,0x04,0x36,0x52,0xDC,0x03,0xF3,0xF9,0x4E,0x42,0xE9,0x3D,0x61,0xEF,0x7C,0xB6,0xB3,0x93,0x50]);
+const ML=PM.length;
 
-let F = null;
+let files = [];
 
-// DOM
-const $ = s => document.querySelector(s);
-const z = $('#dropZone'), fi = $('#fileInput'), fb = $('#fi'), fn = $('#fiNm'), fz = $('#fiSz'), fr = $('#fiRm');
-const g = $('#goBtn'), pg = $('#pg'), er = $('#er'), rs = $('#rs'), rn = $('#rsNm'), rm = $('#rsMt'), dl = $('#dlBtn');
-const iR = $('#iR'), iK = $('#iK'), iD = $('#iD'), mR = $('#mR'), mK = $('#mK'), mD = $('#mD');
+const $=s=>document.querySelector(s);
+const dz=$('#dropZone'),fi=$('#fileInput'),fl=$('#fl'),go=$('#goBtn');
+const pg=$('#pg'),pt=$('#pt'),pf=$('#pf'),er=$('#er'),ba=$('#ba'),dlAll=$('#dlAll');
 
-z.onclick = () => fi.click();
-z.ondragover = e => { e.preventDefault(); z.classList.add('dragover'); };
-z.ondragleave = () => z.classList.remove('dragover');
-z.ondrop = e => { e.preventDefault(); z.classList.remove('dragover'); if(e.dataTransfer.files[0]) pick(e.dataTransfer.files[0]); };
-fi.onchange = () => { if(fi.files[0]) pick(fi.files[0]); };
-fr.onclick = reset;
-g.onclick = decrypt;
+dz.onclick=()=>fi.click();
+dz.ondragover=e=>{e.preventDefault();dz.classList.add('dragover')};
+dz.ondragleave=()=>dz.classList.remove('dragover');
+dz.ondrop=e=>{e.preventDefault();dz.classList.remove('dragover');addFiles(e.dataTransfer.files)};
+fi.onchange=()=>{if(fi.files.length)addFiles(fi.files);fi.value=''};
+go.onclick=decryptAll;
 
-function pick(f) {
-  if(!/\.kgm(\.(flac|mp3))?$|\.kgma/i.test(f.name)) return err('不支持的文件格式');
-  F = f; fn.textContent = f.name; fz.textContent = sz(f.size);
-  fb.classList.add('show'); g.disabled = false;
-  rs.classList.remove('show'); er.classList.remove('show'); pg.classList.remove('show');
-}
-
-function reset() { F = null; fi.value = ''; fb.classList.remove('show'); g.disabled = true; rs.classList.remove('show');
-  er.classList.remove('show'); pg.classList.remove('show'); }
-
-function si(el, state, label, meta) {
-  const ii = el.querySelector('.ii');
-  ii.className = 'ii ' + (state === 'a' ? 'ac' : state === 'd' ? 'dn' : 'pd');
-  ii.textContent = state === 'd' ? '✓' : '';
-  if(label) el.querySelector('.lb').textContent = label;
-  if(meta !== undefined) el.querySelector('.mt').textContent = meta;
-}
-function sp(el) { return el.closest('.ps'); }
-
-async function decrypt() {
-  if(!F) return;
-  pg.classList.add('show'); rs.classList.remove('show'); er.classList.remove('show'); g.disabled = true;
-  [iR,iK,iD].forEach((e,i) => { si(sp(e), 'p', ['读取文件','获取密钥段','解密中'][i], ''); });
-
-  try {
-    si(sp(iR), 'a', '读取文件…','');
-    const buf = await F.arrayBuffer(), d = new Uint8Array(buf);
-    si(sp(iR), 'd', '文件已读取', sz(d.length));
-    await sleep(30);
-
-    for(let i=0;i<28;i++) if(d[i]!==M[i]) throw new Error('无效的 KGM 文件');
-
-    const ok = new Uint8Array(OKL); ok.set(d.subarray(0x1c,0x2c));
-    const al = d.length - HL, sn = Math.ceil(al / KSS);
-
-    si(sp(iK), 'a', '获取密钥段…','');
-    const kr = await fetch('/api/decrypt-key?slots=0&count='+sn);
-    if(!kr.ok) throw new Error('密钥获取失败');
-    const kt = new Uint8Array(await kr.arrayBuffer());
-    si(sp(iK), 'd', '密钥段已获取', sz(kt.byteLength));
-    await sleep(30);
-
-    si(sp(iD), 'a', '解密中…','');
-    const out = new Uint8Array(al);
-    const CH = 262144; let p = 0;
-    while(p < al) {
-      const e = Math.min(p + CH, al);
-      for(let j=p;j<e;j++) {
-        let v = ok[j%OKL] ^ d[HL+j];
-        v = (v ^ ((v&0xf)<<4)) & 0xff;
-        const sl = Math.floor(j/KSS);
-        let w = PM[j%ML] ^ kt[sl];
-        w = (w ^ ((w&0xf)<<4)) & 0xff;
-        out[j] = v ^ w;
-      }
-      p = e;
-      if(p < al) { si(sp(iD), 'a', '解密中… '+Math.round(p*100/al)+'%',''); await sleep(0); }
+function addFiles(list){
+  let added=0;
+  for(const f of list){
+    if(/\.kgm(\.(flac|mp3))?$|\.kgma/i.test(f.name)){
+      files.push({file:f,name:f.name,size:f.size,status:'pending',blob:null,url:null,err:null});
+      added++;
     }
-    si(sp(iD), 'd', '解密完成', sz(out.length));
-    await sleep(50);
-
-    const fmt = df(out), ext = fmt?fmt.ext:'bin', mime = fmt?fmt.mime:'application/octet-stream';
-    const cn = cf(F.name), fn2 = /\.[\w]+$/.test(cn) ? cn : cn+'.'+ext;
-    const bl = new Blob([out],{type:mime}), u = URL.createObjectURL(bl);
-    rn.textContent = fn2; rm.textContent = sz(out.length)+' · '+(fmt?fmt.ext.toUpperCase():'?');
-    dl.href = u; dl.download = fn2; rs.classList.add('show');
-    g.disabled = false;
-  } catch(e) { err(e.message); pg.classList.remove('show'); g.disabled = false; }
+  }
+  renderList();
+  go.disabled=files.length===0;
+  er.classList.remove('show');
+  ba.classList.remove('show');
 }
 
-function df(h) {
+function renderList(){
+  if(!files.length){fl.classList.remove('show');return}
+  fl.classList.add('show');
+  fl.innerHTML=files.map((f,i)=>{
+    const stCls=f.status==='done'?'dn':f.status==='err'?'er':'pd';
+    const stSym=f.status==='done'?'✓':f.status==='err'?'!':'';
+    const dlCls=f.status==='done'?'show':'';
+    return `<div class="fi" data-i="${i}">
+      <span class="st ${stCls}">${stSym}</span>
+      <span class="nm">${f.name}</span>
+      <span class="sz">${f.status==='done'?sz(f.blob.size):f.status==='err'?f.err:f.status==='processing'?'处理中…':sz(f.size)}</span>
+      <a class="dl ${dlCls}" href="${f.url||'#'}" download="${f.dlName||''}">下载</a>
+      <span class="rm" onclick="removeFile(${i})">✕</span>
+    </div>`;
+  }).join('');
+  // 全部完成时显示打包下载
+  const allDone=files.length>0&&files.every(f=>f.status==='done');
+  ba.classList.toggle('show',allDone);
+}
+
+window.removeFile=function(i){
+  if(files[i].url) URL.revokeObjectURL(files[i].url);
+  files.splice(i,1);
+  renderList();
+  go.disabled=files.length===0;
+};
+
+async function decryptAll(){
+  if(!files.length)return;
+  er.classList.remove('show');ba.classList.remove('show');
+  go.disabled=true;pg.classList.add('show');
+  for(let i=0;i<files.length;i++){
+    if(files[i].status!=='done') files[i].status='pending';
+  }
+  renderList();
+
+  for(let i=0;i<files.length;i++){
+    const f=files[i];
+    if(f.status==='done')continue;
+    f.status='processing';renderList();
+
+    pt.textContent='('+(i+1)+'/'+files.length+') '+f.name;
+    pf.style.width=((i)/files.length*100)+'%';
+
+    try{
+      f.status='processing';
+      const buf=await f.file.arrayBuffer();
+      const d=new Uint8Array(buf);
+      for(let j=0;j<28;j++)if(d[j]!==MAGIC[j])throw new Error('无效文件');
+      const ok=new Uint8Array(OKL);ok.set(d.subarray(0x1c,0x2c));
+      const al=d.length-HL,sn=Math.ceil(al/KSS);
+      const kr=await fetch('/api/decrypt-key?slots=0&count='+sn);
+      if(!kr.ok)throw new Error('密钥获取失败');
+      const kt=new Uint8Array(await kr.arrayBuffer());
+      const out=new Uint8Array(al);const CH=262144;let p=0;
+      while(p<al){
+        const e=Math.min(p+CH,al);
+        for(let j=p;j<e;j++){
+          let v=ok[j%OKL]^d[HL+j];
+          v=(v^((v&0xf)<<4))&0xff;
+          const sl=Math.floor(j/KSS);
+          let w=PM[j%ML]^kt[sl];
+          w=(w^((w&0xf)<<4))&0xff;
+          out[j]=v^w;
+        }
+        p=e;
+        pt.textContent='('+(i+1)+'/'+files.length+') '+f.name+' '+Math.round(p*100/al)+'%';
+        await sleep(0);
+      }
+      const fmt=detect(out);const ext=fmt?fmt.ext:'bin';const mime=fmt?fmt.mime:'application/octet-stream';
+      const cn=clean(f.name);const dn=/\.[\w]+$/.test(cn)?cn:cn+'.'+ext;
+      const bl=new Blob([out],{type:mime});const u=URL.createObjectURL(bl);
+      f.blob=bl;f.url=u;f.dlName=dn;f.status='done';
+      pf.style.width=((i+1)/files.length*100)+'%';
+      pt.textContent='('+(i+1)+'/'+files.length+') '+dn+' ✓';
+    }catch(e){
+      f.status='err';f.err=e.message;
+      pt.textContent='('+(i+1)+'/'+files.length+') '+f.name+' ❌ '+e.message;
+    }
+    renderList();
+    await sleep(30);
+  }
+  go.disabled=false;
+  pg.classList.remove('show');
+  // 有成功文件时显示打包下载
+  const done=files.filter(f=>f.status==='done');
+  if(done.length>0){
+    ba.classList.add('show');
+    if(done.length===1){
+      dlAll.textContent='下载全部（1 个文件）';
+      dlAll.href=done[0].url;dlAll.download=done[0].dlName;
+    }else{
+      dlAll.textContent='下载全部（'+done.length+' 个文件，zip）';
+      dlAll.href='#';dlAll.download='';
+      dlAll.onclick=async(e)=>{
+        e.preventDefault();
+        // Use JSZip CDN for batch download
+        const JSZip=await new Promise(r=>{
+          const s=document.createElement('script');
+          s.src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+          s.onload=()=>r(window.JSZip);
+          document.head.appendChild(s);
+        });
+        const zip=new JSZip();
+        for(const f of done) zip.file(f.dlName,f.blob);
+        const blob=await zip.generateAsync({type:'blob'});
+        const u=URL.createObjectURL(blob);
+        const a=document.createElement('a');a.href=u;a.download='kgm_decrypted.zip';a.click();
+        setTimeout(()=>URL.revokeObjectURL(u),60000);
+        dlAll.textContent='下载中…';
+      };
+    }
+  }
+}
+
+function detect(h){
   if(h[0]===0xFF&&(h[1]&0xE0)===0xE0||h[0]===0x49&&h[1]===0x44&&h[2]===0x33) return {ext:'mp3',mime:'audio/mpeg'};
   if(h[0]===0x66&&h[1]===0x4C&&h[2]===0x61&&h[3]===0x43) return {ext:'flac',mime:'audio/flac'};
   if(h[0]===0x4F&&h[1]===0x67&&h[2]===0x67&&h[3]===0x53) return {ext:'ogg',mime:'audio/ogg'};
   if(h[0]===0x52&&h[1]===0x49&&h[2]===0x46&&h[3]===0x46) return {ext:'wav',mime:'audio/wav'};
   return null;
 }
-
-function cf(n) {
-  let b = n;
-  for(const e of ['.kgm.flac','.kgm.mp3','.kgma.flac','.kgma','.kgm']) if(b.toLowerCase().endsWith(e)) { b=b.slice(0,-e.length); break; }
+function clean(n){
+  let b=n;
+  for(const e of ['.kgm.flac','.kgm.mp3','.kgma.flac','.kgma','.kgm']) if(b.toLowerCase().endsWith(e)){b=b.slice(0,-e.length);break}
   return b.replace(/_(HQ|SQ|HiRes|HD|无损|高品质|标准|流畅)\s*$/i,'').replace(/\s*\([^)]*\)\s*$/,'').trim();
 }
-function sz(b) { if(b<1024) return b+' B'; if(b<1048576) return (b/1024).toFixed(1)+' KB'; return (b/1048576).toFixed(1)+' MB'; }
-function err(m) { er.textContent = '❌ '+m; er.classList.add('show'); }
-function sleep(ms) { return new Promise(r=>setTimeout(r,ms)); }
+function sz(b){if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFixed(1)+' KB';return(b/1048576).toFixed(1)+' MB'}
+function err(m){er.textContent='❌ '+m;er.classList.add('show')}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
 </script>
 </body>
 </html>
