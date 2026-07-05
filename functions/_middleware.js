@@ -2,7 +2,7 @@
  * Cloudflare Pages Middleware — 边缘层实时注入
  *
  * - Metacubexd / zashboard → 注入导航栏 + 注销 SW
- * - Music (音乐解锁)       → 由 Music-unlock-injectior-wise.js Worker 独立处理
+ * - Music (音乐解锁)       → 注入 Wise CSS + KGM 入口 + SW 注销
  */
 
 // ── 导航栏静态 HTML ──
@@ -50,6 +50,7 @@ const SKIP_EXTS = new Set([
 
 // ── 路径配置 ──
 const NAVBAR_PATHS = ['/Tools/Metacubexd', '/Tools/zashboard'];
+const MUSIC_PATHS = ['/Music'];
 
 function shouldTransform(pathname, targets) {
   if (!targets.some(p => pathname.startsWith(p))) return false;
@@ -75,6 +76,36 @@ class NavbarBodyHandler {
   }
 }
 
+/* ─── Wise Music 注入 ─── */
+
+class WiseHeadHandler {
+  element(el) {
+    el.append('<link href="/style/Music-unlock-injectior-wise-theme.css" rel="stylesheet">', { html: true });
+    el.append([
+      '<script>',
+      '/* 注销 PWA SW */',
+      'if("serviceWorker" in navigator){',
+      'navigator.serviceWorker.getRegistrations().then(function(regs){',
+      'regs.forEach(function(reg){',
+      'if(reg.scope.includes("/Music/")){',
+      'reg.unregister().then(function(s){',
+      'console.log("[wise] SW unregistered:",reg.scope,s)',
+      '})',
+      '}',
+      '})',
+      '})}',
+      '</script>',
+    ].join('\\n'), { html: true });
+  }
+}
+
+class WiseNavHandler {
+  element(el) {
+    el.setAttribute('href', '/Tools/KgmDecrypt/');
+    el.setInnerContent('KGM 解密', { html: false });
+  }
+}
+
 /* ─── Middleware ─── */
 
 export async function onRequest(context) {
@@ -82,17 +113,31 @@ export async function onRequest(context) {
   const url = new URL(request.url);
   const path = url.pathname;
 
-  if (!shouldTransform(path, NAVBAR_PATHS)) return next();
+  const needsNavbar = shouldTransform(path, NAVBAR_PATHS);
+  const needsWise = shouldTransform(path, MUSIC_PATHS);
+
+  if (!needsNavbar && !needsWise) return next();
 
   const response = await next();
   const ct = (response.headers.get('content-type') || '').toLowerCase();
   if (!ct.includes('text/html') && !ct.includes('text/plain')) return response;
 
   try {
-    return new HTMLRewriter()
-      .on('head', new NavbarHeadHandler())
-      .on('body', new NavbarBodyHandler())
-      .transform(response);
+    let rewriter = new HTMLRewriter();
+
+    if (needsNavbar) {
+      rewriter = rewriter
+        .on('head', new NavbarHeadHandler())
+        .on('body', new NavbarBodyHandler());
+    }
+
+    if (needsWise) {
+      rewriter = rewriter
+        .on('head', new WiseHeadHandler())
+        .on('.wise-nav-back', new WiseNavHandler());
+    }
+
+    return rewriter.transform(response);
   } catch (e) {
     console.error('[middleware] transform error:', e);
     return response;
