@@ -1,0 +1,402 @@
+/* ═══════════════════════════════════════════════════
+   CD Theme "清风拂面" — Record Player Visualization
+   v2 — 优化版
+   ═══════════════════════════════════════════════════ */
+
+/* ── Theme root variables ── */
+.cd-theme-active {
+  --cd-common-color: #241811;
+  --cd-bg-color: #e3e1dd;
+  --cd-icon-frame: #ffffff;
+  --cd-icon-frame-alpha: 0.5;
+}
+
+/* ── CD Theme Container（底层视觉层） ── */
+.cd-theme {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+.cd-theme.active {
+  opacity: 1;
+}
+
+/* ── 全屏场景背景（带加载占位色） ── */
+.cd-scenes {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: #e3e1dd; /* 占位色，与场景图主色一致 */
+}
+.cd-scenes img,
+.cd-scenes picture {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+.cd-scenes picture img {
+  /* picture 内的 img 继承 */
+}
+
+/* ── 底部置物架 ── */
+.cd-shelf {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 2;
+  pointer-events: none;
+}
+.cd-shelf picture,
+.cd-shelf img {
+  width: 100%;
+  height: auto;
+  display: block;
+  vertical-align: bottom;
+}
+
+/* ── 唱机本体 ── */
+.cd-player-body {
+  position: absolute;
+  z-index: 3;
+  bottom: 55px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 92%;
+  max-width: 370px;
+  pointer-events: none;
+}
+.cd-player-body picture,
+.cd-player-body img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ═══════════════════════════════════════════════════
+   专辑封面 → 黑胶唱片
+   ═══════════════════════════════════════════════════ */
+.cd-theme.active ~ .cover-lyrics-wrapper .album-art {
+  position: relative !important;
+  border-radius: 50% !important;
+  width: 200px !important;
+  height: 200px !important;
+  /* 黑胶多层阴影 — 优化层次 */
+  box-shadow:
+    0 0 0 6px rgba(0,0,0,0.50),      /* 唱片外圈 */
+    0 0 0 10px rgba(40,40,40,0.20),   /* 纹路一 */
+    0 0 0 13px rgba(0,0,0,0.12),      /* 纹路二 */
+    0 0 0 16px rgba(40,40,40,0.08),   /* 纹路三 */
+    0 0 0 20px rgba(0,0,0,0.04),      /* 最外圈光晕 */
+    0 8px 36px rgba(0,0,0,0.30) !important;
+  margin-bottom: 14px !important;
+  max-width: 200px !important;
+  /* GPU 加速 + 平滑动画 */
+  will-change: transform, border-radius;
+  animation: cd-spin-cover 2s linear infinite;
+  animation-play-state: paused;
+  /* 封面从方形→圆形平滑过渡 */
+  transition: opacity 0.4s ease,
+              box-shadow 0.5s ease,
+              border-radius 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+              width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+              height 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+/* 黑胶高光 — 用伪元素实现光泽感 */
+.cd-theme.active ~ .cover-lyrics-wrapper .album-art::after {
+  content: '';
+  position: absolute;
+  top: -2%;
+  left: -2%;
+  right: -2%;
+  bottom: -2%;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at 30% 20%,
+    rgba(255,255,255,0.06) 0%,
+    transparent 60%
+  );
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* ── 黑胶中心孔（缩小至 10px） ── */
+.cd-vinyl-hole {
+  display: none;
+}
+.cd-theme.active ~ .cover-lyrics-wrapper .cd-vinyl-hole {
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #888, #444, #222);
+  box-shadow:
+    inset 0 1px 3px rgba(0,0,0,0.8),
+    0 0 4px rgba(0,0,0,0.15);
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* 播放时：黑胶开始旋转 */
+.cd-theme-active.playing .cd-theme.active ~ .cover-lyrics-wrapper .album-art {
+  animation-play-state: running;
+}
+
+@keyframes cd-spin-cover {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ═══════════════════════════════════════════════════
+   唱臂（响应速度优化：1.2s → 0.8s）
+   ═══════════════════════════════════════════════════ */
+.cd-tonearm {
+  position: absolute;
+  z-index: 5;
+  right: calc(50% - 180px);
+  bottom: 250px;
+  width: 130px;
+  height: 200px;
+  pointer-events: none;
+  transform-origin: 110px 15px;
+  transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform: rotate(-20deg);
+}
+.cd-theme-active.playing .cd-tonearm {
+  transform: rotate(3deg);
+}
+
+.cd-tonearm-base {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #b0b0b0, #666);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.5), inset 0 1px 3px rgba(255,255,255,0.3);
+  z-index: 2;
+}
+.cd-tonearm-arm {
+  position: absolute;
+  top: 12px;
+  right: 10px;
+  width: 4px;
+  height: 140px;
+  background: linear-gradient(to bottom, #c0c0c0, #888, #777, #666);
+  border-radius: 2px;
+  transform-origin: top center;
+  transform: rotate(12deg);
+  box-shadow: 0 0 6px rgba(0,0,0,0.3);
+}
+.cd-tonearm-head {
+  position: absolute;
+  bottom: 32px;
+  right: -6px;
+  width: 20px;
+  height: 26px;
+  background: linear-gradient(145deg, #999, #666, #555);
+  border-radius: 3px 3px 5px 5px;
+  transform: rotate(12deg);
+  box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+}
+.cd-tonearm-needle {
+  position: absolute;
+  bottom: 24px;
+  right: 2px;
+  width: 2px;
+  height: 20px;
+  background: #aaa;
+  border-radius: 1px;
+  transform: rotate(6deg);
+  transform-origin: top center;
+  box-shadow: 0 0 3px rgba(0,0,0,0.3);
+}
+
+/* ═══════════════════════════════════════════════════
+   装饰元素
+   ═══════════════════════════════════════════════════ */
+.cd-deco-left {
+  position: absolute;
+  left: 12px;
+  bottom: 340px;
+  z-index: 4;
+  width: 75px;
+  pointer-events: none;
+  opacity: 0.75;
+}
+.cd-deco-left picture,
+.cd-deco-left img { width: 100%; height: auto; display: block; }
+
+.cd-deco-right {
+  position: absolute;
+  right: 8px;
+  bottom: 310px;
+  z-index: 4;
+  width: 85px;
+  pointer-events: none;
+  opacity: 0.75;
+}
+.cd-deco-right picture,
+.cd-deco-right img { width: 100%; height: auto; display: block; }
+
+.cd-robot {
+  position: absolute;
+  left: 8px;
+  bottom: 85px;
+  z-index: 5;
+  width: 65px;
+  pointer-events: none;
+  opacity: 0.85;
+  animation: cd-robot-breathe 3.5s ease-in-out infinite;
+}
+.cd-robot picture,
+.cd-robot img { width: 100%; height: auto; display: block; }
+
+@keyframes cd-robot-breathe {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+
+/* ═══════════════════════════════════════════════════
+   主题开关按钮
+   ═══════════════════════════════════════════════════ */
+.cd-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 18px;
+  background: rgba(0,0,0,0.08);
+  color: var(--md-sys-color-on-surface-variant);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1.15rem;
+  line-height: 1;
+  position: relative;
+}
+.cd-toggle-btn:hover {
+  background: rgba(0,0,0,0.15);
+}
+.cd-toggle-btn:active {
+  transform: scale(0.9);
+}
+.cd-toggle-btn.active {
+  color: var(--md-sys-color-primary);
+  background: var(--md-sys-color-primary-container);
+}
+.cd-toggle-btn .material-symbols-rounded {
+  font-size: 1.2rem;
+}
+
+/* ═══════════════════════════════════════════════════
+   调整现有播放器元素
+   ═══════════════════════════════════════════════════ */
+.cd-theme.active ~ .player-background {
+  opacity: 0 !important;
+}
+.cd-theme.active ~ .cover-lyrics-wrapper {
+  position: relative;
+  z-index: 2;
+  justify-content: center;
+  padding-bottom: 20px;
+}
+.cd-theme-active .player-content {
+  position: relative;
+  z-index: 1;
+}
+.cd-theme.active ~ .cover-lyrics-wrapper .song-title-main {
+  text-shadow: 0 2px 12px rgba(0,0,0,0.15);
+}
+.cd-theme.active ~ .cover-lyrics-wrapper .artist-name {
+  text-shadow: 0 1px 8px rgba(0,0,0,0.1);
+}
+
+/* ═══════════════════════════════════════════════════
+   歌词打开时减弱 CD 主题（优化：去掉 blur 避免闪烁）
+   ═══════════════════════════════════════════════════ */
+.lyrics-open .cd-theme.active {
+  opacity: 0.08;
+  transition: opacity 0.4s ease;
+}
+
+/* ═══════════════════════════════════════════════════
+   暗色模式（优化对比度）
+   ═══════════════════════════════════════════════════ */
+[data-theme="dark"] .cd-theme.active {
+  filter: brightness(0.90) saturate(0.95);
+}
+[data-theme="dark"] .cd-theme.active ~ .cover-lyrics-wrapper .album-art {
+  box-shadow:
+    0 0 0 6px rgba(0,0,0,0.60),
+    0 0 0 10px rgba(10,10,10,0.30),
+    0 0 0 13px rgba(0,0,0,0.18),
+    0 0 0 16px rgba(10,10,10,0.10),
+    0 0 0 20px rgba(0,0,0,0.06),
+    0 8px 36px rgba(0,0,0,0.45) !important;
+}
+[data-theme="dark"] .cd-theme.active ~ .cover-lyrics-wrapper .song-title-main {
+  text-shadow: 0 2px 16px rgba(0,0,0,0.4);
+}
+[data-theme="dark"] .cd-theme.active ~ .cover-lyrics-wrapper .artist-name {
+  text-shadow: 0 1px 10px rgba(0,0,0,0.3);
+}
+[data-theme="dark"] .cd-toggle-btn {
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.5);
+}
+[data-theme="dark"] .cd-toggle-btn:hover {
+  background: rgba(255,255,255,0.18);
+}
+
+/* ═══════════════════════════════════════════════════
+   响应式
+   ═══════════════════════════════════════════════════ */
+@media screen and (max-width: 374px) {
+  .cd-player-body { max-width: 310px; bottom: 50px; }
+  .cd-theme.active ~ .cover-lyrics-wrapper .album-art {
+    width: 160px !important;
+    height: 160px !important;
+    max-width: 160px !important;
+  }
+  .cd-tonearm {
+    width: 100px; height: 160px;
+    right: calc(50% - 150px); bottom: 215px;
+    transform-origin: 85px 12px;
+  }
+  .cd-tonearm-arm { height: 110px; }
+  .cd-tonearm-head { bottom: 26px; }
+  .cd-tonearm-needle { bottom: 18px; height: 16px; }
+  .cd-robot { width: 50px; bottom: 75px; }
+  .cd-deco-left { width: 60px; }
+  .cd-deco-right { width: 65px; }
+  .cd-toggle-btn { width: 32px; height: 32px; }
+}
+
+@media screen and (min-width: 768px) {
+  .cd-player-body { max-width: 400px; }
+  .cd-theme.active ~ .cover-lyrics-wrapper .album-art {
+    width: 220px !important;
+    height: 220px !important;
+    max-width: 220px !important;
+  }
+  .cd-tonearm {
+    width: 140px; height: 220px;
+    right: calc(50% - 195px);
+    transform-origin: 120px 15px;
+  }
+  .cd-toggle-btn { width: 40px; height: 40px; }
+}
