@@ -37,8 +37,8 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--s);
 .fl .fi .st.er{background:var(--s);color:#d03238;border:2px solid #d03238;font-size:12px;content:'!'}
 .fl .fi .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .fl .fi .sz{color:var(--m);font-size:12px;white-space:nowrap}
-.fl .fi .dl{background:var(--k);color:var(--c);padding:3px 10px;border-radius:999px;text-decoration:none;font-size:11px;font-weight:600;display:none}
-.fl .fi .dl.show{display:inline}
+.fl .fi .dl{background:var(--k);color:var(--c);padding:3px 10px;border-radius:999px;text-decoration:none;font-size:11px;font-weight:600;opacity:.3;pointer-events:none}
+.fl .fi .dl.ok{opacity:1;pointer-events:auto}
 .fl .fi .rm{color:var(--m);cursor:pointer;font-size:14px;padding:2px 6px;border-radius:4px;transition:.15s}
 .fl .fi .rm:hover{color:#d03238;background:var(--s)}
 
@@ -159,7 +159,7 @@ function renderList(){
   fl.innerHTML=files.map((f,i)=>{
     const stCls=f.status==='done'?'dn':f.status==='err'?'er':'pd';
     const stSym=f.status==='done'?'✓':f.status==='err'?'!':'';
-    const dlCls=f.status==='done'?'show':'';
+    const dlCls=f.status==='done'?'ok':'';
     return `<div class="fi" data-i="${i}">
       <span class="st ${stCls}">${stSym}</span>
       <span class="nm">${f.name}</span>
