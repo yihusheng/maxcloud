@@ -499,6 +499,18 @@ dz.ondrop=e=>{e.preventDefault();dz.classList.remove('dragover');addFiles(e.data
 fi.onchange=()=>{if(fi.files.length)addFiles(fi.files);fi.value=''};
 go.onclick=decryptAll;
 
+// Event delegation: download & remove
+fl.onclick=e=>{
+  const dl=e.target.closest('.dl');
+  if(dl&&dl.classList.contains('ok')){const idx=parseInt(dl.dataset.idx);if(files[idx]&&files[idx].url) saveFile(files[idx].url,files[idx].dlName);return}
+  const rm=e.target.closest('.rm');
+  if(rm){removeFile(parseInt(rm.dataset.rm))}
+};
+
+function saveFile(url,name){
+  const a=document.createElement('a');a.href=url;a.download=name||'download';document.body.appendChild(a);a.click();setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url)},120000)
+}
+
 function addFiles(list){
   let added=0;
   for(const f of list){
@@ -529,8 +541,8 @@ function renderList(){
       <span class="tag ${fmtCls}">${fmtLb}</span>
       <span class="nm">${f.name}</span>
       <span class="sz">${szTxt}</span>
-      <a class="dl ${dlCls}" href="${f.url||'#'}" download="${f.dlName||''}">下载</a>
-      <span class="rm" onclick="removeFile(${i})">✕</span>
+      <a class="dl ${dlCls}" data-idx="${i}">下载</a>
+      <span class="rm" data-rm="${i}">✕</span>
     </div>`;
   }).join('');
   const allDone=files.length>0&&files.every(f=>f.status==='done');
@@ -598,7 +610,7 @@ async function decryptAll(){
     ba.classList.add('show');
     if(done.length===1){
       dlAll.textContent='下载全部（1 个文件）';
-      dlAll.href=done[0].url;dlAll.download=done[0].dlName;
+      dlAll.href='#';dlAll.onclick=e=>{e.preventDefault();saveFile(done[0].url,done[0].dlName)};
     }else{
       dlAll.textContent='下载全部（'+done.length+' 个文件，zip）';
       dlAll.href='#';dlAll.download='';
