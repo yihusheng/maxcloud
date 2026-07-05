@@ -163,7 +163,7 @@ class NavbarBodyHandler {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 class WiseHeadHandler {
   element(el) {
-    el.append('<link href="/style/Music-unlock-injectior-wise-theme.css" rel="stylesheet">', { html: true });
+    el.append('<link href="/style/Music-unlock-injectior-wise-theme.css?v=2" rel="stylesheet">', { html: true });
     el.append([
       '<script>',
       '/* 注销 PWA SW */',
