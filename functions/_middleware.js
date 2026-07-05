@@ -166,18 +166,23 @@ class WiseHeadHandler {
     el.append('<link href="/style/Music-unlock-injectior-wise-theme.css?v=2" rel="stylesheet">', { html: true });
     el.append([
       '<script>',
-      '/* 注销 PWA SW */',
+      '/* 彻底杀掉 PWA SW，阻止 Vue 重新注册 */',
       'if("serviceWorker" in navigator){',
+      '(function killSW(){',
       'navigator.serviceWorker.getRegistrations().then(function(regs){',
       'regs.forEach(function(reg){',
       'if(reg.scope.includes("/Music/")){',
-      'reg.unregister().then(function(s){',
-      'console.log("[wise] SW unregistered:",reg.scope,s)',
-      '})',
+      'reg.unregister();',
       '}',
-      '})',
-      '})}',
-      '</script>',
+      '});',
+      'caches.keys().then(function(keys){',
+      'keys.forEach(function(k){ if(k.includes("music")||k.includes("unlock")) caches.delete(k); });',
+      '});',
+      '});',
+      'setTimeout(killSW,500);',  // 持续清除，防止 Vue 后注册
+      '})();',
+      'navigator.serviceWorker.addEventListener("controllerchange",function(){ location.reload(); });',
+      '}</script>',
     ].join('\\n'), { html: true });
   }
 }
