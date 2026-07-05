@@ -189,7 +189,7 @@ class WiseHeadHandler {
 
 class WiseNavHandler {
   element(el) {
-    el.setAttribute('href', '/Tools/KgmDecrypt/');
+    el.setAttribute('href', '/Tools/MusicDecrypt/');
     el.setInnerContent('← KGM 解密', { html: false });
   }
 }
