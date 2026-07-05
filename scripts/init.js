@@ -8,6 +8,7 @@ import { updateTime, fetchWeather, updateThemeColor } from './weather.js';
 import { loadMusicList, loadBingWallpaper } from './player.js';
 import { initIsland } from './island.js';
 import { CookieUtils } from './utils.js';
+import { themeManager } from './theme-manager.js';
 
 // 注入 CookieUtils 到 i18n（避免循环依赖）
 setCookieUtils(CookieUtils);

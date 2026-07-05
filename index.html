@@ -17,7 +17,6 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0&display=swap" media="all" />
   <link rel="stylesheet" href="/style/material-symbols.css" media="print" onload="this.media=\"all\"" />
   <link rel="stylesheet" href="/style/index.css">
-  <link rel="stylesheet" href="/style/cd-theme.css">
   <link rel="stylesheet" href="/Tools/navbar.css">
   <!-- 预连接：加速音频、封面、歌词加载 -->
   <link rel="dns-prefetch" href="/">
@@ -141,62 +140,10 @@
   </div>
   <div class="player-content">
     <div class="player-background"></div>
-    <!-- CD 主题 "清风拂面" 视觉层 -->
-    <div class="cd-theme" id="cdTheme">
-      <!-- 全屏场景背景（WebP + PNG 回退） -->
-      <div class="cd-scenes">
-        <picture>
-          <source srcset="/cd-theme/scenes.webp" type="image/webp">
-          <img src="/cd-theme/scenes.png" alt="" loading="lazy">
-        </picture>
-      </div>
-      <!-- 底部置物架 -->
-      <div class="cd-shelf">
-        <picture>
-          <source srcset="/cd-theme/shelf.webp" type="image/webp">
-          <img src="/cd-theme/shelf.png" alt="" loading="lazy">
-        </picture>
-      </div>
-      <!-- 唱机本体 -->
-      <div class="cd-player-body">
-        <picture>
-          <source srcset="/cd-theme/recordplayer.webp" type="image/webp">
-          <img src="/cd-theme/recordplayer.png" alt="" loading="lazy">
-        </picture>
-      </div>
-      <!-- 唱臂 -->
-      <div class="cd-tonearm" id="cdTonearm">
-        <div class="cd-tonearm-base"></div>
-        <div class="cd-tonearm-arm"></div>
-        <div class="cd-tonearm-head"></div>
-        <div class="cd-tonearm-needle"></div>
-      </div>
-      <!-- 装饰左 -->
-      <div class="cd-deco-left">
-        <picture>
-          <source srcset="/cd-theme/decorate_left.webp" type="image/webp">
-          <img src="/cd-theme/decorate_left.png" alt="" loading="lazy">
-        </picture>
-      </div>
-      <!-- 装饰右 -->
-      <div class="cd-deco-right">
-        <picture>
-          <source srcset="/cd-theme/decorate_right.webp" type="image/webp">
-          <img src="/cd-theme/decorate_right.png" alt="" loading="lazy">
-        </picture>
-      </div>
-      <!-- 机器人 -->
-      <div class="cd-robot" id="cdRobot">
-        <picture>
-          <source srcset="/cd-theme/robot.webp" type="image/webp">
-          <img src="/cd-theme/robot.png" alt="" loading="lazy">
-        </picture>
-      </div>
-    </div>
+    <!-- 主题层（由 theme-manager.js 动态渲染） -->
+    <!-- 主题层容器会自动插入在此 -->
     <div class="cover-lyrics-wrapper">
       <img id="mainCover" crossorigin="anonymous" src="" class="album-art" alt="album cover" title="点击查看歌词">
-      <!-- 黑胶中心孔（封面本身会被样式化为黑胶唱片） -->
-      <div class="cd-vinyl-hole" id="cdVinylHole"></div>
       <div class="song-info" id="songInfo">
         <h1 id="mainTitle" class="song-title-main">Title</h1>
         <p id="mainArtist" class="artist-name">Artist</p>
@@ -228,7 +175,7 @@
       <button class="btn btn-play" id="playBtn" aria-label="play/pause"><span class="material-symbols-rounded" id="playIcon">play_arrow</span></button>
       <button class="btn" id="nextBtn" aria-label="next"><span class="material-symbols-rounded">skip_next</span></button>
       <button class="btn btn-shuffle" id="playlistBtn" aria-label="playlist"><span class="material-symbols-rounded">queue_music</span></button>
-      <button class="cd-toggle-btn" id="cdThemeToggle" aria-label="toggle CD theme" title="切换唱片机主题"><span class="material-symbols-rounded">album</span></button>
+      <button class="btn btn-shuffle" id="themeToggle" aria-label="toggle theme" title="唱片机主题"><span class="material-symbols-rounded">album</span></button>
     </div>
   </div>
   <div class="bottom-drawer" id="drawer">

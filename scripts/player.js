@@ -2,46 +2,18 @@
 import { state } from './state.js';
 import { wPost, bench, CoverDB, LyricsDB, preloadAudio, preloadAdjacent, ColorUtils, CookieUtils } from './utils.js';
 import { updateThemeColor } from './weather.js';
+import { themeManager } from './theme-manager.js';
 
 const app = document.getElementById('app');
 
-// ── CD 主题控制 ──
-
-function initCdTheme() {
-  app.classList.add('cd-theme-active');
-  var theme = document.getElementById('cdTheme');
-  if (theme) setTimeout(function() { theme.classList.add('active'); }, 100);
-  setupCdToggle();
-}
-// 页面加载后激活
-if (document.readyState === 'complete') {
-  initCdTheme();
-} else {
-  window.addEventListener('load', initCdTheme);
-}
-
-// 主题开关
-var _cdThemeToggle = true;
-function setupCdToggle() {
-  var btn = document.getElementById('cdThemeToggle');
-  var theme = document.getElementById('cdTheme');
-  if (!btn || !theme) return;
-  btn.classList.add('active');
-  btn.addEventListener('click', function(e) {
-    e.stopPropagation();
-    _cdThemeToggle = !_cdThemeToggle;
-    theme.classList.toggle('active', _cdThemeToggle);
-    btn.classList.toggle('active', _cdThemeToggle);
-  });
-}
-
-// 控制黑胶旋转和唱臂
-function updateCdPlayState(isPlaying) {
+// ── 播放状态通知主题管理器 ──
+function updateThemePlayState(isPlaying) {
   if (isPlaying) {
     app.classList.add('playing');
   } else {
     app.classList.remove('playing');
   }
+  themeManager.notifyPlayState(isPlaying);
 }
 
 // ── Cookie 持久化播放状态 ──
@@ -380,7 +352,7 @@ export function loadSong(song){
   if (state.lyricsVisible) toggleLyrics();
 
   updateUI(0);
-  updateCdPlayState(false);
+  updateThemePlayState(false);
   document.getElementById('playIcon').innerText = 'play_arrow';
   state.lyricsData = []; state.currentLyricIndex = -1;
   state.currentSongLrcUrl = song.lrc || null; state.lrcLoadId = 0;
@@ -452,14 +424,14 @@ export function loadSong(song){
     },
     onplay: function() {
       if (songId !== state.currentSongId) return;
-      updateCdPlayState(true);
+      updateThemePlayState(true);
       document.getElementById('playIcon').innerText = 'pause';
       document.getElementById('playBtn').style.opacity = '';
       setPlaybackState('playing');
     },
     onpause: function() {
       if (songId !== state.currentSongId) return;
-      updateCdPlayState(false);
+      updateThemePlayState(false);
       document.getElementById('playIcon').innerText = 'play_arrow';
       setPlaybackState('paused');
     },

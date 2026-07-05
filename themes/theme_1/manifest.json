@@ -1,0 +1,30 @@
+{
+  "theme_id": 1,
+  "theme_name": "清风拂面",
+  "theme_name_en": "Gentle Breeze",
+  "version": "1.0",
+  "author": "KuGou Concept",
+  "r_param": {
+    "common_color": "#241811",
+    "bg_color": "#E3E1DD",
+    "common_transparency": 1,
+    "icon_frame_color": "#FFFFFF",
+    "icon_frame_transparency": 0.5
+  },
+  "r_img": {
+    "scenes": "assets/scenes.png",
+    "recordplayer": "assets/recordplayer.png",
+    "shelf": "assets/shelf.png",
+    "decorate_left": "assets/decorate_left.png",
+    "decorate_right": "assets/decorate_right.png",
+    "robot": "assets/robot.png",
+    "icon_switch": "assets/icon_switch.png"
+  },
+  "r_animation": {
+    "vinyl": "assets/anim_vinyl.json",
+    "needle": "assets/anim_needle.json",
+    "robot": "assets/anim_robot.json",
+    "decorate_left": "assets/anim_deco_left.json",
+    "decorate_right": null
+  }
+}

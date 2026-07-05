@@ -1,0 +1,174 @@
+/* ═══════════════════════════════════════════════════
+   Theme: 清风拂面 (Gentle Breeze)
+   Theme ID: 1
+   ═══════════════════════════════════════════════════ */
+
+/* ── CSS 变量（基于 manifest r_param） ── */
+.theme-active[data-theme-id="1"] {
+  --th-common-color: #241811;
+  --th-bg-color: #E3E1DD;
+  --th-icon-frame: #FFFFFF;
+}
+
+/* ── 主题容器 ── */
+.theme-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+.theme-layer.active {
+  opacity: 1;
+}
+
+/* ── 场景背景 ── */
+.th-scenes {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: #E3E1DD;
+}
+.th-scenes img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+
+/* ── 置物架 ── */
+.th-shelf {
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 100%;
+  z-index: 2;
+}
+.th-shelf img {
+  width: 100%; height: auto;
+  display: block; vertical-align: bottom;
+}
+
+/* ── 唱机本体 ── */
+.th-player-body {
+  position: absolute;
+  z-index: 3;
+  bottom: 55px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 92%;
+  max-width: 370px;
+}
+.th-player-body img {
+  width: 100%; height: auto;
+  display: block;
+}
+
+/* ── 装饰 ── */
+.th-deco-left {
+  position: absolute;
+  left: 12px; bottom: 340px;
+  z-index: 4; width: 75px; opacity: 0.75;
+}
+.th-deco-left img { width: 100%; height: auto; display: block; }
+
+.th-deco-right {
+  position: absolute;
+  right: 8px; bottom: 310px;
+  z-index: 4; width: 85px; opacity: 0.75;
+}
+.th-deco-right img { width: 100%; height: auto; display: block; }
+
+/* ── 封面的黑胶样式 ── */
+.theme-layer.active ~ .cover-lyrics-wrapper .album-art {
+  position: relative !important;
+  border-radius: 50% !important;
+  width: 200px !important;
+  height: 200px !important;
+  box-shadow:
+    0 0 0 6px rgba(0,0,0,0.50),
+    0 0 0 10px rgba(40,40,40,0.20),
+    0 0 0 13px rgba(0,0,0,0.12),
+    0 0 0 16px rgba(40,40,40,0.08),
+    0 0 0 20px rgba(0,0,0,0.04),
+    0 8px 36px rgba(0,0,0,0.30) !important;
+  margin-bottom: 14px !important;
+  max-width: 200px !important;
+  transition: opacity 0.4s ease,
+              box-shadow 0.5s ease,
+              border-radius 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+              width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+              height 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+/* ── 隐藏默认背景 ── */
+.theme-layer.active ~ .player-background {
+  opacity: 0 !important;
+}
+.theme-layer.active ~ .cover-lyrics-wrapper {
+  position: relative; z-index: 2;
+  justify-content: center; padding-bottom: 20px;
+}
+.theme-layer.active ~ .cover-lyrics-wrapper .song-title-main {
+  text-shadow: 0 2px 12px rgba(0,0,0,0.15);
+}
+.theme-layer.active ~ .cover-lyrics-wrapper .artist-name {
+  text-shadow: 0 1px 8px rgba(0,0,0,0.1);
+}
+
+/* ── Lottie 动画容器 ── */
+.th-anim-vinyl {
+  position: absolute;
+  z-index: 4;
+  /* 由 JS 根据实际情况定位 */
+  pointer-events: none;
+}
+.th-anim-needle {
+  position: absolute;
+  z-index: 5;
+  pointer-events: none;
+}
+.th-anim-robot {
+  position: absolute;
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* ── 歌词打开淡化 ── */
+.lyrics-open .theme-layer.active {
+  opacity: 0.08;
+  transition: opacity 0.4s ease;
+}
+
+/* ── 暗色模式 ── */
+[data-theme="dark"] .theme-layer.active {
+  filter: brightness(0.90) saturate(0.95);
+}
+[data-theme="dark"] .theme-layer.active ~ .cover-lyrics-wrapper .album-art {
+  box-shadow:
+    0 0 0 6px rgba(0,0,0,0.60),
+    0 0 0 10px rgba(10,10,10,0.30),
+    0 0 0 13px rgba(0,0,0,0.18),
+    0 0 0 16px rgba(10,10,10,0.10),
+    0 0 0 20px rgba(0,0,0,0.06),
+    0 8px 36px rgba(0,0,0,0.45) !important;
+}
+
+/* ── 响应式 ── */
+@media screen and (max-width: 374px) {
+  .th-player-body { max-width: 310px; bottom: 50px; }
+  .theme-layer.active ~ .cover-lyrics-wrapper .album-art {
+    width: 160px !important; height: 160px !important; max-width: 160px !important;
+  }
+  .th-deco-left { width: 60px; }
+  .th-deco-right { width: 65px; }
+}
+
+@media screen and (min-width: 768px) {
+  .th-player-body { max-width: 400px; }
+  .theme-layer.active ~ .cover-lyrics-wrapper .album-art {
+    width: 220px !important; height: 220px !important; max-width: 220px !important;
+  }
+}
