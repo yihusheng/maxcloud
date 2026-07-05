@@ -1,97 +1,94 @@
 /* ═══════════════════════════════════════════════════
-   WISE DESIGN — 音乐解锁
+   WISE DESIGN — 音乐解锁 (KgmDecrypt 同款卡片)
    ═══════════════════════════════════════════════════ */
 
 :root {
-  --wp: #9fe870;
-  --wop: #0e0f0c;
-  --wpa: #cdffad;
-  --wpn: #c5edab;
-  --wpp: #e2f6d5;
-  --wik: #0e0f0c;
-  --wid: #163300;
-  --wbd: #454745;
-  --wmt: #868685;
-  --wca: #ffffff;
-  --wcs: #e8ebe6;
-  --wpos: #2ead4b;
-  --wneg: #d03238;
-  --rx: 24px;
-  --rm: 12px;
-  --fn: 'Inter', system-ui, -apple-system, sans-serif;
+  --p: #9fe870;
+  --op: #0e0f0c;
+  --pa: #cdffad;
+  --pn: #c5edab;
+  --pp: #e2f6d5;
+  --k: #0e0f0c;
+  --kd: #163300;
+  --b: #454745;
+  --m: #868685;
+  --c: #ffffff;
+  --s: #e8ebe6;
+  --r: 24px;
+  --rs: 12px;
+  --rp: 9999px;
 }
 
 /* sage canvas */
 html, body {
   margin: 0; padding: 0;
-  background: var(--wcs) !important;
-  font-family: var(--fn);
-  color: var(--wik);
+  background: var(--s) !important;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: var(--k);
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
 }
 body { padding: 40px 16px !important; }
 
-/* white card — nav merged, top flat */
-#app {
-  background: var(--wca) !important;
-  border-radius: 0 0 var(--rx) var(--rx) !important;
-  max-width: 760px !important;
-  margin: 0 auto !important;
-  padding: 48px 48px 40px !important;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04) !important;
-  color: var(--wik) !important;
-}
-
-/* ─── Nav (merged into card, KgmDecrypt 同款) ─── */
+/* ─── Nav header (merged into card, no shadow) ─── */
 .wise-nav {
   max-width: 760px;
-  margin: 0 auto 0;
+  margin: 0 auto 0 !important;
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 14px 32px;
-  background: var(--wca);
-  border-radius: var(--rx) var(--rx) 0 0;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-  border-bottom: 1px solid var(--wcs);
+  background: var(--c);
+  border-radius: var(--r) var(--r) 0 0;
+  border-bottom: 1px solid var(--s);
 }
 .wise-nav-brand {
   display: flex;
   align-items: center;
   gap: 10px;
   text-decoration: none;
-  color: var(--wik);
+  color: var(--k);
 }
 .wise-nav-brand .dot {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: var(--wp);
+  background: var(--p);
   flex-shrink: 0;
 }
 .wise-nav-brand .label { font-size: 15px; font-weight: 600; letter-spacing: -0.2px; }
 
-/* 右侧按钮 (注入后为 KGM 解密入口) */
+/* ─── Right button (同 KgmDecrypt .rt a) ─── */
 .wise-nav-back {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
-  color: var(--wik);
+  color: var(--k);
   text-decoration: none;
-  padding: 8px 18px;
-  border-radius: 999px;
-  border: 1px solid var(--wik);
-  transition: all 0.15s ease;
+  padding: 6px 16px;
+  border-radius: var(--rp);
+  border: 1px solid var(--k);
+  transition: .15s;
   margin-left: auto;
+  white-space: nowrap;
 }
-.wise-nav-back:hover { background: var(--wp); border-color: var(--wp); color: var(--wop); }
-.wise-nav-back span { display: inline; }
+.wise-nav-back:hover { background: var(--k); color: var(--p); }
+
+/* ─── White card (top flat, shadow spans both) ─── */
+#app {
+  background: var(--c) !important;
+  border-radius: 0 0 var(--r) var(--r) !important;
+  max-width: 760px !important;
+  margin: 0 auto !important;
+  padding: 48px 48px 40px !important;
+  box-shadow: 0 4px 24px rgba(14,15,12,.06) !important;
+  color: var(--k) !important;
+}
 
 /* ─── Upload Hero Card ─── */
 .el-upload-dragger {
-  background: var(--wpp) !important;
-  border: 2px dashed var(--wpn) !important;
-  border-radius: var(--rx) !important;
+  background: var(--pp) !important;
+  border: 2px dashed var(--pn) !important;
+  border-radius: var(--r) !important;
   padding: 64px 40px !important;
   transition: all 0.25s ease;
   cursor: pointer;
@@ -102,555 +99,196 @@ body { padding: 40px 16px !important; }
   min-height: 200px !important;
   width: auto !important;
 }
-
-.el-upload-dragger:hover {
-  background: var(--wpa) !important;
-  border-color: var(--wp) !important;
-}
-
-/* Upload icon area */
-.el-upload-dragger .el-icon--upload {
-  font-size: 48px !important;
-  color: var(--wp) !important;
-  margin-bottom: 16px;
-}
-
-/* Primary CTA text */
+.el-upload-dragger:hover { background: var(--pa) !important; border-color: var(--p) !important; }
+.el-upload-dragger .el-icon--upload { font-size: 48px !important; color: var(--p) !important; margin-bottom: 16px; }
 .el-upload-dragger .el-upload__text {
-  color: var(--wik) !important;
-  font-family: var(--fn);
-  font-size: 20px !important;
-  font-weight: 600 !important;
-  line-height: 1.4 !important;
-  text-align: center !important;
+  color: var(--k) !important; font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 20px !important; font-weight: 600 !important; line-height: 1.4 !important; text-align: center !important;
 }
-
-.el-upload-dragger .el-upload__text em {
-  color: var(--wp) !important;
-  font-style: normal !important;
-  font-weight: 700 !important;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-/* File count badge */
+.el-upload-dragger .el-upload__text em { color: var(--p) !important; font-style: normal !important; font-weight: 700 !important; text-decoration: underline; text-underline-offset: 3px; }
 .el-upload-dragger .el-upload__text .file-count,
 .el-upload-dragger .el-upload__text + div,
-.el-upload-dragger .el-upload__text ~ * {
-  display: block;
-  font-size: 13px;
-  color: var(--wmt);
-  margin-top: 8px;
-}
+.el-upload-dragger .el-upload__text ~ * { display: block; font-size: 13px; color: var(--m); margin-top: 8px; }
+.el-upload__tip { color: var(--m) !important; font-family: 'Inter', system-ui, -apple-system, sans-serif; font-size: 13px !important; margin-top: 12px; text-align: center; }
 
-/* Tip below upload */
-.el-upload__tip {
-  color: var(--wmt) !important;
-  font-family: var(--fn);
-  font-size: 13px !important;
-  margin-top: 12px;
-  text-align: center;
-}
-
-/* ─── Buttons Container ─── */
-/* Target the button group / row that holds action buttons.
-   Element UI renders .el-button + .el-button inline; add left margin. */
-.el-button + .el-button {
-  margin-left: 12px !important;
-}
-
-/* For button groups rendered inside a flex container */
-.el-row .el-button,
-[class*="el-col"] .el-button {
-  margin-bottom: 0;
-}
-
-/* General button styles */
-.el-button {
-  border-radius: var(--rx) !important;
-  font-family: var(--fn) !important;
-  font-weight: 600 !important;
-  font-size: 15px !important;
-  line-height: 22px !important;
-  padding: 14px 28px !important;
-  border: none;
-  transition: all 0.12s ease;
-  min-height: 50px !important;
-}
+/* ─── Buttons ─── */
+.el-button { border-radius: var(--r) !important; font-family: 'Inter', system-ui, -apple-system, sans-serif !important; font-weight: 600 !important; font-size: 15px !important; line-height: 22px !important; padding: 14px 28px !important; border: none; transition: all 0.12s ease; min-height: 50px !important; }
 .el-button:active { transform: translateY(1px); }
-
-.el-button--primary {
-  background: var(--wp) !important;
-  color: var(--wop) !important;
-}
-.el-button--primary:hover { background: var(--wpa) !important; }
-.el-button--primary:active { background: var(--wpn) !important; }
-
-.el-button--success {
-  background: var(--wpos) !important;
-  color: #fff !important;
-}
+.el-button + .el-button { margin-left: 12px !important; }
+.el-row .el-button, [class*="el-col"] .el-button { margin-bottom: 0; }
+.el-button--primary { background: var(--p) !important; color: var(--op) !important; }
+.el-button--primary:hover { background: var(--pa) !important; }
+.el-button--primary:active { background: var(--pn) !important; }
+.el-button--success { background: #2ead4b !important; color: #fff !important; }
 .el-button--success:hover { background: #3cc45a !important; }
-
-.el-button--danger {
-  background: var(--wneg) !important;
-  color: #fff !important;
-}
+.el-button--danger { background: #d03238 !important; color: #fff !important; }
 .el-button--danger:hover { background: #e04848 !important; }
-
-.el-button--default {
-  background: var(--wca) !important;
-  color: var(--wik) !important;
-  border: 1.5px solid var(--wik) !important;
-}
-.el-button--default:hover { background: var(--wcs) !important; }
-
-.el-button--default.is-plain {
-  background: var(--wcs) !important;
-  border: none !important;
-}
-.el-button--default.is-plain:hover {
-  background: var(--wp) !important;
-  color: var(--wop) !important;
-}
-
+.el-button--default { background: var(--c) !important; color: var(--k) !important; border: 1.5px solid var(--k) !important; }
+.el-button--default:hover { background: var(--s) !important; }
+.el-button--default.is-plain { background: var(--s) !important; border: none !important; }
+.el-button--default.is-plain:hover { background: var(--p) !important; color: var(--op) !important; }
 .el-button--small { padding: 10px 20px !important; font-size: 13px !important; min-height: 40px !important; }
 .el-button--mini { padding: 8px 16px !important; font-size: 12px !important; min-height: 34px !important; }
 
-/* ─── Radio Row Spacing ─── */
-.el-radio {
-  font-family: var(--fn);
-  margin-right: 24px !important;
-  margin-bottom: 8px !important;
-}
-.el-radio:last-child {
-  margin-right: 0 !important;
-}
+/* ─── Checkbox / Toggle ─── */
+.el-button + .el-checkbox { margin-left: 32px !important; padding-left: 32px !important; border-left: 1px solid var(--s) !important; }
+.el-checkbox { display: inline-flex !important; align-items: center !important; gap: 10px !important; border: none !important; background: none !important; padding: 0 !important; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+.el-checkbox.is-bordered, .el-checkbox.is-checked, .el-checkbox.is-focus, .el-checkbox:active, .el-checkbox:focus, .el-checkbox:hover,
+.el-checkbox.is-bordered.is-checked, .el-checkbox.is-bordered.is-focus, .el-checkbox.is-bordered:active, .el-checkbox.is-bordered:focus, .el-checkbox.is-bordered:hover { border: none !important; background: none !important; padding: 0 !important; box-shadow: none !important; outline: none !important; }
+.el-checkbox__inner, .el-checkbox__input span, .el-checkbox__input input, .el-checkbox__input:active, .el-checkbox__input:focus { display: none !important; background: none !important; box-shadow: none !important; }
+.el-checkbox__input { display: block !important; position: relative !important; width: 44px !important; height: 26px !important; min-width: 44px !important; flex-shrink: 0 !important; border: none !important; padding: 0 !important; margin: 0 !important; border-radius: var(--rp) !important; background: var(--m) !important; transition: background 0.2s ease !important; cursor: pointer; box-shadow: none !important; outline: none !important; }
+.el-checkbox__input.is-checked { background: var(--p) !important; }
+.el-checkbox__input::after { content: '' !important; display: block !important; position: absolute !important; top: 3px !important; left: 3px !important; width: 20px !important; height: 20px !important; background: #fff !important; border-radius: 50% !important; box-shadow: 0 1px 4px rgba(0,0,0,0.12) !important; transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1) !important; }
+.el-checkbox__input.is-checked::after { transform: translateX(18px) !important; }
+.el-checkbox__label { font-size: 14px !important; font-weight: 500 !important; color: var(--b) !important; padding: 0 !important; line-height: 1 !important; }
 
-.el-radio__label { color: var(--wbd) !important; font-size: 14px; }
-.el-radio__input .el-radio__inner { border-color: var(--wmt) !important; }
-.el-radio__input.is-checked .el-radio__inner {
-  background: var(--wp) !important;
-  border-color: var(--wp) !important;
-}
-.el-radio__input.is-checked .el-radio__label {
-  font-weight: 600;
-  color: var(--wik) !important;
-}
+/* ─── Radio ─── */
+.el-radio { font-family: 'Inter', system-ui, -apple-system, sans-serif; margin-right: 24px !important; margin-bottom: 8px !important; }
+.el-radio:last-child { margin-right: 0 !important; }
+.el-radio__label { color: var(--b) !important; font-size: 14px; }
+.el-radio__input .el-radio__inner { border-color: var(--m) !important; }
+.el-radio__input.is-checked .el-radio__inner { background: var(--p) !important; border-color: var(--p) !important; }
+.el-radio__input.is-checked .el-radio__label { font-weight: 600; color: var(--k) !important; }
 
-/* "立即保存" → Wise toggle switch (from scratch) */
-.el-button + .el-checkbox {
-  margin-left: 32px !important;
-  padding-left: 32px !important;
-  border-left: 1px solid var(--wcs) !important;
-}
-.el-checkbox {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 10px !important;
-  border: none !important;
-  background: none !important;
-  padding: 0 !important;
-  font-family: var(--fn);
-}
-/* Nuke ALL possible checked/active/focus backgrounds on the label */
-.el-checkbox.is-bordered,
-.el-checkbox.is-checked,
-.el-checkbox.is-focus,
-.el-checkbox:active,
-.el-checkbox:focus,
-.el-checkbox:hover,
-.el-checkbox.is-bordered.is-checked,
-.el-checkbox.is-bordered.is-focus,
-.el-checkbox.is-bordered:active,
-.el-checkbox.is-bordered:focus,
-.el-checkbox.is-bordered:hover {
-  border: none !important;
-  background: none !important;
-  padding: 0 !important;
-  box-shadow: none !important;
-  outline: none !important;
-}
-/* Hide all inner elements of the old checkbox system */
-.el-checkbox__inner,
-.el-checkbox__input span,
-.el-checkbox__input input,
-.el-checkbox__input:active,
-.el-checkbox__input:focus {
-  display: none !important;
-  background: none !important;
-  box-shadow: none !important;
-}
-/* The input wrapper becomes the toggle track */
-.el-checkbox__input {
-  display: block !important;
-  position: relative !important;
-  width: 44px !important;
-  height: 26px !important;
-  min-width: 44px !important;
-  flex-shrink: 0 !important;
-  border: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  border-radius: 999px !important;
-  background: var(--wmt) !important;
-  transition: background 0.2s ease !important;
-  cursor: pointer;
-  box-shadow: none !important;
-  outline: none !important;
-}
-/* Track lit */
-.el-checkbox__input.is-checked {
-  background: var(--wp) !important;
-}
-/* Thumb */
-.el-checkbox__input::after {
-  content: '' !important;
-  display: block !important;
-  position: absolute !important;
-  top: 3px !important;
-  left: 3px !important;
-  width: 20px !important;
-  height: 20px !important;
-  background: #fff !important;
-  border-radius: 50% !important;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.12) !important;
-  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-}
-/* Thumb moved right when checked */
-.el-checkbox__input.is-checked::after {
-  transform: translateX(18px) !important;
-}
-.el-checkbox__label {
-  font-size: 14px !important;
-  font-weight: 500 !important;
-  color: var(--wbd) !important;
-  padding: 0 !important;
-  line-height: 1 !important;
-}
-
-/* ─── Table (clean, no cell borders) ─── */
-.el-table {
-  background: transparent !important;
-  border-radius: var(--rm);
-  margin-top: 16px;
-  border: none !important;
-}
+/* ─── Table ─── */
+.el-table { background: transparent !important; border-radius: var(--rs); margin-top: 16px; border: none !important; }
 .el-table::before, .el-table::after { display: none !important; }
-/* Wipe all cell borders */
-.el-table th.el-table__cell,
-.el-table td.el-table__cell {
-  border: none !important;
-  border-right: none !important;
-  border-left: none !important;
-}
-.el-table th.el-table__cell {
-  background: var(--wcs) !important;
-  color: var(--wbd) !important;
-  font-weight: 600 !important;
-  font-size: 11px !important;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  border-bottom: none !important;
-  padding: 14px 12px !important;
-}
-.el-table--border th.el-table__cell,
-.el-table--border td.el-table__cell {
-  border-right: none !important;
-}
-.el-table th.el-table__cell:last-child,
-.el-table td.el-table__cell:last-child {
-  border-right: none !important;
-}
-.el-table td {
-  border-bottom: 1px solid var(--wcs) !important;
-  color: var(--wik) !important;
-  padding: 14px 12px !important;
-  border-top: none !important;
-}
+.el-table th.el-table__cell, .el-table td.el-table__cell { border: none !important; }
+.el-table th.el-table__cell { background: var(--s) !important; color: var(--b) !important; font-weight: 600 !important; font-size: 11px !important; text-transform: uppercase; letter-spacing: 0.8px; border-bottom: none !important; padding: 14px 12px !important; }
+.el-table td { border-bottom: 1px solid var(--s) !important; color: var(--k) !important; padding: 14px 12px !important; border-top: none !important; }
 .el-table tr { background: transparent !important; }
-.el-table tr:hover td { background: var(--wpp) !important; }
-.el-table__body { border-collapse: collapse !important; }
-.el-table__header { border-collapse: collapse !important; }
-.el-table--border::after,
-.el-table--border::before,
-.el-table__fixed-right::before,
-.el-table__fixed::before { display: none !important; }
+.el-table tr:hover td { background: var(--pp) !important; }
+.el-table__body, .el-table__header { border-collapse: collapse !important; }
+.el-table--border::after, .el-table--border::before, .el-table__fixed-right::before, .el-table__fixed::before { display: none !important; }
 
 /* ─── Dialog ─── */
-.el-dialog {
-  border-radius: var(--rx) !important;
-  background: var(--wca) !important;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.08) !important;
-}
+.el-dialog { border-radius: var(--r) !important; background: var(--c) !important; box-shadow: 0 8px 40px rgba(0,0,0,0.08) !important; }
 .el-dialog__header { padding: 32px 32px 0 !important; }
-.el-dialog__title { font-family: var(--fn); font-weight: 600; font-size: 20px; color: var(--wik) !important; }
-.el-dialog__body { padding: 24px 32px 16px !important; color: var(--wbd); font-family: var(--fn); }
+.el-dialog__title { font-family: 'Inter', system-ui, -apple-system, sans-serif; font-weight: 600; font-size: 20px; color: var(--k) !important; }
+.el-dialog__body { padding: 24px 32px 16px !important; color: var(--b); font-family: 'Inter', system-ui, -apple-system, sans-serif; }
 .el-dialog__footer { padding: 0 32px 28px !important; }
-.el-dialog__headerbtn .el-dialog__close { color: var(--wmt) !important; }
-.el-dialog__headerbtn:hover .el-dialog__close { color: var(--wik) !important; }
+.el-dialog__headerbtn .el-dialog__close { color: var(--m) !important; }
+.el-dialog__headerbtn:hover .el-dialog__close { color: var(--k) !important; }
 
-/* ─── Inputs ─── */
-.el-input__inner {
-  font-family: var(--fn) !important;
-  border-radius: var(--rm) !important;
-  border: 1.5px solid var(--wmt) !important;
-  background: var(--wca) !important;
-  color: var(--wik) !important;
-  padding: 12px 16px !important;
-  height: 48px !important;
-  line-height: 24px !important;
-  font-size: 16px !important;
-}
-.el-input__inner:focus { border-color: var(--wik) !important; }
-.el-input__inner::placeholder { color: var(--wmt); }
+/* ─── Input ─── */
+.el-input__inner { font-family: 'Inter', system-ui, -apple-system, sans-serif !important; border-radius: var(--rs) !important; border: 1.5px solid var(--m) !important; background: var(--c) !important; color: var(--k) !important; padding: 12px 16px !important; height: 48px !important; line-height: 24px !important; font-size: 16px !important; }
+.el-input__inner:focus { border-color: var(--k) !important; }
+.el-input__inner::placeholder { color: var(--m); }
 
-/* ─── Notification / Message ─── */
-.el-notification {
-  border-radius: var(--rx) !important;
-  background: var(--wca) !important;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.08) !important;
-  border: none !important;
-}
-.el-notification__title { color: var(--wik) !important; font-weight: 600; font-family: var(--fn); }
-.el-notification__content { color: var(--wbd) !important; font-family: var(--fn); }
-.el-message-box {
-  border-radius: var(--rx) !important;
-  border: none !important;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.08) !important;
-}
-.el-message-box__title { font-weight: 600; color: var(--wik) !important; font-family: var(--fn); }
+/* ─── Misc UI ─── */
+.el-notification { border-radius: var(--r) !important; background: var(--c) !important; box-shadow: 0 8px 40px rgba(0,0,0,0.08) !important; border: none !important; }
+.el-notification__title { color: var(--k) !important; font-weight: 600; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+.el-notification__content { color: var(--b) !important; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+.el-message-box { border-radius: var(--r) !important; border: none !important; box-shadow: 0 8px 40px rgba(0,0,0,0.08) !important; }
+.el-message-box__title { font-weight: 600; color: var(--k) !important; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+a { color: var(--k); font-weight: 500; transition: color 0.12s ease; }
+a:hover { color: var(--p); }
+.wise-nav + .el-row { margin-bottom: 12px !important; }
+.el-row .el-col { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.el-radio-group { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; margin: 12px 0 16px; }
+.el-form-item__label, label:not(.el-checkbox):not(.el-radio) { font-weight: 600 !important; font-size: 13px !important; color: var(--b) !important; letter-spacing: 0.2px; display: block; margin-bottom: 4px; }
 
-/* ─── Links ─── */
-a { color: var(--wik); font-weight: 500; transition: color 0.12s ease; }
-a:hover { color: var(--wp); }
-
-/* ─── Action row ─── */
-.el-row {
-  margin-bottom: 12px !important;
-}
-.el-row .el-col {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-}
-
-/* ─── Radio group: Wise form layout ─── */
-.el-radio-group {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 24px;
-  margin: 12px 0 16px;
-}
-/* Style surrounding label text like "歌曲命名格式：" */
-.el-form-item__label,
-label:not(.el-checkbox):not(.el-radio) {
-  font-weight: 600 !important;
-  font-size: 13px !important;
-  color: var(--wbd) !important;
-  letter-spacing: 0.2px;
-  display: block;
-  margin-bottom: 4px;
-}
-
-/* ─── Music ─── */
-.music-cover .el-image {
-  border-radius: var(--rm) !important;
-  border: 1px solid var(--wcs) !important;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-}
-.music-cover i { color: var(--wik); }
-.music-cover i:hover { color: var(--wp) !important; }
-
-.edit-item .label { font-weight: 600; color: var(--wbd); font-size: 14px; }
-.edit-item .input input {
-  border-bottom: 1.5px solid var(--wmt) !important;
-  font-family: var(--fn);
-  background: transparent !important;
-  font-size: 15px;
-}
-.edit-item .input input:focus { border-bottom-color: var(--wik) !important; }
-.edit-item i:hover { color: var(--wp) !important; }
-
-#app-footer {
-  color: var(--wmt) !important;
-  font-family: var(--fn);
-  font-size: 12px !important;
-  margin-top: 40px !important;
-}
-#app-footer a { color: var(--wmt) !important; }
-#app-footer a:hover { color: var(--wp) !important; }
-
-.update-info {
-  border-radius: var(--rm) !important;
-  border: 1px solid var(--wcs) !important;
-}
-.update-info .update-title {
-  background: var(--wcs) !important;
-  color: var(--wbd) !important;
-  font-weight: 600;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-.update-info .update-content { color: var(--wbd) !important; font-family: var(--fn); }
-
-audio { border-radius: var(--rx) !important; margin-top: 16px; }
+/* ─── Music specific ─── */
+.music-cover .el-image { border-radius: var(--rs) !important; border: 1px solid var(--s) !important; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.music-cover i { color: var(--k); }
+.music-cover i:hover { color: var(--p) !important; }
+.edit-item .label { font-weight: 600; color: var(--b); font-size: 14px; }
+.edit-item .input input { border-bottom: 1.5px solid var(--m) !important; font-family: 'Inter', system-ui, -apple-system, sans-serif; background: transparent !important; font-size: 15px; }
+.edit-item .input input:focus { border-bottom-color: var(--k) !important; }
+.edit-item i:hover { color: var(--p) !important; }
+#app-footer { color: var(--m) !important; font-family: 'Inter', system-ui, -apple-system, sans-serif; font-size: 12px !important; margin-top: 40px !important; }
+#app-footer a { color: var(--m) !important; }
+#app-footer a:hover { color: var(--p) !important; }
+.update-info { border-radius: var(--rs) !important; border: 1px solid var(--s) !important; }
+.update-info .update-title { background: var(--s) !important; color: var(--b) !important; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+.update-info .update-content { color: var(--b) !important; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+audio { border-radius: var(--r) !important; margin-top: 16px; }
 
 [data-v-670c0e2e] .um-config-dialog { max-width: 90%; width: 38em; }
 [data-v-701d8fe2] .um-edit-dialog { max-width: 90%; width: 28em; }
-form[data-v-670c0e2e] input { font-family: var(--fn) !important; }
+form[data-v-670c0e2e] input { font-family: 'Inter', system-ui, -apple-system, sans-serif !important; }
 
 /* ─── Loader ─── */
 #loader-mask { background: rgba(232,235,230,0.97) !important; backdrop-filter: blur(4px); }
-#loader {
-  border-color: var(--wcs) !important;
-  border-top-color: var(--wp) !important;
-  border-width: 3px !important;
-  width: 36px !important;
-  height: 36px !important;
-  margin: -18px 0 0 -18px !important;
-}
-#loader-source { font-size: 15px !important; font-weight: 600; color: var(--wbd) !important; font-family: var(--fn); }
-#loader-tips-timeout { font-size: 13px !important; color: var(--wbd) !important; font-family: var(--fn); }
-#loader-tips-timeout a { color: var(--wik) !important; font-weight: 600; }
-#loader-tips-timeout a:hover { color: var(--wp) !important; }
+#loader { border-color: var(--s) !important; border-top-color: var(--p) !important; border-width: 3px !important; width: 36px !important; height: 36px !important; margin: -18px 0 0 -18px !important; }
+#loader-source { font-size: 15px !important; font-weight: 600; color: var(--b) !important; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+#loader-tips-timeout { font-size: 13px !important; color: var(--b) !important; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+#loader-tips-timeout a { color: var(--k) !important; font-weight: 600; }
+#loader-tips-timeout a:hover { color: var(--p) !important; }
 
 /* ─── Responsive ─── */
 @media (max-width: 768px) {
   body { padding: 20px 12px !important; }
   #app { padding: 32px 24px !important; border-radius: 0 0 20px 20px !important; }
-  .wise-nav { padding: 12px 16px; margin-bottom: 0; border-radius: 20px 20px 0 0; }
-  .wise-nav-back { font-size: 13px; padding: 6px 14px; }
+  .wise-nav { padding: 12px 20px; border-radius: 20px 20px 0 0; }
+  .wise-nav-back { font-size: 12px; padding: 5px 12px; }
   .el-upload-dragger { padding: 48px 24px !important; min-height: 160px !important; }
   .el-upload-dragger .el-upload__text { font-size: 18px !important; }
-  .el-button + .el-button { margin-left: 10px !important; }
-  .el-dialog__header { padding: 24px 24px 0 !important; }
-  .el-dialog__body { padding: 20px 24px 12px !important; }
-  .el-dialog__footer { padding: 0 24px 24px !important; }
-  .el-table th.el-table__cell,
-  .el-table td { padding: 12px 10px !important; }
-  .el-input__inner { height: 44px !important; font-size: 15px !important; padding: 10px 14px !important; }
 }
 
 @media (max-width: 480px) {
-  body { padding: 0 !important; background: var(--wca) !important; }
-  #app {
-    padding: 24px 16px 32px !important;
-    border-radius: 0 !important;
-    max-width: 100% !important;
-    box-shadow: none !important;
-  }
-  .wise-nav {
-    padding: 8px 12px;
-    margin-bottom: 0;
-    border-radius: 0;
-    max-width: 100%;
-    box-shadow: none;
-    border-bottom: 1px solid var(--wcs);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: var(--wca);
-    gap: 6px;
-  }
+  body { padding: 0 !important; background: var(--c) !important; }
+  #app { padding: 24px 16px 32px !important; border-radius: 0 !important; max-width: 100% !important; box-shadow: none !important; }
+  .wise-nav { padding: 8px 14px; border-radius: 0; max-width: 100%; position: sticky; top: 0; z-index: 100; background: var(--c); gap: 6px; }
   .wise-nav-brand .dot { width: 10px; height: 10px; }
   .wise-nav-brand .label { font-size: 13px; }
-  .wise-nav-back { font-size: 12px; padding: 5px 10px; }
-
-  .el-upload-dragger {
-    padding: 40px 16px !important;
-    min-height: 140px !important;
-    border-radius: 16px !important;
-  }
+  .wise-nav-back { font-size: 11px; padding: 4px 10px; }
+  .el-upload-dragger { padding: 40px 16px !important; min-height: 140px !important; border-radius: 16px !important; }
   .el-upload-dragger .el-upload__text { font-size: 16px !important; }
-
-  .el-button {
-    padding: 14px 20px !important;
-    font-size: 15px !important;
-    min-height: 48px !important;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+  .el-button { padding: 14px 20px !important; font-size: 15px !important; min-height: 48px !important; width: 100%; display: flex; align-items: center; justify-content: center; }
   .el-button + .el-button { margin-left: 0 !important; margin-top: 10px !important; }
   .el-button--small, .el-button--mini { width: auto; display: inline-flex; }
-
-  /* "立即保存" toggle — inline row */
-  .el-button + .el-checkbox {
-    margin-left: 0 !important;
-    padding-left: 0 !important;
-    border-left: none !important;
-    margin-top: 12px !important;
-    display: inline-flex !important;
-    gap: 10px !important;
-    width: auto !important;
-    justify-content: flex-start !important;
-  }
-
+  .el-button + .el-checkbox { margin-left: 0 !important; padding-left: 0 !important; border-left: none !important; margin-top: 12px !important; display: inline-flex !important; gap: 10px !important; width: auto !important; justify-content: flex-start !important; }
   .el-table { font-size: 12px; }
   .el-table__body-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .el-table th.el-table__cell,
-  .el-table td { padding: 10px 8px !important; white-space: nowrap; }
-
+  .el-table th.el-table__cell, .el-table td { padding: 10px 8px !important; white-space: nowrap; }
   .el-dialog { width: auto !important; margin: 12px !important; max-width: calc(100vw - 24px) !important; }
   .el-dialog__header { padding: 20px 20px 0 !important; }
   .el-dialog__body { padding: 16px 20px 12px !important; }
   .el-dialog__footer { padding: 0 20px 20px !important; }
   .el-dialog__title { font-size: 18px; }
-
   .el-input { width: 100%; }
   .el-input__inner { height: 46px !important; font-size: 16px !important; padding: 10px 14px !important; }
-
   audio { width: 100%; border-radius: 16px !important; }
   .music-cover .el-image { width: 120px !important; height: 120px !important; }
-
   #app-footer { margin-top: 28px !important; }
-  [data-v-670c0e2e] .um-config-dialog,
-  [data-v-701d8fe2] .um-edit-dialog { width: 100% !important; }
+  [data-v-670c0e2e] .um-config-dialog, [data-v-701d8fe2] .um-edit-dialog { width: 100% !important; }
 }
 
 @media (max-width: 360px) {
   #app { padding: 20px 12px 28px !important; }
-  #app .wise-hero, #app h1:first-child { font-size: 24px !important; }
-  .wise-nav { padding: 8px 10px; }
+  .wise-nav { padding: 6px 10px; }
   .wise-nav-brand .label { font-size: 12px; }
   .wise-nav-brand .dot { width: 8px; height: 8px; }
   .el-upload-dragger { padding: 28px 12px !important; min-height: 120px !important; }
-  .wise-nav-back span { display: none; }
 }
 
 /* ─── Dark ─── */
 @media (prefers-color-scheme: dark) {
   :root {
-    --wca: #181818;
-    --wcs: #252525;
-    --wik: #e0e0e0;
-    --wbd: #a0a0a0;
-    --wmt: #606060;
-    --wop: #0e0f0c;
+    --c: #181818;
+    --s: #252525;
+    --k: #e0e0e0;
+    --b: #a0a0a0;
+    --m: #606060;
+    --op: #0e0f0c;
   }
   html, body { background-color: #101010 !important; }
-  #app, .wise-nav { background: var(--wca) !important; box-shadow: 0 1px 4px rgba(0,0,0,0.3); }
+  .wise-nav, #app { background: var(--c) !important; }
   .el-upload-dragger { background: rgba(159,232,112,0.06) !important; border-color: #3a5a2a !important; }
-  .el-upload-dragger:hover { background: rgba(159,232,112,0.10) !important; border-color: var(--wp) !important; }
-  .el-button--default { background: var(--wcs) !important; border-color: var(--wbd) !important; color: var(--wik) !important; }
+  .el-upload-dragger:hover { background: rgba(159,232,112,0.10) !important; border-color: var(--p) !important; }
+  .el-button--default { background: var(--s) !important; border-color: var(--b) !important; color: var(--k) !important; }
   .el-button--default.is-plain { background: #2a2a2a !important; }
-  .el-button--default.is-plain:hover { background: var(--wp) !important; color: var(--wop) !important; }
-  .el-table th.el-table__cell { background: #2a2a2a !important; color: var(--wbd) !important; }
-  .el-table td { border-bottom-color: #2a2a2a !important; color: var(--wik) !important; }
+  .el-button--default.is-plain:hover { background: var(--p) !important; color: var(--op) !important; }
+  .el-table th.el-table__cell { background: #2a2a2a !important; color: var(--b) !important; }
+  .el-table td { border-bottom-color: #2a2a2a !important; color: var(--k) !important; }
   .el-table tr:hover td { background: rgba(159,232,112,0.06) !important; }
   .el-dialog { background: #1e1e1e !important; }
-  .el-dialog__title { color: var(--wik) !important; }
-  .el-dialog .el-input__inner { background: #2a2a2a !important; border-color: #404040 !important; color: var(--wik) !important; }
-
-  .el-notification { background: #252525 !important; }
-  .el-message-box { background: #1e1e1e !important; }
+  .el-dialog .el-input__inner { background: #2a2a2a !important; border-color: #404040 !important; color: var(--k) !important; }
+  .el-notification, .el-message-box { background: #1e1e1e !important; }
   .music-cover .el-image { border-color: #2a2a2a !important; }
   .update-info { border-color: #2a2a2a !important; }
-  .update-info .update-title { background: #2a2a2a !important; color: var(--wik) !important; }
+  .update-info .update-title { background: #2a2a2a !important; color: var(--k) !important; }
+  #app, .wise-nav { box-shadow: none; }
   #loader-mask { background: rgba(16,16,16,0.97) !important; }
 }
