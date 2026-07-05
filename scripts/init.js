@@ -30,5 +30,8 @@ window.addEventListener('resize', function(){ if (window.innerWidth >= 768) load
 // 灵动岛
 initIsland();
 
+// 主题管理器初始化
+themeManager.init();
+
 // 音乐（不阻塞 UI）
 loadMusicList();

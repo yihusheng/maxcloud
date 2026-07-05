@@ -2,7 +2,9 @@
 import { state } from './state.js';
 import { wPost, bench, CoverDB, LyricsDB, preloadAudio, preloadAdjacent, ColorUtils, CookieUtils } from './utils.js';
 import { updateThemeColor } from './weather.js';
-import { themeManager } from './theme-manager.js';
+// 延迟引用 themeManager（避免模块加载时序问题）
+let _themeManager = null;
+import('./theme-manager.js').then(m => { _themeManager = m.themeManager; }).catch(() => {});
 
 const app = document.getElementById('app');
 
@@ -13,7 +15,9 @@ function updateThemePlayState(isPlaying) {
   } else {
     app.classList.remove('playing');
   }
-  themeManager.notifyPlayState(isPlaying);
+  if (_themeManager) {
+    _themeManager.notifyPlayState(isPlaying);
+  }
 }
 
 // ── Cookie 持久化播放状态 ──

@@ -4,6 +4,7 @@
   "theme_name_en": "Gentle Breeze",
   "version": "1.0",
   "author": "KuGou Concept",
+  "thumb_img": "https://youthimgbssdl.kugou.com/02278e4bc9164ddad776bcdfafa2bf9b.png",
   "r_param": {
     "common_color": "#241811",
     "bg_color": "#E3E1DD",
@@ -12,19 +13,18 @@
     "icon_frame_transparency": 0.5
   },
   "r_img": {
-    "scenes": "assets/scenes.png",
-    "recordplayer": "assets/recordplayer.png",
-    "shelf": "assets/shelf.png",
-    "decorate_left": "assets/decorate_left.png",
-    "decorate_right": "assets/decorate_right.png",
-    "robot": "assets/robot.png",
-    "icon_switch": "assets/icon_switch.png"
+    "scenes":     {"file":"assets/scenes.png",    "w":1080, "h":2340, "pos":"fullscreen"},
+    "recordplayer":{"file":"assets/recordplayer.png","w":930,  "h":735,  "pos":"center-bottom", "scale":0.42},
+    "shelf":      {"file":"assets/shelf.png",     "w":1080, "h":405,  "pos":"bottom", "scale":1.0},
+    "decorate_left":{"file":"assets/decorate_left.png","w":276,"h":276,"pos":"left-bottom", "scale":0.28},
+    "decorate_right":{"file":"assets/decorate_right.png","w":345,"h":549,"pos":"right-bottom","scale":0.28},
+    "robot":      {"file":"assets/robot.png",      "w":276,  "h":276,  "pos":"left-corner","scale":0.24},
+    "icon_switch":{"file":"assets/icon_switch.png","w":135,  "h":135,  "pos":"right-corner","scale":0.32}
   },
   "r_animation": {
-    "vinyl": "assets/anim_vinyl.json",
-    "needle": "assets/anim_needle.json",
-    "robot": "assets/anim_robot.json",
-    "decorate_left": "assets/anim_deco_left.json",
-    "decorate_right": null
+    "vinyl":      {"file":"assets/anim_vinyl.json",    "w":696, "h":279, "pos":"vinyl-overlay","autoplay":false, "loop":true},
+    "needle":     {"file":"assets/anim_needle.json",   "w":279, "h":279, "pos":"needle-right","autoplay":false, "loop":false},
+    "robot":      {"file":"assets/anim_robot.json",    "w":276, "h":276, "pos":"robot-place","autoplay":true, "loop":true},
+    "decorate_left":{"file":"assets/anim_deco_left.json","w":276,"h":276,"pos":"deco-left-place","autoplay":true,"loop":true}
   }
 }

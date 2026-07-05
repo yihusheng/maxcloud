@@ -1,30 +1,24 @@
 /* ═══════════════════════════════════════════════════
-   Theme: 清风拂面 (Gentle Breeze)
-   Theme ID: 1
+   Theme: 清风拂面 (ID:1)
+   ｜ scenes bg | recordplayer | shelf | deco | robot
+   ｜ Lottie: vinyl spinning, needle drop, robot anim
    ═══════════════════════════════════════════════════ */
 
-/* ── CSS 变量（基于 manifest r_param） ── */
-.theme-active[data-theme-id="1"] {
-  --th-common-color: #241811;
-  --th-bg-color: #E3E1DD;
-  --th-icon-frame: #FFFFFF;
-}
-
-/* ── 主题容器 ── */
-.theme-layer {
+/* ── 主题层容器 ── */
+#themeLayer {
   position: absolute;
   inset: 0;
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.6s ease;
+  transition: opacity 0.5s ease;
 }
-.theme-layer.active {
+#themeLayer.active {
   opacity: 1;
 }
 
-/* ── 场景背景 ── */
+/* ── 场景背景（全屏） ── */
 .th-scenes {
   position: absolute;
   inset: 0;
@@ -39,68 +33,142 @@
   display: block;
 }
 
-/* ── 置物架 ── */
+/* ── 置物架（底部） ── */
 .th-shelf {
   position: absolute;
-  bottom: 0; left: 0;
+  bottom: 0;
+  left: 0;
   width: 100%;
   z-index: 2;
+  line-height: 0;
 }
 .th-shelf img {
-  width: 100%; height: auto;
-  display: block; vertical-align: bottom;
-}
-
-/* ── 唱机本体 ── */
-.th-player-body {
-  position: absolute;
-  z-index: 3;
-  bottom: 55px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 92%;
-  max-width: 370px;
-}
-.th-player-body img {
-  width: 100%; height: auto;
+  width: 100%;
+  height: auto;
   display: block;
 }
 
-/* ── 装饰 ── */
+/* ── 唱机本体（居中对齐，位于下半部分） ── */
+.th-player-body {
+  position: absolute;
+  z-index: 3;
+  /* 从底部算起，唱机在置物架上方 */
+  bottom: 120px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 92%;
+  max-width: 380px;
+  line-height: 0;
+}
+.th-player-body img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ── 装饰左（唱机左上方） ── */
 .th-deco-left {
   position: absolute;
-  left: 12px; bottom: 340px;
-  z-index: 4; width: 75px; opacity: 0.75;
+  z-index: 4;
+  left: 4%;
+  bottom: 45%;
+  width: 22%;
+  max-width: 100px;
+  opacity: 0.8;
+  line-height: 0;
+  pointer-events: none;
 }
 .th-deco-left img { width: 100%; height: auto; display: block; }
 
+/* ── 装饰右 ── */
 .th-deco-right {
   position: absolute;
-  right: 8px; bottom: 310px;
-  z-index: 4; width: 85px; opacity: 0.75;
+  z-index: 4;
+  right: 2%;
+  bottom: 40%;
+  width: 24%;
+  max-width: 110px;
+  opacity: 0.8;
+  line-height: 0;
+  pointer-events: none;
 }
 .th-deco-right img { width: 100%; height: auto; display: block; }
 
-/* ── 封面的黑胶样式 ── */
-.theme-layer.active ~ .cover-lyrics-wrapper .album-art {
+/* ── Lottie 动画容器 ── */
+
+/* 唱片旋转动画 — 覆盖在专辑封面上方 */
+.th-lottie-vinyl {
+  position: absolute;
+  z-index: 5;
+  /* 居中于封面位置 */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -60%);
+  width: 240px;
+  height: 240px;
+  pointer-events: none;
+  opacity: 0.7;
+  mix-blend-mode: screen;
+}
+.th-lottie-vinyl svg { width: 100% !important; height: 100% !important; }
+
+/* 唱针动画 — 右侧，与唱片联动 */
+.th-lottie-needle {
+  position: absolute;
+  z-index: 6;
+  right: calc(50% - 170px);
+  bottom: 46%;
+  width: 160px;
+  height: 200px;
+  pointer-events: none;
+  transform-origin: 80% 10%;
+}
+.th-lottie-needle svg { width: 100% !important; height: 100% !important; }
+
+/* 机器人动画 — 左下 */
+.th-lottie-robot {
+  position: absolute;
+  z-index: 5;
+  left: 3%;
+  bottom: 28%;
+  width: 18%;
+  max-width: 75px;
+  pointer-events: none;
+}
+.th-lottie-robot svg { width: 100% !important; height: 100% !important; }
+
+/* 左侧装饰动画 */
+.th-lottie-deco-left {
+  position: absolute;
+  z-index: 4;
+  left: 5%;
+  bottom: 46%;
+  width: 20%;
+  max-width: 80px;
+  pointer-events: none;
+}
+.th-lottie-deco-left svg { width: 100% !important; height: 100% !important; }
+
+/* ═══════════════════════════════════════════════════
+   专辑封面 → 黑胶唱片样式
+   ═══════════════════════════════════════════════════ */
+.theme-active[data-theme-id="1"] .theme-layer.active ~ .cover-lyrics-wrapper .album-art {
   position: relative !important;
   border-radius: 50% !important;
-  width: 200px !important;
-  height: 200px !important;
+  width: 190px !important;
+  height: 190px !important;
   box-shadow:
     0 0 0 6px rgba(0,0,0,0.50),
     0 0 0 10px rgba(40,40,40,0.20),
     0 0 0 13px rgba(0,0,0,0.12),
     0 0 0 16px rgba(40,40,40,0.08),
-    0 0 0 20px rgba(0,0,0,0.04),
     0 8px 36px rgba(0,0,0,0.30) !important;
-  margin-bottom: 14px !important;
-  max-width: 200px !important;
-  transition: opacity 0.4s ease,
-              box-shadow 0.5s ease,
-              border-radius 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
-              width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
-              height 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  margin-bottom: 10px !important;
+  max-width: 190px !important;
+  transition: border-radius 0.5s cubic-bezier(0.34,1.56,0.64,1),
+              width 0.4s ease,
+              height 0.4s ease,
+              box-shadow 0.4s ease !important;
 }
 
 /* ── 隐藏默认背景 ── */
@@ -108,67 +176,43 @@
   opacity: 0 !important;
 }
 .theme-layer.active ~ .cover-lyrics-wrapper {
-  position: relative; z-index: 2;
-  justify-content: center; padding-bottom: 20px;
-}
-.theme-layer.active ~ .cover-lyrics-wrapper .song-title-main {
-  text-shadow: 0 2px 12px rgba(0,0,0,0.15);
-}
-.theme-layer.active ~ .cover-lyrics-wrapper .artist-name {
-  text-shadow: 0 1px 8px rgba(0,0,0,0.1);
+  position: relative;
+  z-index: 2;
+  justify-content: center;
+  padding-bottom: 5px;
 }
 
-/* ── Lottie 动画容器 ── */
-.th-anim-vinyl {
-  position: absolute;
-  z-index: 4;
-  /* 由 JS 根据实际情况定位 */
-  pointer-events: none;
-}
-.th-anim-needle {
-  position: absolute;
-  z-index: 5;
-  pointer-events: none;
-}
-.th-anim-robot {
-  position: absolute;
-  z-index: 5;
-  pointer-events: none;
-}
-
-/* ── 歌词打开淡化 ── */
-.lyrics-open .theme-layer.active {
-  opacity: 0.08;
+/* ── 歌词打开时淡化 ── */
+.lyrics-open #themeLayer.active {
+  opacity: 0.06;
   transition: opacity 0.4s ease;
 }
 
 /* ── 暗色模式 ── */
-[data-theme="dark"] .theme-layer.active {
-  filter: brightness(0.90) saturate(0.95);
-}
-[data-theme="dark"] .theme-layer.active ~ .cover-lyrics-wrapper .album-art {
-  box-shadow:
-    0 0 0 6px rgba(0,0,0,0.60),
-    0 0 0 10px rgba(10,10,10,0.30),
-    0 0 0 13px rgba(0,0,0,0.18),
-    0 0 0 16px rgba(10,10,10,0.10),
-    0 0 0 20px rgba(0,0,0,0.06),
-    0 8px 36px rgba(0,0,0,0.45) !important;
+[data-theme="dark"] #themeLayer.active {
+  filter: brightness(0.88) saturate(0.95);
 }
 
-/* ── 响应式 ── */
+/* ═══════════════════════════════════════════════════
+   响应式
+   ═══════════════════════════════════════════════════ */
 @media screen and (max-width: 374px) {
-  .th-player-body { max-width: 310px; bottom: 50px; }
-  .theme-layer.active ~ .cover-lyrics-wrapper .album-art {
-    width: 160px !important; height: 160px !important; max-width: 160px !important;
+  .th-player-body { max-width: 320px; bottom: 100px; }
+  .theme-active[data-theme-id="1"] .theme-layer.active ~ .cover-lyrics-wrapper .album-art {
+    width: 150px !important;
+    height: 150px !important;
+    max-width: 150px !important;
   }
-  .th-deco-left { width: 60px; }
-  .th-deco-right { width: 65px; }
+  .th-lottie-vinyl { width: 190px; height: 190px; }
+  .th-lottie-needle { width: 120px; height: 150px; right: calc(50% - 140px); }
+  .th-lottie-robot { width: 14%; }
 }
 
 @media screen and (min-width: 768px) {
-  .th-player-body { max-width: 400px; }
-  .theme-layer.active ~ .cover-lyrics-wrapper .album-art {
-    width: 220px !important; height: 220px !important; max-width: 220px !important;
+  .th-player-body { max-width: 420px; bottom: 140px; }
+  .theme-active[data-theme-id="1"] .theme-layer.active ~ .cover-lyrics-wrapper .album-art {
+    width: 220px !important;
+    height: 220px !important;
+    max-width: 220px !important;
   }
 }

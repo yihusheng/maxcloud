@@ -1,145 +1,198 @@
-// ── Theme 1: 清风拂面 — 主题脚本 ──
-// 依赖: lottie-web (通过 CDN 加载)
+// ── Theme 1: 清风拂面 ──
+// CD 唱片机主题：静态场景 + Lottie 唱片/唱针/机器人动画
+
+const MANIFEST = '/themes/theme_1/manifest.json';
+const BASE = '/themes/theme_1/';
+
+let manifest = null;
+let lottieLoaded = false;
+const animInstances = {};
+let containerEl = null;
+let playHandler = null;
+
+// ── 加载 Lottie 库 ──
+function loadLottieLib() {
+  return new Promise((resolve, reject) => {
+    if (typeof lottie !== 'undefined') { resolve(); return; }
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js';
+    s.onload = resolve;
+    s.onerror = () => {
+      console.warn('Lottie 加载失败，使用 CSS 回退');
+      reject();
+    };
+    document.head.appendChild(s);
+  });
+}
+
+// ── 加载 manifest ──
+async function loadManifest() {
+  if (manifest) return manifest;
+  try {
+    const r = await fetch(MANIFEST);
+    manifest = await r.json();
+    return manifest;
+  } catch (e) {
+    console.error('Theme manifest load failed', e);
+    return null;
+  }
+}
+
+// ── 创建 Lottie 容器 ──
+function createAnimContainer(parent, className, styles) {
+  const div = document.createElement('div');
+  div.className = className;
+  Object.assign(div.style, styles);
+  parent.appendChild(div);
+  return div;
+}
+
+// ── 创建静态图 ──
+function createStaticImg(parent, className, src, styles) {
+  const div = document.createElement('div');
+  div.className = className;
+  Object.assign(div.style, styles || {});
+  div.innerHTML = `<img src="${BASE}${src}" alt="" loading="lazy" style="width:100%;height:auto;display:block;">`;
+  parent.appendChild(div);
+  return div;
+}
+
+// ═══════════════════════════════════════════
+// 主题生命周期
+// ═══════════════════════════════════════════
 
 export default {
   id: 1,
   name: '清风拂面',
 
-  // Lottie 实例
-  _anim: { vinyl: null, needle: null, robot: null, deco_left: null },
-  _container: null,
+  async onActivate(container) {
+    containerEl = container;
+    const m = await loadManifest();
+    if (!m) return;
 
-  // ── 主题激活 ──
-  async onActivate(containerEl) {
-    this._container = containerEl;
+    // —— 1. 静态图片层 ——
+    createStaticImg(container, 'th-scenes',   m.r_img.scenes.file);
+    createStaticImg(container, 'th-shelf',    m.r_img.shelf.file);
+    createStaticImg(container, 'th-player-body', m.r_img.recordplayer.file);
+    if (m.r_img.decorate_left)  createStaticImg(container, 'th-deco-left',  m.r_img.decorate_left.file);
+    if (m.r_img.decorate_right) createStaticImg(container, 'th-deco-right', m.r_img.decorate_right.file);
 
-    // 等待 Lottie 库就绪
-    if (typeof lottie === 'undefined') {
-      await this._loadLottieLib();
+    // —— 2. Lottie 动画层 ——
+    try {
+      await loadLottieLib();
+      lottieLoaded = true;
+
+      const anims = m.r_animation;
+
+      // 唱片动画 (vinyl)
+      if (anims.vinyl) {
+        const vc = createAnimContainer(container, 'th-lottie-vinyl', {
+          position:'absolute', zIndex:5, pointerEvents:'none',
+          top:'50%', left:'50%', transform:'translate(-50%, -62%)',
+          width:'240px', height:'240px'
+        });
+        animInstances.vinyl = lottie.loadAnimation({
+          container: vc, path: BASE + anims.vinyl.file,
+          renderer: 'svg', loop: true, autoplay: false
+        });
+      }
+
+      // 唱针动画 (needle)
+      if (anims.needle) {
+        const nc = createAnimContainer(container, 'th-lottie-needle', {
+          position:'absolute', zIndex:6, pointerEvents:'none',
+          right:'calc(50% - 175px)', bottom:'44%',
+          width:'160px', height:'200px'
+        });
+        animInstances.needle = lottie.loadAnimation({
+          container: nc, path: BASE + anims.needle.file,
+          renderer: 'svg', loop: false, autoplay: false
+        });
+        // 停在第一帧（唱针抬起状态）
+        animInstances.needle.goToFrame(0, true);
+      }
+
+      // 机器人动画
+      if (anims.robot) {
+        const rc = createAnimContainer(container, 'th-lottie-robot', {
+          position:'absolute', zIndex:5, pointerEvents:'none',
+          left:'3%', bottom:'26%', width:'18%', maxWidth:'75px'
+        });
+        animInstances.robot = lottie.loadAnimation({
+          container: rc, path: BASE + anims.robot.file,
+          renderer: 'svg', loop: true, autoplay: true
+        });
+      }
+
+      // 装饰动画
+      if (anims.decorate_left) {
+        const dc = createAnimContainer(container, 'th-lottie-deco-left', {
+          position:'absolute', zIndex:4, pointerEvents:'none',
+          left:'5%', bottom:'44%', width:'20%', maxWidth:'80px'
+        });
+        animInstances.deco_left = lottie.loadAnimation({
+          container: dc, path: BASE + anims.decorate_left.file,
+          renderer: 'svg', loop: true, autoplay: true
+        });
+      }
+
+    } catch (e) {
+      console.warn('Lottie animations not available, using CSS fallback');
     }
 
-    // 创建动画容器
-    this._createAnimationContainers();
-
-    // 加载 Lottie 动画
-    this._loadAnimations();
-
-    // 监听播放状态
+    // —— 3. 监听播放状态 ——
     this._bindPlayEvents();
+
+    // —— 4. 通知当前播放状态 ——
+    const app = document.getElementById('app');
+    if (app && app.classList.contains('playing')) {
+      this.onPlayStateChanged(true);
+    }
   },
 
-  // ── 主题停用 ──
   onDeactivate() {
-    // 销毁所有 Lottie 实例
-    Object.values(this._anim).forEach(a => { if (a) a.destroy(); });
-    this._anim = { vinyl: null, needle: null, robot: null, deco_left: null };
-    this._container = null;
+    // 销毁 Lottie
+    Object.values(animInstances).forEach(a => { if (a && a.destroy) a.destroy(); });
+    Object.keys(animInstances).forEach(k => delete animInstances[k]);
+
+    // 移除事件
+    if (playHandler) {
+      document.removeEventListener('theme:playstate', playHandler);
+      playHandler = null;
+    }
+    containerEl = null;
+    lottieLoaded = false;
   },
 
-  // ── 播放状态切换 ──
   onPlayStateChanged(isPlaying) {
-    ['vinyl', 'needle'].forEach(key => {
-      const anim = this._anim[key];
-      if (anim) {
-        if (isPlaying) {
-          anim.play();
-        } else {
-          anim.pause();
-        }
-      }
-    });
-  },
-
-  // ── 加载 Lottie 库 ──
-  _loadLottieLib() {
-    return new Promise((resolve, reject) => {
-      const s = document.createElement('script');
-      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js';
-      s.onload = resolve;
-      s.onerror = reject;
-      document.head.appendChild(s);
-    });
-  },
-
-  // ── 创建动画容器 ──
-  _createAnimationContainers() {
-    if (!this._container) return;
-
-    const ct = this._container;
-
-    // 唱片动画
-    const vinylDiv = document.createElement('div');
-    vinylDiv.className = 'th-anim-vinyl';
-    vinylDiv.id = 'th1-anim-vinyl';
-    // 定位到黑胶位置（与封面 align）
-    vinylDiv.style.cssText = 'position:absolute;z-index:4;width:240px;height:240px;top:50%;left:50%;transform:translate(-50%,-60%);pointer-events:none;';
-    ct.appendChild(vinylDiv);
-    this._animContainers = { vinyl: vinylDiv };
-
-    // 唱针动画
-    const needleDiv = document.createElement('div');
-    needleDiv.className = 'th-anim-needle';
-    needleDiv.id = 'th1-anim-needle';
-    needleDiv.style.cssText = 'position:absolute;z-index:5;right:calc(50% - 160px);bottom:270px;width:160px;height:200px;pointer-events:none;';
-    ct.appendChild(needleDiv);
-    this._animContainers.needle = needleDiv;
-
-    // 机器人动画
-    const robotDiv = document.createElement('div');
-    robotDiv.className = 'th-anim-robot';
-    robotDiv.id = 'th1-anim-robot';
-    robotDiv.style.cssText = 'position:absolute;z-index:5;left:8px;bottom:85px;width:65px;pointer-events:none;';
-    ct.appendChild(robotDiv);
-    this._animContainers.robot = robotDiv;
-  },
-
-  // ── 加载 Lottie 动画 ──
-  _loadAnimations() {
-    if (typeof lottie === 'undefined' || !this._animContainers) return;
-
-    const base = '/themes/theme_1/assets/';
+    if (!lottieLoaded) return;
 
     // 唱片旋转
-    if (this._animContainers.vinyl) {
-      this._anim.vinyl = lottie.loadAnimation({
-        container: this._animContainers.vinyl,
-        path: base + 'anim_vinyl.json',
-        renderer: 'svg',
-        loop: true,
-        autoplay: false
-      });
+    if (animInstances.vinyl) {
+      if (isPlaying) animInstances.vinyl.play();
+      else animInstances.vinyl.pause();
     }
 
-    // 唱针
-    if (this._animContainers.needle) {
-      this._anim.needle = lottie.loadAnimation({
-        container: this._animContainers.needle,
-        path: base + 'anim_needle.json',
-        renderer: 'svg',
-        loop: false,
-        autoplay: false
-      });
+    // 唱针：播放时落到唱片上，暂停时抬起
+    if (animInstances.needle) {
+      if (isPlaying) {
+        // 播放唱针下落动画
+        animInstances.needle.playSegments([0, 15], true);
+      } else {
+        // 唱针抬起（回到第一帧）
+        animInstances.needle.goToFrame(0, true);
+      }
     }
 
-    // 机器人
-    if (this._animContainers.robot) {
-      this._anim.robot = lottie.loadAnimation({
-        container: this._animContainers.robot,
-        path: base + 'anim_robot.json',
-        renderer: 'svg',
-        loop: true,
-        autoplay: true
-      });
-    }
+    // 机器人随音乐轻微律动（已有自动循环，无需额外处理）
+    // 后续可添加：根据音乐节奏加速/减速机器人动画
   },
 
-  // ── 绑定播放事件 ──
   _bindPlayEvents() {
-    // 通过自定义事件与主播放器通信
-    const handler = (e) => {
+    if (playHandler) return;
+    playHandler = (e) => {
       this.onPlayStateChanged(e.detail);
     };
-    document.addEventListener('theme:playstate', handler);
-    this._playHandler = handler;
+    document.addEventListener('theme:playstate', playHandler);
   }
 };
