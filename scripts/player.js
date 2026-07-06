@@ -11,27 +11,36 @@ const lottieAnims = {};
 let lottieLib = null;
 
 // ── CD 唱片机主题切换 ──
-let cdThemeActive = false;
+let cdThemeActive = true;
 
 export function initCdTheme() {
   const cd = document.getElementById('cdTheme');
   if (!cd) return;
 
+  // 默认激活
+  cd.classList.add('active');
+
   // 加载 Lottie 库
   loadLottieLibrary().then(() => {
     loadCdAnimations();
+    // 激活时同步当前播放状态
+    if (app.classList.contains('playing')) {
+      cdPlay(true);
+    } else {
+      cdNeedleLift();
+    }
   });
 
   // 绑定主题切换按钮
   const btn = document.getElementById('themeToggle');
   if (btn) {
+    btn.classList.add('active');
     btn.addEventListener('click', () => {
       cdThemeActive = !cdThemeActive;
       cd.classList.toggle('active', cdThemeActive);
       btn.classList.toggle('active', cdThemeActive);
 
       if (cdThemeActive) {
-        // 激活时同步当前播放状态
         if (app.classList.contains('playing')) {
           cdPlay(true);
         } else {
@@ -49,7 +58,6 @@ export function initCdTheme() {
         }
       }
     });
-    btn.classList.add('active');
   }
 }
 
