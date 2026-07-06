@@ -17,6 +17,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0&display=swap" media="all" />
   <link rel="stylesheet" href="/style/material-symbols.css" media="print" onload="this.media=\"all\"" />
   <link rel="stylesheet" href="/style/index.css">
+  <link rel="stylesheet" href="/style/cd-player.css">
   <link rel="stylesheet" href="/Tools/navbar.css">
   <!-- 预连接：加速音频、封面、歌词加载 -->
   <link rel="dns-prefetch" href="/">
@@ -139,9 +140,21 @@
     </div>
   </div>
   <div class="player-content">
+    <!-- CD 唱片机主题层（必须置于 .player-background 之前，因 ~ 选择器需如此） -->
+    <div class="cd-theme" id="cdTheme">
+      <div class="cd-scenes"><img src="/themes/theme_1/assets/scenes.png" alt=""></div>
+      <div class="cd-player-body"><img src="/themes/theme_1/assets/recordplayer.png" alt=""></div>
+      <div class="cd-shelf"><img src="/themes/theme_1/assets/shelf.png" alt=""></div>
+      <div class="cd-deco-left"><img src="/themes/theme_1/assets/decorate_left.png" alt=""></div>
+      <div class="cd-deco-right"><img src="/themes/theme_1/assets/decorate_right.png" alt=""></div>
+      <div class="cd-robot-static"><img src="/themes/theme_1/assets/robot.png" alt=""></div>
+      <!-- Lottie 动画容器 -->
+      <div class="cd-vinyl" id="cdVinyl"></div>
+      <div class="cd-needle" id="cdNeedle"></div>
+      <div class="cd-robot-lottie" id="cdRobotLottie"></div>
+      <div class="cd-deco-lottie" id="cdDecoLottie"></div>
+    </div>
     <div class="player-background"></div>
-    <!-- 主题层（由 theme-manager.js 动态渲染） -->
-    <!-- 主题层容器会自动插入在此 -->
     <div class="cover-lyrics-wrapper">
       <img id="mainCover" crossorigin="anonymous" src="" class="album-art" alt="album cover" title="点击查看歌词">
       <div class="song-info" id="songInfo">

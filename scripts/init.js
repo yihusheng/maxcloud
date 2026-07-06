@@ -8,7 +8,7 @@ import { updateTime, fetchWeather, updateThemeColor } from './weather.js';
 import { loadMusicList, loadBingWallpaper } from './player.js';
 import { initIsland } from './island.js';
 import { CookieUtils } from './utils.js';
-import { themeManager } from './theme-manager.js';
+import { initCdTheme } from './player.js';
 
 // 注入 CookieUtils 到 i18n（避免循环依赖）
 setCookieUtils(CookieUtils);
@@ -30,8 +30,8 @@ window.addEventListener('resize', function(){ if (window.innerWidth >= 768) load
 // 灵动岛
 initIsland();
 
-// 主题管理器初始化
-themeManager.init();
+// CD 唱片机主题初始化
+initCdTheme();
 
 // 音乐（不阻塞 UI）
 loadMusicList();
