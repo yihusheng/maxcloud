@@ -64,6 +64,7 @@ var musicList = [
     "title": "日落大道 (Live)",
     "artist": "梁博",
     "src": "./public/music/梁博 - 日落大道 (Live).mp3",
+    "cover": "./public/music/梁博 - 日落大道 (Live).jpg",
     "lrc": "./public/music/梁博 - 日落大道 (Live).lrc"
   },
   {
