@@ -4,157 +4,13 @@ import { wPost, bench, CoverDB, LyricsDB, preloadAudio, preloadAdjacent, ColorUt
 import { updateThemeColor } from './weather.js';
 
 const app = document.getElementById('app');
-const THEME_BASE = '/themes/theme_1/assets/';
 
-// ── Lottie 动画实例 ──
-const lottieAnims = {};
-let lottieLib = null;
-
-// ── CD 唱片机主题切换 ──
-let cdThemeActive = true;
-
-export function initCdTheme() {
-  const cd = document.getElementById('cdTheme');
-  if (!cd) return;
-
-  // 默认激活
-  cd.classList.add('active');
-
-  // 加载 Lottie 库
-  loadLottieLibrary().then(() => {
-    loadCdAnimations();
-    // 激活时同步当前播放状态
-    if (app.classList.contains('playing')) {
-      cdPlay(true);
-    } else {
-      cdNeedleLift();
-    }
-  });
-
-  // 绑定主题切换按钮
-  const btn = document.getElementById('themeToggle');
-  if (btn) {
-    btn.classList.add('active');
-    btn.addEventListener('click', () => {
-      cdThemeActive = !cdThemeActive;
-      cd.classList.toggle('active', cdThemeActive);
-      btn.classList.toggle('active', cdThemeActive);
-
-      if (cdThemeActive) {
-        if (app.classList.contains('playing')) {
-          cdPlay(true);
-        } else {
-          cdNeedleLift();
-        }
-      } else {
-        // 关闭时重置专辑封面样式
-        const cover = document.getElementById('mainCover');
-        if (cover) {
-          cover.style.width = '';
-          cover.style.height = '';
-          cover.style.maxWidth = '';
-          cover.style.borderRadius = '';
-          cover.style.boxShadow = '';
-        }
-      }
-    });
-  }
-}
-
-// ── 加载 Lottie 库 ──
-function loadLottieLibrary() {
-  return new Promise((resolve) => {
-    if (typeof lottie !== 'undefined') { lottieLib = lottie; resolve(); return; }
-    const s = document.createElement('script');
-    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js';
-    s.onload = () => { lottieLib = lottie; resolve(); };
-    s.onerror = () => { console.warn('Lottie 加载失败'); resolve(); };
-    document.head.appendChild(s);
-  });
-}
-
-// ── 加载 CD 动画 ──
-function loadCdAnimations() {
-  if (!lottieLib) return;
-
-  const anims = [
-    { id: 'vinyl',   container: 'cdVinyl',     path: THEME_BASE + 'anim_vinyl.json',    loop: true,  autoplay: false },
-    { id: 'needle',  container: 'cdNeedle',    path: THEME_BASE + 'anim_needle.json',   loop: false, autoplay: false },
-    { id: 'robot',   container: 'cdRobotLottie', path: THEME_BASE + 'anim_robot.json',  loop: true,  autoplay: true },
-    { id: 'deco',    container: 'cdDecoLottie', path: THEME_BASE + 'anim_deco_left.json', loop: true, autoplay: true },
-  ];
-
-  anims.forEach(({ id, container, path, loop, autoplay }) => {
-    const el = document.getElementById(container);
-    if (!el) return;
-    try {
-      lottieAnims[id] = lottieLib.loadAnimation({
-        container: el,
-        path: path,
-        renderer: 'svg',
-        loop: loop,
-        autoplay: autoplay
-      });
-    } catch (e) {
-      console.warn(`Lottie ${id} 加载失败:`, e);
-    }
-  });
-
-  // 初始状态：唱针抬起
-  if (lottieAnims.needle) lottieAnims.needle.goToFrame(0, true);
-}
-
-// ── 唱针落下（播放） ──
-function cdNeedleDrop() {
-  if (!lottieAnims.needle) return;
-  try { lottieAnims.needle.playSegments([0, 14], true); } catch (e) {}
-}
-
-// ── 唱针抬起（暂停） ──
-function cdNeedleLift() {
-  if (!lottieAnims.needle) return;
-  try { lottieAnims.needle.goToFrame(0, true); } catch (e) {}
-}
-
-// ── 黑胶开始旋转 ──
-function cdVinylSpin() {
-  if (!lottieAnims.vinyl) return;
-  try { lottieAnims.vinyl.play(); } catch (e) {}
-}
-
-// ── 黑胶停止旋转 ──
-function cdVinylStop() {
-  if (!lottieAnims.vinyl) return;
-  try { lottieAnims.vinyl.pause(); } catch (e) {}
-}
-
-// ── 播放状态：开始 ──
-function cdPlay(isPlaying) {
-  if (isPlaying) {
-    cdVinylSpin();
-    cdNeedleDrop();
-  } else {
-    cdVinylStop();
-    cdNeedleLift();
-  }
-}
-
-// ── 歌词开关时淡化主题 ──
-function cdLyricsFade(visible) {
-  const cd = document.getElementById('cdTheme');
-  if (!cd) return;
-  cd.classList.toggle('lyrics-open', visible);
-}
-
-// ── 播放状态通知 CD 主题 ──
+// ── 播放状态通知 ──
 function updateThemePlayState(isPlaying) {
   if (isPlaying) {
     app.classList.add('playing');
   } else {
     app.classList.remove('playing');
-  }
-  if (cdThemeActive) {
-    cdPlay(isPlaying);
   }
 }
 
@@ -458,12 +314,10 @@ export function toggleLyrics() {
         } else { document.getElementById('lyricsContent').innerHTML = '<div class="lyrics-empty">暂无歌词</div>'; }
       });
     }
-    cdLyricsFade(true);
   } else {
     lv.classList.remove('open');
     app.classList.remove('lyrics-open');
     island.classList.remove('music-mode');
-    cdLyricsFade(false);
   }
 }
 
