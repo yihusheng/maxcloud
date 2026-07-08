@@ -16,6 +16,7 @@ on:
       - 'kugou_key.xz'
       - 'download-music-list.py'
       - 'upload-music-list.py'
+      - 'embed-cover.py'
       - '.github/workflows/update-music.yml'
   workflow_dispatch:
   schedule:
@@ -84,7 +85,9 @@ jobs:
 
       - name: Install deps
         if: steps.check.outputs.has_new == 'true' || steps.sync.outputs.synced == 'true' || env.kgm_decrypted == 'true'
-        run: npm install music-metadata
+        run: |
+          npm install music-metadata
+          pip install mutagen -q 2>&1 | tail -1 || true
 
       - name: Ensure public/music directory exists
         if: steps.check.outputs.has_new == 'true' || steps.sync.outputs.synced == 'true' || env.kgm_decrypted == 'true'

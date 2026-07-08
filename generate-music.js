@@ -9,6 +9,8 @@
 const fs = require('fs');
 const path = require('path');
 const mm = require('music-metadata');
+const https = require('https');
+const { execSync } = require('child_process');
 
 const musicDir = path.join(__dirname, 'public', 'music');
 const outputFile = path.join(__dirname, 'scripts', 'music_list.js');
@@ -159,6 +161,52 @@ function extractUSLT(filePath) {
           console.log(`  📸 提取封面: ${coverFile}  (${audioFile})`);
         }
         extractedCover = coverFile;
+      }
+
+      // iTunes 兜底：无内嵌封面时从 iTunes API 搜索并嵌入 MP3
+      if (!extractedCover && ext === '.mp3') {
+        const searchTerm = encodeURIComponent((artist || title) + ' ' + title);
+        const searchUrl = `https://itunes.apple.com/search?term=${searchTerm}&country=cn&entity=song&limit=1`;
+        try {
+          const itunesData = await new Promise((resolve, reject) => {
+            https.get(searchUrl, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 8000 }, (res) => {
+              let d = '';
+              res.on('data', c => d += c);
+              res.on('end', () => resolve(d));
+            }).on('error', reject);
+          });
+          const json = JSON.parse(itunesData);
+          const artworkUrl = json.results?.[0]?.artworkUrl100;
+          if (artworkUrl) {
+            const coverUrl = artworkUrl.replace('100x100bb', '600x600bb');
+            const coverFile = baseName + '.jpg';
+            const coverPath = path.join(musicDir, coverFile);
+
+            if (!fs.existsSync(coverPath)) {
+              // 下载封面图
+              const imgBuf = await new Promise((resolve, reject) => {
+                https.get(coverUrl, { timeout: 15000 }, (res) => {
+                  const chunks = [];
+                  res.on('data', c => chunks.push(c));
+                  res.on('end', () => resolve(Buffer.concat(chunks)));
+                }).on('error', reject);
+              });
+              fs.writeFileSync(coverPath, imgBuf);
+              console.log(`  🍎 iTunes 下载封面: ${coverFile}  (${audioFile})`);
+
+              // 嵌入到 MP3
+              try {
+                execSync(`python3 embed-cover.py "${filePath}" "${coverPath}"`, { timeout: 15000 });
+                console.log(`  💉 嵌入封面到 MP3: ${audioFile}`);
+              } catch (embedErr) {
+                console.warn(`  ⚠️  嵌入封面失败: ${audioFile}`);
+              }
+            }
+            extractedCover = coverFile;
+          }
+        } catch (e) {
+          if (e.code !== 'ENOENT') console.warn(`  ⚠️  iTunes 搜索失败: ${audioFile} — ${e.message}`);
+        }
       }
 
       // 提取内嵌歌词
