@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """从 R2 根目录拉取 music_list.js（本地不存在时），确保 merge 时保留已有歌曲"""
 import urllib.request, os
+from urllib.parse import quote
 
 TOKEN = os.environ.get('CLOUDFLARE_API_TOKEN', '')
 AID = os.environ.get('CLOUDFLARE_ACCOUNT_ID', '')
@@ -10,7 +11,7 @@ if not TOKEN or not AID:
     print('⚠️  R2 credentials not set, starting fresh')
     exit(0)
 
-encoded = __import__('urllib.parse').quote('music_list.js', safe='')
+encoded = quote('music_list.js', safe='')
 url = f'https://api.cloudflare.com/client/v4/accounts/{AID}/r2/buckets/{BUCKET}/objects/{encoded}'
 req = urllib.request.Request(url, headers={'Authorization': f'Bearer {TOKEN}'})
 try:
