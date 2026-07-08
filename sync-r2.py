@@ -57,8 +57,23 @@ def list_r2_objects():
 
 
 def read_music_list():
-    """读取当前 music_list.js"""
-    js_path = 'scripts/music_list.js'  # music_list.js 保留在 scripts/（web 入口）
+    \"\"\"读取当前 music_list.js，本地不存在时从 R2 下载\"\"\"
+    js_path = 'scripts/music_list.js'
+    if not os.path.exists(js_path):
+        # 本地无列表 → 从 R2 拉取
+        from urllib.parse import quote
+        r2_url = f'https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/r2/buckets/{BUCKET}/objects/{quote("public/music/music_list.js", safe="")}'
+        req = urllib.request.Request(r2_url, headers={'Authorization': f'Bearer {TOKEN}'})
+        try:
+            resp = urllib.request.urlopen(req)
+            text = resp.read().decode('utf-8')
+            os.makedirs(os.path.dirname(js_path), exist_ok=True)
+            with open(js_path, 'w', encoding='utf-8') as f:
+                f.write(text)
+            print(f'📥 Downloaded music_list.js from R2')
+        except Exception as e:
+            print(f'⚠️  Cannot download music_list.js from R2: {e}')
+            return []
     if not os.path.exists(js_path):
         return []
     with open(js_path, 'r', encoding='utf-8') as f:

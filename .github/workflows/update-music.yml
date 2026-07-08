@@ -72,6 +72,34 @@ jobs:
         run: |
           python3 sync-r2.py
 
+      - name: Download current music_list.js from R2 (for merge)
+        if: steps.check.outputs.has_new == 'true' || steps.sync.outputs.synced == 'true' || env.kgm_decrypted == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          # 本地没有 music_list.js 时从 R2 拉取（确保 merge 时保留已有歌曲）
+          if [ ! -f scripts/music_list.js ]; then
+            python3 -c "
+import urllib.request, os, json
+TOKEN = os.environ['CLOUDFLARE_API_TOKEN']
+AID = os.environ['CLOUDFLARE_ACCOUNT_ID']
+BUCKET = 'maxcloud'
+encoded = __import__('urllib.parse').quote('public/music/music_list.js', safe='')
+url = f'https://api.cloudflare.com/client/v4/accounts/{AID}/r2/buckets/{BUCKET}/objects/{encoded}'
+req = urllib.request.Request(url, headers={'Authorization': f'Bearer {TOKEN}'})
+try:
+    resp = urllib.request.urlopen(req)
+    text = resp.read().decode('utf-8')
+    os.makedirs('scripts', exist_ok=True)
+    with open('scripts/music_list.js', 'w', encoding='utf-8') as f:
+        f.write(text)
+    print('📥 Downloaded music_list.js from R2 for merge')
+except Exception as e:
+    print('⚠️  R2 music_list.js not found, starting fresh')
+"
+          fi
+
       - name: Install deps
         if: steps.check.outputs.has_new == 'true' || steps.sync.outputs.synced == 'true' || env.kgm_decrypted == 'true'
         run: npm install music-metadata
@@ -121,31 +149,53 @@ jobs:
             done
           done
 
-      - name: Remove audio files only (preserve covers/lyrics for music_list.js)
+      - name: Upload music_list.js to R2
+        if: steps.check.outputs.has_new == 'true' || steps.sync.outputs.synced == 'true' || env.kgm_decrypted == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          # 上传 music_list.js 到 R2，播放器通过 /public/music/* 代理读取
+          python3 -c "
+import urllib.request, json
+with open('scripts/music_list.js','r') as f:
+    data = f.read()
+import os
+TOKEN = os.environ['CLOUDFLARE_API_TOKEN']
+AID = os.environ['CLOUDFLARE_ACCOUNT_ID']
+BUCKET = 'maxcloud'
+encoded = __import__('urllib.parse').quote('public/music/music_list.js', safe='')
+url = f'https://api.cloudflare.com/client/v4/accounts/{AID}/r2/buckets/{BUCKET}/objects/{encoded}'
+req = urllib.request.Request(url, data=data.encode('utf-8'), method='PUT',
+    headers={'Authorization': f'Bearer {TOKEN}', 'Content-Type': 'application/javascript'})
+resp = urllib.request.urlopen(req)
+print(f'  uploaded music_list.js ({resp.status})')
+"
+
+      - name: Clean repo — delete all audio/covers/lyrics/music_list
         if: steps.check.outputs.has_new == 'true' || steps.sync.outputs.synced == 'true' || env.kgm_decrypted == 'true'
         run: |
-          # 只删音频文件，不删封面/歌词——它们会被 music_list.js 引用且存在于 R2
+          # 全部文件已上传 R2，清理 repo 只留 .gitkeep
           rm -f public/music/*.mp3 public/music/*.MP3
           rm -f public/music/*.flac public/music/*.FLAC
           rm -f public/music/*.m4a
           rm -f public/music/*.ogg
           rm -f public/music/*.wav
           rm -f public/music/*.aac
+          rm -f public/music/*.jpg public/music/*.jpeg
+          rm -f public/music/*.png
+          rm -f public/music/*.lrc
+          rm -f scripts/music_list.js
 
-      - name: Commit music_list.js + extracted covers/lyrics
+      - name: Commit cleanup (music_list.js deleted, .gitkeep retained)
         if: steps.check.outputs.has_new == 'true' || steps.sync.outputs.synced == 'true' || env.kgm_decrypted == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "bot@users.noreply.github.com"
-          # 添加更新后的音乐列表、封面、歌词
-          git add scripts/music_list.js
-          # 保留 .gitkeep 确保 public/music 目录存在
           touch public/music/.gitkeep
           git add public/music/.gitkeep
-          # 添加封面/歌词等提取产物
-          git add public/music/*.jpg public/music/*.jpeg public/music/*.png public/music/*.lrc 2>/dev/null || true
           git add -A
-          git diff --cached --quiet || git commit -m "update music_list [skip ci]"
+          git diff --cached --quiet || git commit -m "cleanup: remove processed files from repo [skip ci]"
           git push
 
       - uses: actions/configure-pages@v5

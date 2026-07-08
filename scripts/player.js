@@ -67,7 +67,7 @@ export async function loadMusicList() {
   document.getElementById('shuffleBtn').classList.toggle('active', state.isShuffle);
 
   try {
-    var r = await fetch('/scripts/music_list.js?' + Date.now(), {
+    var r = await fetch('/public/music/music_list.js?' + Date.now(), {
       signal: AbortSignal.timeout(8000)
     });
     if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -80,7 +80,7 @@ export async function loadMusicList() {
   } catch (e) {
     console.warn('音乐列表加载失败:', e.message || e);
     try {
-      var r2 = await fetch('/scripts/music_list.js', { cache: 'reload' });
+      var r2 = await fetch('/public/music/music_list.js', { cache: 'reload' });
       if (r2.ok) {
         var text2 = await r2.text();
         var s2 = text2.indexOf('[');

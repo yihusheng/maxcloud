@@ -65,7 +65,7 @@ const MIME_MAP = {
   jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png',
   webp: 'image/webp', gif: 'image/gif',
   lrc: 'text/plain; charset=utf-8', txt: 'text/plain; charset=utf-8',
-  svg: 'image/svg+xml',
+  svg: 'image/svg+xml', js: 'application/javascript', json: 'application/json',
 };
 
 async function handleMusicProxy(pathname, request, env) {
