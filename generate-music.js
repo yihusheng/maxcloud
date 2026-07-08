@@ -257,10 +257,15 @@ function extractUSLT(filePath) {
 
   // ── 合并旧歌（本地没扫到但之前已存在 R2 中的歌）──
   // 旧歌的 cover/lrc 文件在 R2 中，不在 repo checkout 里，所以不校验本地文件
+  // 去重 key 使用 URL 解码后的文件名，避免 URL 编码版本（%20/%E4等）与原始 UTF-8 版本视为不同歌曲
+  function normalizeSrc(src) {
+    try { return decodeURIComponent(src); } catch(e) { return src; }
+  }
   var newKeys = {};
-  for (var i = 0; i < songs.length; i++) newKeys[songs[i].src] = true;
+  for (var i = 0; i < songs.length; i++) newKeys[normalizeSrc(songs[i].src)] = true;
   for (var key in oldMap) {
-    if (!newKeys[key]) {
+    var oldSrc = oldMap[key].src;
+    if (!newKeys[normalizeSrc(oldSrc)]) {
       var oldSong = oldMap[key];
       // 保留原有 cover/lrc 引用 —— 文件在 R2 中，不在 repo checkout
       songs.push(oldSong);
