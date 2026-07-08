@@ -47,17 +47,20 @@ var musicList = [
   {
     "title": "晴天",
     "artist": "周杰伦",
-    "src": "./public/music/周杰伦 - 晴天.mp3"
+    "src": "./public/music/周杰伦 - 晴天.mp3",
+    "cover": "./public/music/周杰伦 - 晴天.jpg"
   },
   {
     "title": "稻香",
     "artist": "周杰伦",
-    "src": "./public/music/周杰伦 - 稻香.mp3"
+    "src": "./public/music/周杰伦 - 稻香.mp3",
+    "cover": "./public/music/周杰伦 - 稻香.jpg"
   },
   {
     "title": "青花瓷",
     "artist": "周杰伦",
-    "src": "./public/music/周杰伦 - 青花瓷.mp3"
+    "src": "./public/music/周杰伦 - 青花瓷.mp3",
+    "cover": "./public/music/周杰伦 - 青花瓷.jpg"
   },
   {
     "title": "凶手不只一个",
