@@ -138,10 +138,10 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: python3 upload-music-list.py
 
-      - name: Clean repo — delete processed audio/covers/lyrics, keep music_list.js
+      - name: Clean repo — delete all processed files (audio/covers/lyrics/music_list)
         if: steps.check.outputs.has_new == 'true' || steps.sync.outputs.synced == 'true' || env.kgm_decrypted == 'true'
         run: |
-          # 音频/封面/歌词已上传 R2，从 repo 删除（music_list.js 保留在仓库供播放器读取）
+          # 全部已上传 R2 并生成 music_list.js → 从 repo 彻底删除
           rm -f public/music/*.mp3 public/music/*.MP3
           rm -f public/music/*.flac public/music/*.FLAC
           rm -f public/music/*.m4a
@@ -151,18 +151,17 @@ jobs:
           rm -f public/music/*.jpg public/music/*.jpeg
           rm -f public/music/*.png
           rm -f public/music/*.lrc
+          rm -f scripts/music_list.js
 
-      - name: Commit cleanup + updated music_list.js
+      - name: Commit cleanup — only .gitkeep remains
         if: steps.check.outputs.has_new == 'true' || steps.sync.outputs.synced == 'true' || env.kgm_decrypted == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "bot@users.noreply.github.com"
-          # 保留 music_list.js + .gitkeep，删除其余已处理文件
-          git add scripts/music_list.js
           touch public/music/.gitkeep
           git add public/music/.gitkeep
           git add -A
-          git diff --cached --quiet || git commit -m "update music_list + cleanup processed files [skip ci]"
+          git diff --cached --quiet || git commit -m "cleanup: remove processed files from repo [skip ci]"
           git push
 
       - uses: actions/configure-pages@v5

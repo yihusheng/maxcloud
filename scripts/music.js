@@ -20,7 +20,7 @@ function getRandomIndex() {
 
 async function loadMusicList() {
   try {
-    var res = await fetch('/scripts/music_list.js?' + Date.now());
+    var res = await fetch('/music_list.js?' + Date.now());
     if (!res.ok) throw new Error('HTTP ' + res.status);
     var text = await res.text();
     var start = text.indexOf('[');

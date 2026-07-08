@@ -224,6 +224,24 @@ export async function onRequest(context) {
     return handleDecryptKey(request, env);
   }
 
+  // ── Music list from R2 root ──
+  if (path === '/music_list.js' && env.MUSIC_BUCKET) {
+    try {
+      const obj = await env.MUSIC_BUCKET.get('music_list.js');
+      if (obj) {
+        return new Response(obj.body, {
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Content-Type': 'application/javascript',
+            'Cache-Control': 'public, max-age=300, must-revalidate',
+          },
+        });
+      }
+    } catch (e) {
+      console.error('[music_list]', e);
+    }
+  }
+
   // ── Proxy: /public/music/* ──
   if (path.startsWith('/public/music/')) {
     const result = await handleMusicProxy(path, request, env);
