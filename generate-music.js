@@ -240,10 +240,44 @@ function extractUSLT(filePath) {
           const lrcFile = baseName + '.lrc';
           const lrcPath = path.join(musicDir, lrcFile);
           if (!fs.existsSync(lrcPath)) {
-            fs.writeFileSync(lrcPath, usltBuf); // 写出原始编码，不转换
+            fs.writeFileSync(lrcPath, usltBuf);
             console.log(`  📝 提取歌词(USLT兜底): ${lrcFile}  (${audioFile})`);
           }
           extractedLyrics = lrcFile;
+        }
+      }
+
+      // LRCLIB 兜底：无歌词时从公共 API 搜索 LRC 歌词
+      if (!extractedLyrics) {
+        const searchQuery = encodeURIComponent(`${artist || ''} ${title}`.trim());
+        try {
+          const lrcResp = await fetch(
+            `https://lrclib.net/api/search?q=${searchQuery}`,
+            { signal: AbortSignal.timeout(8000) }
+          );
+          if (lrcResp.ok) {
+            const results = await lrcResp.json();
+            // 取第一个结果，优先选有 syncedLyrics 的
+            let best = null;
+            for (const r of results) {
+              if (r.syncedLyrics) { best = r; break; }
+            }
+            if (!best && results.length > 0) best = results[0];
+            if (best) {
+              const lyricsText = best.syncedLyrics || best.plainLyrics;
+              if (lyricsText) {
+                const lrcFile = baseName + '.lrc';
+                const lrcPath = path.join(musicDir, lrcFile);
+                if (!fs.existsSync(lrcPath)) {
+                  fs.writeFileSync(lrcPath, lyricsText, 'utf-8');
+                  console.log(`  🎤 LRCLIB 下载歌词: ${lrcFile}  (${audioFile})`);
+                }
+                extractedLyrics = lrcFile;
+              }
+            }
+          }
+        } catch (e) {
+          if (e.name !== 'AbortError') console.warn(`  ⚠️  LRCLIB 搜索失败: ${audioFile} — ${e.message}`);
         }
       }
     } catch (e) {
