@@ -14,6 +14,8 @@ on:
       - 'sync-r2.py'
       - 'decrypt_kgm.py'
       - 'kugou_key.xz'
+      - 'download-music-list.py'
+      - 'upload-music-list.py'
       - '.github/workflows/update-music.yml'
   workflow_dispatch:
   schedule:
@@ -78,27 +80,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          # 本地没有 music_list.js 时从 R2 拉取（确保 merge 时保留已有歌曲）
-          if [ ! -f scripts/music_list.js ]; then
-            python3 -c "
-import urllib.request, os, json
-TOKEN = os.environ['CLOUDFLARE_API_TOKEN']
-AID = os.environ['CLOUDFLARE_ACCOUNT_ID']
-BUCKET = 'maxcloud'
-encoded = __import__('urllib.parse').quote('public/music/music_list.js', safe='')
-url = f'https://api.cloudflare.com/client/v4/accounts/{AID}/r2/buckets/{BUCKET}/objects/{encoded}'
-req = urllib.request.Request(url, headers={'Authorization': f'Bearer {TOKEN}'})
-try:
-    resp = urllib.request.urlopen(req)
-    text = resp.read().decode('utf-8')
-    os.makedirs('scripts', exist_ok=True)
-    with open('scripts/music_list.js', 'w', encoding='utf-8') as f:
-        f.write(text)
-    print('📥 Downloaded music_list.js from R2 for merge')
-except Exception as e:
-    print('⚠️  R2 music_list.js not found, starting fresh')
-"
-          fi
+          if [ ! -f scripts/music_list.js ]; then python3 download-music-list.py; fi
 
       - name: Install deps
         if: steps.check.outputs.has_new == 'true' || steps.sync.outputs.synced == 'true' || env.kgm_decrypted == 'true'
@@ -154,23 +136,7 @@ except Exception as e:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          # 上传 music_list.js 到 R2，播放器通过 /public/music/* 代理读取
-          python3 -c "
-import urllib.request, json
-with open('scripts/music_list.js','r') as f:
-    data = f.read()
-import os
-TOKEN = os.environ['CLOUDFLARE_API_TOKEN']
-AID = os.environ['CLOUDFLARE_ACCOUNT_ID']
-BUCKET = 'maxcloud'
-encoded = __import__('urllib.parse').quote('public/music/music_list.js', safe='')
-url = f'https://api.cloudflare.com/client/v4/accounts/{AID}/r2/buckets/{BUCKET}/objects/{encoded}'
-req = urllib.request.Request(url, data=data.encode('utf-8'), method='PUT',
-    headers={'Authorization': f'Bearer {TOKEN}', 'Content-Type': 'application/javascript'})
-resp = urllib.request.urlopen(req)
-print(f'  uploaded music_list.js ({resp.status})')
-"
+        run: python3 upload-music-list.py
 
       - name: Clean repo — delete all audio/covers/lyrics/music_list
         if: steps.check.outputs.has_new == 'true' || steps.sync.outputs.synced == 'true' || env.kgm_decrypted == 'true'
