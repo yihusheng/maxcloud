@@ -86,6 +86,10 @@ jobs:
         if: steps.check.outputs.has_new == 'true' || steps.sync.outputs.synced == 'true' || env.kgm_decrypted == 'true'
         run: npm install music-metadata
 
+      - name: Ensure public/music directory exists
+        if: steps.check.outputs.has_new == 'true' || steps.sync.outputs.synced == 'true' || env.kgm_decrypted == 'true'
+        run: mkdir -p public/music
+
       - name: Generate music_list.js + extract covers + lyrics
         if: steps.check.outputs.has_new == 'true' || steps.sync.outputs.synced == 'true' || env.kgm_decrypted == 'true'
         run: node generate-music.js
