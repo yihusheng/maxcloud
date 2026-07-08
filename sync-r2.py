@@ -2,7 +2,7 @@
 """
 sync-r2.py - 从 R2 同步新音乐文件，校验封面/歌词完整性
 
-用法: python3 scripts/sync-r2.py [music_dir]
+用法: python3 sync-r2.py [music_dir]
 
 工作流:
 1. 列出 R2 中全部 MP3 / 封面 / 歌词
@@ -58,7 +58,7 @@ def list_r2_objects():
 
 def read_music_list():
     """读取当前 music_list.js"""
-    js_path = 'scripts/music_list.js'
+    js_path = 'scripts/music_list.js'  # music_list.js 保留在 scripts/（web 入口）
     if not os.path.exists(js_path):
         return []
     with open(js_path, 'r', encoding='utf-8') as f:

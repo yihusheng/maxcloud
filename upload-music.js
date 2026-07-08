@@ -2,14 +2,14 @@
  * 本地音乐处理流程
  *
  * 步骤 1: 解析元数据 + 提取内嵌封面/歌词 + 生成 music_list.js
- *   node scripts/generate-music.js
+ *   node generate-music.js
  *
  * 步骤 2: 上传到 R2（任选一种方式）
  *   方式 A — 使用本脚本（需配置以下环境变量）:
  *     export CLOUDFLARE_ACCOUNT_ID="xxx"
  *     export CLOUDFLARE_R2_ACCESS_KEY="xxx"
  *     export CLOUDFLARE_R2_SECRET_KEY="xxx"
- *     node scripts/upload-music.js
+ *     node upload-music.js
  *
  *   方式 B — 使用 rclone（推荐，简单可靠）:
  *     rclone config  # 选 S3 → Cloudflare R2

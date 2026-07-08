@@ -1,9 +1,9 @@
 /**
  * generate-music.js
  * 扫描 public/music 目录，提取 MP3 / FLAC / M4A / OGG 等格式的内置封面和歌词，
- * 生成 scripts/music_list.js
+ * 生成 scripts/music_list.js (位于 scripts/ 目录)
  *
- * 用法: node scripts/generate-music.js
+ * 用法: node generate-music.js
  */
 
 const fs = require('fs');
@@ -256,27 +256,13 @@ function extractUSLT(filePath) {
   }
 
   // ── 合并旧歌（本地没扫到但之前已存在 R2 中的歌）──
-  // 但需要校验 cover/lrc 文件确实存在
+  // 旧歌的 cover/lrc 文件在 R2 中，不在 repo checkout 里，所以不校验本地文件
   var newKeys = {};
   for (var i = 0; i < songs.length; i++) newKeys[songs[i].src] = true;
   for (var key in oldMap) {
     if (!newKeys[key]) {
       var oldSong = oldMap[key];
-      // 清理旧歌中引用已不存在文件的 cover/lrc
-      if (oldSong.cover) {
-        var coverPath = path.join(musicDir, path.basename(oldSong.cover));
-        if (!fs.existsSync(coverPath)) {
-          console.log(`  🗑️  移除封面(文件不存在): ${oldSong.cover}`);
-          delete oldSong.cover;
-        }
-      }
-      if (oldSong.lrc) {
-        var lrcPath = path.join(musicDir, path.basename(oldSong.lrc));
-        if (!fs.existsSync(lrcPath)) {
-          console.log(`  🗑️  移除歌词(文件不存在): ${oldSong.lrc}`);
-          delete oldSong.lrc;
-        }
-      }
+      // 保留原有 cover/lrc 引用 —— 文件在 R2 中，不在 repo checkout
       songs.push(oldSong);
       console.log(`  🔄 保留: ${oldSong.artist} - ${oldSong.title}${oldSong.cover ? ' 🖼️' : ''}${oldSong.lrc ? ' 📝' : ''}`);
     }

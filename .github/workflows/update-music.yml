@@ -10,10 +10,10 @@ on:
       - 'public/music/*.aac'
       - 'public/music/*.kgm'
       - 'public/music/*.kgm.flac'
-      - 'scripts/generate-music.js'
-      - 'scripts/sync-r2.py'
-      - 'scripts/decrypt_kgm.py'
-      - 'scripts/kugou_key.xz'
+      - 'generate-music.js'
+      - 'sync-r2.py'
+      - 'decrypt_kgm.py'
+      - 'kugou_key.xz'
       - '.github/workflows/update-music.yml'
   workflow_dispatch:
   schedule:
@@ -46,7 +46,7 @@ jobs:
           count=$(ls public/music/*.kgm public/music/*.kgm.flac 2>/dev/null | wc -l)
           if [ "$count" -gt 0 ]; then
             echo "Found $count KGM file(s), decrypting..."
-            python3 scripts/decrypt_kgm.py public/music/*.kgm public/music/*.kgm.flac
+            python3 decrypt_kgm.py public/music/*.kgm public/music/*.kgm.flac
             rm -f public/music/*.kgm public/music/*.kgm.flac
             echo "kgm_decrypted=true" >> "$GITHUB_ENV"
           else
@@ -70,7 +70,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          python3 scripts/sync-r2.py
+          python3 sync-r2.py
 
       - name: Install deps
         if: steps.check.outputs.has_new == 'true' || steps.sync.outputs.synced == 'true' || env.kgm_decrypted == 'true'
@@ -78,7 +78,7 @@ jobs:
 
       - name: Generate music_list.js + extract covers + lyrics
         if: steps.check.outputs.has_new == 'true' || steps.sync.outputs.synced == 'true' || env.kgm_decrypted == 'true'
-        run: node scripts/generate-music.js
+        run: node generate-music.js
 
       - name: Upload all files to R2
         if: steps.check.outputs.has_new == 'true' || steps.sync.outputs.synced == 'true' || env.kgm_decrypted == 'true'
@@ -121,27 +121,29 @@ jobs:
             done
           done
 
-      - name: Remove audio files and extracted files
+      - name: Remove audio files only (preserve covers/lyrics for music_list.js)
         if: steps.check.outputs.has_new == 'true' || steps.sync.outputs.synced == 'true' || env.kgm_decrypted == 'true'
         run: |
+          # 只删音频文件，不删封面/歌词——它们会被 music_list.js 引用且存在于 R2
           rm -f public/music/*.mp3 public/music/*.MP3
           rm -f public/music/*.flac public/music/*.FLAC
           rm -f public/music/*.m4a
           rm -f public/music/*.ogg
           rm -f public/music/*.wav
           rm -f public/music/*.aac
-          rm -f public/music/*.jpg public/music/*.jpeg
-          rm -f public/music/*.png
-          rm -f public/music/*.lrc
 
-      - name: Commit music_list.js
+      - name: Commit music_list.js + extracted covers/lyrics
         if: steps.check.outputs.has_new == 'true' || steps.sync.outputs.synced == 'true' || env.kgm_decrypted == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "bot@users.noreply.github.com"
+          # 添加更新后的音乐列表、封面、歌词
           git add scripts/music_list.js
+          # 保留 .gitkeep 确保 public/music 目录存在
           touch public/music/.gitkeep
           git add public/music/.gitkeep
+          # 添加封面/歌词等提取产物
+          git add public/music/*.jpg public/music/*.jpeg public/music/*.png public/music/*.lrc 2>/dev/null || true
           git add -A
           git diff --cached --quiet || git commit -m "update music_list [skip ci]"
           git push
