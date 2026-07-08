@@ -168,16 +168,16 @@ def main():
                     print(f'     → Will re-download MP3 to re-extract lyrics')
                 del s['lrc']
 
-    # 5. Download new MP3s (not in music list)
+    # 5. Download all MP3s missing locally (regardless of music list)
+    #    这样当封面/歌词文件被添加到 repo 时，MP3 会被重新下载并重新提取
     downloaded = 0
     for r2_key in r2_mp3s:
         fname = r2_key[len(PREFIX):]
-        src_path = f'./public/music/{fname}'
-        if src_path in known_srcs:
-            continue
-        
         local_path = os.path.join(MUSIC_DIR, fname)
-        print(f'⬇️  Downloading new: {fname}')
+        if os.path.exists(local_path):
+            continue  # 本地已有 → 跳过
+        
+        print(f'⬇️  Downloading: {fname}')
         if download_from_r2(r2_key, local_path):
             downloaded += 1
 
