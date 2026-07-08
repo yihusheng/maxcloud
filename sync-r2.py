@@ -62,7 +62,7 @@ def read_music_list():
     if not os.path.exists(js_path):
         # 本地无列表 → 从 R2 拉取
         from urllib.parse import quote
-        r2_url = f'https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/r2/buckets/{BUCKET}/objects/{quote("public/music/music_list.js", safe="")}'
+        r2_url = f'https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/r2/buckets/{BUCKET}/objects/{quote("music_list.js", safe="")}'
         req = urllib.request.Request(r2_url, headers={'Authorization': f'Bearer {TOKEN}'})
         try:
             resp = urllib.request.urlopen(req)
