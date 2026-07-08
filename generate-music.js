@@ -10,8 +10,8 @@ const fs = require('fs');
 const path = require('path');
 const mm = require('music-metadata');
 
-const musicDir = path.join(__dirname, '..', 'public', 'music');
-const outputFile = path.join(__dirname, 'music_list.js');
+const musicDir = path.join(__dirname, 'public', 'music');
+const outputFile = path.join(__dirname, 'scripts', 'music_list.js');
 
 const AUDIO_EXTS = new Set(['.mp3', '.wav', '.flac', '.ogg', '.m4a', '.aac', '.mp4', '.wma']);
 const COVER_EXTS = ['.jpg', '.jpeg', '.png', '.webp'];
