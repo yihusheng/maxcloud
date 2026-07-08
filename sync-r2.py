@@ -57,7 +57,7 @@ def list_r2_objects():
 
 
 def read_music_list():
-    \"\"\"读取当前 music_list.js，本地不存在时从 R2 下载\"\"\"
+    """读取当前 music_list.js，本地不存在时从 R2 下载"""
     js_path = 'scripts/music_list.js'
     if not os.path.exists(js_path):
         # 本地无列表 → 从 R2 拉取
@@ -114,7 +114,8 @@ def download_from_r2(r2_key, local_path):
             f.write(resp.read())
         return True
     except Exception as e:
-        print(f'  ⚠️  Download        return False
+        print(f'  ⚠️  Download failed: {e}')
+        return False
 
 
 def main():
