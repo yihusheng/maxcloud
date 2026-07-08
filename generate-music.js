@@ -9,7 +9,6 @@
 const fs = require('fs');
 const path = require('path');
 const mm = require('music-metadata');
-const https = require('https');
 const { execSync } = require('child_process');
 
 const musicDir = path.join(__dirname, 'public', 'music');
@@ -164,48 +163,46 @@ function extractUSLT(filePath) {
       }
 
       // iTunes 兜底：无内嵌封面时从 iTunes API 搜索并嵌入 MP3
+      // 即使有外部 JPG 文件也运行，确保后续工作流能直接提取内置封面
+      const hasLocalJpg = files.includes(baseName + '.jpg') || files.includes(baseName + '.jpeg') || files.includes(baseName + '.png');
       if (!extractedCover && ext === '.mp3') {
         const searchTerm = encodeURIComponent((artist || title) + ' ' + title);
-        const searchUrl = `https://itunes.apple.com/search?term=${searchTerm}&country=cn&entity=song&limit=1`;
         try {
-          const itunesData = await new Promise((resolve, reject) => {
-            https.get(searchUrl, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 8000 }, (res) => {
-              let d = '';
-              res.on('data', c => d += c);
-              res.on('end', () => resolve(d));
-            }).on('error', reject);
-          });
-          const json = JSON.parse(itunesData);
+          // 使用 Node 18+ fetch（AbortSignal.timeout 确保超时）
+          const searchResp = await fetch(
+            `https://itunes.apple.com/search?term=${searchTerm}&country=cn&entity=song&limit=1`,
+            { signal: AbortSignal.timeout(8000) }
+          );
+          if (!searchResp.ok) throw new Error('HTTP ' + searchResp.status);
+          const json = await searchResp.json();
           const artworkUrl = json.results?.[0]?.artworkUrl100;
           if (artworkUrl) {
-            const coverUrl = artworkUrl.replace('100x100bb', '600x600bb');
+            const hiResUrl = artworkUrl.replace('100x100bb', '600x600bb');
             const coverFile = baseName + '.jpg';
             const coverPath = path.join(musicDir, coverFile);
+            let newDownload = false;
 
             if (!fs.existsSync(coverPath)) {
               // 下载封面图
-              const imgBuf = await new Promise((resolve, reject) => {
-                https.get(coverUrl, { timeout: 15000 }, (res) => {
-                  const chunks = [];
-                  res.on('data', c => chunks.push(c));
-                  res.on('end', () => resolve(Buffer.concat(chunks)));
-                }).on('error', reject);
-              });
+              const imgResp = await fetch(hiResUrl, { signal: AbortSignal.timeout(15000) });
+              if (!imgResp.ok) throw new Error('cover HTTP ' + imgResp.status);
+              const imgBuf = Buffer.from(await imgResp.arrayBuffer());
               fs.writeFileSync(coverPath, imgBuf);
               console.log(`  🍎 iTunes 下载封面: ${coverFile}  (${audioFile})`);
+              newDownload = true;
+            }
 
-              // 嵌入到 MP3
-              try {
-                execSync(`python3 embed-cover.py "${filePath}" "${coverPath}"`, { timeout: 15000 });
-                console.log(`  💉 嵌入封面到 MP3: ${audioFile}`);
-              } catch (embedErr) {
-                console.warn(`  ⚠️  嵌入封面失败: ${audioFile}`);
-              }
+            // 只要 MP3 无内嵌封面就尝试嵌入（即使外部 JPG 已存在）
+            try {
+              execSync(`python3 embed-cover.py "${filePath}" "${coverPath}"`, { timeout: 15000 });
+              if (newDownload) console.log(`  💉 嵌入封面到 MP3: ${audioFile}`);
+            } catch (embedErr) {
+              console.warn(`  ⚠️  嵌入封面失败: ${audioFile}`);
             }
             extractedCover = coverFile;
           }
         } catch (e) {
-          if (e.code !== 'ENOENT') console.warn(`  ⚠️  iTunes 搜索失败: ${audioFile} — ${e.message}`);
+          if (e.name !== 'ENOENT') console.warn(`  ⚠️  iTunes 搜索失败: ${audioFile} — ${e.message}`);
         }
       }
 
