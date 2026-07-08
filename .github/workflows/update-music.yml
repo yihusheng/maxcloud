@@ -87,15 +87,17 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           set -euo pipefail
+          shopt -s nullglob
           TOKEN="$CLOUDFLARE_API_TOKEN"
           ACCOUNT_ID="$CLOUDFLARE_ACCOUNT_ID"
 
-          npm install -g wrangler --silent 2>&1 | tail -1
+          # 静默安装 wrangler，失败不阻断
+          npm install -g wrangler --silent 2>&1 | tail -1 || true
 
           upload() {
             local file="$1" ct="$2"
-            local encoded
-            encoded=$(python3 -c "import urllib.parse; print(urllib.parse.quote('$file', safe='/'))")
+            # 避免 'file' 内含单引号破坏 python3 -c 的引用
+            encoded=$(python3 -c "import urllib.parse, sys; print(urllib.parse.quote(sys.argv[1], safe='/'))" "$file")
             local url="https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/r2/buckets/${BUCKET}/objects/${encoded}"
             http_code=$(curl -s -o /dev/null -w "%{http_code}" -X PUT \
               -H "Authorization: Bearer ${TOKEN}" \
@@ -103,24 +105,21 @@ jobs:
               --data-binary @"${file}" \
               "${url}")
             if [ "$http_code" != "200" ]; then
-              wrangler r2 object put "${BUCKET}/${file}" --file="${file}" >/dev/null 2>&1
+              wrangler r2 object put "${BUCKET}/${file}" --file="${file}" >/dev/null 2>&1 || true
             fi
             echo "  uploaded $file"
           }
           export -f upload
           export TOKEN ACCOUNT_ID BUCKET
 
-          for f in public/music/*.mp3; do [ -f "$f" ] && upload "$f" "audio/mpeg"; done
-          for f in public/music/*.flac; do [ -f "$f" ] && upload "$f" "audio/flac"; done
-          for f in public/music/*.m4a; do [ -f "$f" ] && upload "$f" "audio/mp4"; done
-          for f in public/music/*.ogg; do [ -f "$f" ] && upload "$f" "audio/ogg"; done
-          for f in public/music/*.wav; do [ -f "$f" ] && upload "$f" "audio/wav"; done
-          for f in public/music/*.aac; do [ -f "$f" ] && upload "$f" "audio/aac"; done
-          for f in public/music/*.lrc; do [ -f "$f" ] && upload "$f" "text/plain; charset=utf-8"; done
-          for f in public/music/*.jpg; do [ -f "$f" ] && upload "$f" "image/jpeg"; done
-          for f in public/music/*.jpeg; do [ -f "$f" ] && upload "$f" "image/jpeg"; done
-          for f in public/music/*.png; do [ -f "$f" ] && upload "$f" "image/png"; done
-          for f in public/music/*.json; do [ -f "$f" ] && upload "$f" "application/json"; done
+          for ext in mp3:audio/mpeg flac:audio/flac m4a:audio/mp4 ogg:audio/ogg wav:audio/wav aac:audio/aac \
+                     lrc:text/plain\;\ charset=utf-8 jpg:image/jpeg jpeg:image/jpeg png:image/png json:application/json; do
+            ext_name="${ext%%:*}"
+            content_type="${ext#*:}"
+            for f in public/music/*."$ext_name"; do
+              [ -f "$f" ] && upload "$f" "$content_type"
+            done
+          done
 
       - name: Remove audio files and extracted files
         if: steps.check.outputs.has_new == 'true' || steps.sync.outputs.synced == 'true' || env.kgm_decrypted == 'true'
