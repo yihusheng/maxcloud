@@ -160,12 +160,14 @@ for (const dn of fs.readdirSync(EMOJI_DIR).sort()) {
   const iniPath = findIni(dp);
   if (!iniPath) { console.log('  ⚠ 无 INI:', dn); continue; }
   const entries = parseIni(iniPath);
-  const data = { cps: new Set(), names: new Map(), skins: new Map() };
+  // Merge into existing category data (multiple folders can map to same catId)
+  if (!byFolder[catId]) byFolder[catId] = { cps: new Set(), names: new Map(), skins: new Map() };
+  const data = byFolder[catId];
   for (const e of entries) {
     const raw = (e.title || e.code || '').toUpperCase().trim();
     if (!raw) continue;
-    // Normalize: spaces between hex → commas (some ini uses spaces instead of commas)
-    const hexStr = raw.replace(/\s+/g, ',');
+    // Normalize: spaces/underscores between hex → commas (some ini uses spaces or underscores)
+    const hexStr = raw.replace(/[\s_]+/g, ',');
     const parts = hexStr.split(',').map(s => s.trim()).filter(Boolean);
     const firstHex = parts[0];
     if (!/^[0-9A-F]+$/.test(firstHex)) continue;
@@ -206,7 +208,6 @@ for (const dn of fs.readdirSync(EMOJI_DIR).sort()) {
       if (v.length) { data.skins.set(firstHex, v); skinMap[firstHex] = v; }
     }
   }
-  byFolder[catId] = data;
   console.log(`  ${dn} (→${catId}): ${data.cps.size} emoji`);
 }
 
