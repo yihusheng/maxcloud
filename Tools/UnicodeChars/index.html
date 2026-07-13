@@ -200,16 +200,116 @@ var EMOJI_PUA_RANGES={
 };
 
 var EMOJI_CATS=[
-  {id:'smileys',label:'😀 笑脸与情绪',ranges:[[0x1F600,0x1F64F]]},
-  {id:'people',label:'🧑 人物与身体',ranges:[[0x1F9B0,0x1F9FF],[0x1F468,0x1F487],[0x1F9D1,0x1F9DF]]},
-  {id:'gesture',label:'💃 动作与手势',ranges:[[0x1F44A,0x1F44F],[0x1F64B,0x1F64F],[0x1F91A,0x1F91F],[0x1F932,0x1F93A],[0x1F9BE,0x1F9BF]]},
-  {id:'animals',label:'🐾 动物与植物',ranges:[[0x1F400,0x1F43F],[0x1F980,0x1F9AE],[0x1FAB0,0x1FABF],[0x1F330,0x1F33F],[0x1F490,0x1F49F]]},
-  {id:'food',label:'🍎 食物与饮料',ranges:[[0x1F340,0x1F37F],[0x1F950,0x1F96F],[0x1FAD0,0x1FADF]]},
-  {id:'travel',label:'🚗 旅行与交通',ranges:[[0x1F680,0x1F6FF]]},
-  {id:'objects',label:'💡 物品',ranges:[[0x1F4A0,0x1F4FF],[0x1F9F0,0x1F9FF],[0x1FA70,0x1FAFF]]},
-  {id:'symbols',label:'🔣 符号',ranges:[[0x2600,0x26FF],[0x2700,0x27BF],[0x2934,0x2935],[0x2B05,0x2B55],[0x3030,0x303D],[0x3297,0x3299],[0x23E9,0x23F3],[0x23F8,0x23FA],[0x24C2,0x24C2],[0x25AA,0x25FE],[0x231A,0x231B],[0x23CF,0x23CF]]},
+  // ── 1. 笑脸与人物 (faces + people + gestures + body) ──
+  {id:'smileys',label:'😀 笑脸与人物',ranges:[
+    [0x1F600,0x1F64F],   // Emoticons
+    [0x1F910,0x1F92F],   // Supplemental faces + gestures
+    [0x1F970,0x1F97A],   // Newer faces
+    [0x1F9D0,0x1F9D0],   // Monocle face
+    [0x1F440,0x1F487],   // Eyes, body, people, activities
+    [0x1F468,0x1F47F],   // People + families
+    [0x1F9B0,0x1F9BF],   // Hair, bone, leg, foot, tooth, prosthetics
+    [0x1F9CC,0x1F9CF],   // Troll, standing, kneeling, deaf
+    [0x1F9D1,0x1F9DF],   // People categories + fantasy
+    [0x1F3FB,0x1F3FF],   // Skin tone modifiers
+  ]},
+  // ── 2. 动物与自然 (animals + plants + weather + nature places) ──
+  {id:'animals',label:'🐾 动物与自然',ranges:[
+    [0x1F400,0x1F43F],   // Animal faces + symbols
+    [0x1F980,0x1F9AE],   // More animals (crab, lion, unicorn, etc.)
+    [0x1FAB0,0x1FABF],   // Insects & bugs (fly, worm, beetle)
+    [0x1F330,0x1F33F],   // Plants (seedling, tree, cactus, tulip, etc.)
+    [0x1F340,0x1F343],   // Clover, maple leaf, fallen leaf, leaf in wind
+    [0x1F490,0x1F49F],   // Flowers (bouquet, cherry, rose, hibiscus, etc.)
+    [0x1F300,0x1F31F],   // Weather & celestial (cyclone, moon, stars)
+    [0x1F324,0x1F32C],   // Weather conditions
+    [0x1F308,0x1F308],   // Rainbow
+    [0x1F30A,0x1F30A],   // Water wave
+    [0x1F3D4,0x1F3DF],   // Natural places (mountain, beach, desert, park)
+  ]},
+  // ── 3. 食物与饮料 ──
+  {id:'food',label:'🍎 食物与饮料',ranges:[
+    [0x1F344,0x1F37F],   // Main food (mushroom, fruits, prepared food, drinks)
+    [0x1F950,0x1F96F],   // Supplementary food
+    [0x1FAD0,0x1FADF],   // More food
+    [0x1F32D,0x1F32F],   // Hot dog, taco, burrito
+    [0x1F9C0,0x1F9CB],   // Cheese, cupcake, salt, garlic, waffle, etc.
+  ]},
+  // ── 4. 活动 (sports + games + arts + music + events) ──
+  {id:'activities',label:'⚽ 活动',ranges:[
+    [0x1F396,0x1F3AF],   // Medals, arts, entertainment, games
+    [0x1F3B0,0x1F3BC],   // Games & music (8-ball, dice, cards, instruments)
+    [0x1F3BD,0x1F3D3],   // Sports equipment & sports
+    [0x1F3F8,0x1F3FA],   // Badminton, bow & arrow, amphora
+    [0x1F380,0x1F38F],   // Events (ribbon, gift, fireworks, party)
+    [0x1F93C,0x1F93F],   // Wrestling, water polo, handball, diving mask
+    [0x1F940,0x1F94F],   // Sports items (medals, boxing glove, etc.)
+    [0x1FA00,0x1FA6F],   // Chess symbols
+    [0x26BD,0x26BE],     // Soccer ball, baseball
+    [0x26F3,0x26F3],     // Golf
+    [0x26F7,0x26F9],     // Skier, ice skate, person with ball
+  ]},
+  // ── 5. 旅行与地点 (transport + buildings + places + time) ──
+  {id:'travel',label:'🚗 旅行与地点',ranges:[
+    [0x1F680,0x1F6C5],   // Transport
+    [0x1F6CB,0x1F6D7],   // Places (couch, bed, temple, hut, elevator)
+    [0x1F6DC,0x1F6FC],   // More transport (wireless, slide, wheel, etc.)
+    [0x1F3E0,0x1F3F0],   // Buildings (house, hospital, castle)
+    [0x1F550,0x1F567],   // Clock faces
+    [0x231A,0x231B],     // Watch, hourglass
+    [0x23F0,0x23F3],     // Alarm clock, stopwatch, timer, hourglass
+    [0x26E9,0x26FA],     // Places (shrine, church, mountain, tent)
+    [0x26FD,0x26FD],     // Fuel pump
+    [0x26F0,0x26F2],     // Mountain, fountain, golf? (golf is in activities)
+    [0x26F4,0x26F6],     // Ferry, sailboat
+    [0x1F5FA,0x1F5FF],   // Map, globe, places
+  ]},
+  // ── 6. 物品 (household + tech + clothing + tools + objects) ──
+  {id:'objects',label:'💡 物品',ranges:[
+    [0x1F4A0,0x1F4FF],   // Various objects
+    [0x1F6AA,0x1F6BF],   // Household (door, toilet, shower, etc.)
+    [0x1F6CE,0x1F6D2],   // Bellhop, bed, worship, stop sign, oil
+    [0x1F6E0,0x1F6E5],   // Hammer, wrench, shield, motor boat
+    [0x1F451,0x1F45F],   // Clothing (crown, hat, coat, bag, shoes)
+    [0x1F48C,0x1F48F],   // Ring, gem, etc.
+    [0x1F97B,0x1F97F],   // Sari, lab coat, goggles, hiking boot, flat shoe
+    [0x1F9E0,0x1F9E6],   // Brain, orange heart, clothes (scarf, gloves, coat, socks)
+    [0x1F9E7,0x1F9FF],   // Objects (envelope, tools, science, household)
+    [0x1F9F0,0x1F9FF],   // More objects
+    [0x1FA70,0x1FAFF],   // Objects A (shoes, swimsuit, tools, household)
+    [0x1F3F5,0x1F3F7],   // Rosette, label
+  ]},
+  // ── 7. 符号 (hearts, zodiac, arrows, geometric, signs) ──
+  {id:'symbols',label:'🔣 符号',ranges:[
+    [0x2600,0x26FF],     // Misc symbols
+    [0x2700,0x27BF],     // Dingbats
+    [0x2934,0x2935],     // Arrows
+    [0x2B05,0x2B55],     // Arrows, stars, geometric
+    [0x3030,0x303D],     // CJK symbols
+    [0x3297,0x3299],     // Congrats, secret
+    [0x23E9,0x23EF],     // Media symbols (fast-forward, play/pause, etc.)
+    [0x23F8,0x23FA],     // Media controls (record, etc.)
+    [0x24C2,0x24C2],     // Circled M
+    [0x25AA,0x25FE],     // Geometric shapes
+    [0x23CF,0x23CF],     // Eject button
+    [0x1F500,0x1F53F],   // Symbol arrows, etc.
+    [0x1F540,0x1F55F],   // More symbols, diamond shapes
+  ]},
+  // ── 8. 旗帜 (country flags + individual flags) ──
   {id:'flags',label:'🏁 旗帜',flagsOnly:true},
-  {id:'misc',label:'🎨 杂项',ranges:[[0x1F300,0x1F32F],[0x1F380,0x1F3FF],[0x1F500,0x1F5FF],[0x1F900,0x1F93F],[0x1F940,0x1F94F],[0x1FA00,0x1FA6F]]}
+  // ── 9. 杂项 (unclaimed leftovers) ──
+  {id:'misc',label:'🎨 杂项',ranges:[
+    [0x1F300,0x1F30F],   // Weather misc
+    [0x1F320,0x1F323],   // Shooting star, thermometer, umbrella
+    [0x1F390,0x1F395],   // Wind chime, ceremony
+    [0x1F580,0x1F59F],   // Tech misc
+    [0x1F5A0,0x1F5FF],   // More objects/tech
+    [0x1F900,0x1F90F],   // Supplemental symbols
+    [0x1F930,0x1F933],   // Gestures
+    [0x1F938,0x1F93B],   // Sports misc
+    [0x1FA80,0x1FAFF],   // Object misc
+    [0x1F6F0,0x1F6F3],   // Transport misc
+  ]},
 ];
 
 var FLAG_COUNTRIES=[
