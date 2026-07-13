@@ -312,6 +312,69 @@ function getPagedItems(total,allItems,rangeStart,rangeEnd,page,perPage){
   return{items:items,total:total,pages:pages,page:page};
 }
 
+// ── Unified data getter & renderer ──
+function getPanelItems(panel,search){
+  if(panel==='unicode'){
+    if(state.unicodeSub==='public'){
+      var bd=getPublicBlockItems(state.publicBlock,search);
+      if(bd.allItems&&bd.allItems.length)return bd.allItems;
+      if(bd.block&&bd.block.id!=='all'&&bd.block.start!==undefined){
+        var items=[];for(var i=bd.block.start;i<=bd.block.end;i++)items.push({cp:i,ch:String.fromCodePoint(i)});
+        return items;
+      }
+      return[];
+    }else{
+      var pd=getPuaItems(state.privateRange,search);
+      if(pd.allItems&&pd.allItems.length)return pd.allItems;
+      if(pd.range){
+        var items=[];for(var i=pd.range.start;i<=pd.range.end;i++)items.push({cp:i,ch:String.fromCodePoint(i),name:getPuaName(i)});
+        return items;
+      }
+      return[];
+    }
+  }
+  if(panel==='emoji'){
+    if(state.emojiSub==='public')return filterPublicEmoji(state.emojiCat,search);
+    var r=EMOJI_PUA_RANGES[state.emojiPuaRange];
+    if(!r)return[];
+    if(search){
+      var sc=parseInt(search,16),items=[];
+      if(!isNaN(sc)&&sc>=r.start&&sc<=r.end)items.push({cp:sc,ch:String.fromCodePoint(sc),name:getEmojiPuaName(sc)});
+      return items;
+    }
+    var items=[];for(var i=r.start;i<=r.end;i++)items.push({cp:i,ch:String.fromCodePoint(i),name:getEmojiPuaName(i)});
+    return items;
+  }
+  return[];
+}
+
+function renderPanel(panel){
+  var gridId,paginationId,pageKey,pageType,countEl;
+  if(panel==='unicode'){
+    gridId='unicodeGrid';paginationId='unicodePagination';pageKey='unicodePage';pageType='u';
+    countEl=document.getElementById('unicodeResultCnt');
+  }else{
+    gridId='emojiGrid';paginationId='emojiPagination';pageKey='emojiPage';pageType=state.emojiSub==='public'?'emoji':'emoji-pua';
+    countEl=document.getElementById('emojiResultCnt');
+  }
+  var grid=document.getElementById(gridId),pg=document.getElementById(paginationId);
+  var search=panel==='unicode'?state.unicodeSearch:state.emojiSearch;
+  var items=getPanelItems(panel,search);
+  state.totalCount=items.length;
+  if(panel==='unicode'){
+    var bd=getPublicBlockItems(state.publicBlock,search);
+    document.getElementById('unicodeBlockDesc').textContent=(bd.block?bd.block.desc:'')+' · '+items.length.toLocaleString()+' 个';
+  }
+  var pages=Math.ceil(items.length/PER_PAGE)||1;
+  if(state[pageKey]>=pages)state[pageKey]=0;
+  var s=state[pageKey]*PER_PAGE,e=Math.min(s+PER_PAGE-1,items.length-1);
+  renderGrid(grid,items.slice(s,e+1),pageType);
+  renderPagination(pg,state[pageKey],pages,pageType);
+  countEl.textContent=items.length.toLocaleString()+' 个';
+  document.getElementById('footerCount').textContent=state.totalCount.toLocaleString();
+  updateBadges();
+}
+
 var ALL_EMOJI=null;
 function genAllEmoji(){
   if(ALL_EMOJI)return ALL_EMOJI;
@@ -472,44 +535,9 @@ function showSkinPicker(el,hexKey,ch,cp,hex,nm){
 
 
 function getPageItems(tab,pg){
-  if(tab==='u'){
-    var sub=state.unicodeSub,search=state.unicodeSearch;
-    if(sub==='public'){
-      var bd=getPublicBlockItems(state.publicBlock,search);
-      if(bd.allItems){
-        var s=pg*PER_PAGE,e=Math.min(s+PER_PAGE-1,bd.allItems.length-1);
-        return bd.allItems.slice(s,e+1);
-      }
-      var r=getPagedItems(bd.total,null,bd.block.start,bd.block.end,pg,PER_PAGE);
-      return r.items;
-    }else{
-      var pd=getPuaItems(state.privateRange,search);
-      if(pd.allItems){
-        var s=pg*PER_PAGE,e=Math.min(s+PER_PAGE-1,pd.allItems.length-1);
-        return pd.allItems.slice(s,e+1);
-      }
-      var items=[];for(var i=pd.range.start+pg*PER_PAGE;i<=Math.min(pd.range.start+(pg+1)*PER_PAGE-1,pd.range.end);i++)items.push({cp:i,ch:String.fromCodePoint(i),name:getPuaName(i)});
-      return items;
-    }
-  }
-  if(tab==='e'||tab==='ep'){
-    if(tab==='e'){
-      var filtered=filterPublicEmoji(state.emojiCat,state.emojiSearch);
-      var s=pg*PER_PAGE,e=Math.min(s+PER_PAGE-1,filtered.length-1);
-      return filtered.slice(s,e+1);
-    }
-    var range=state.emojiPuaRange,rv=EMOJI_PUA_RANGES[range];
-    if(!rv)return[];
-    var searchL=(state.emojiSearch||'').toLowerCase().trim();
-    if(searchL){
-      var sc=parseInt(searchL,16);
-      if(!isNaN(sc)&&sc>=rv.start&&sc<=rv.end)return[{cp:sc,ch:String.fromCodePoint(sc),name:getEmojiPuaName(sc)}];
-      return[];
-    }
-    var items=[];for(var i=rv.start+pg*PER_PAGE;i<=Math.min(rv.start+(pg+1)*PER_PAGE-1,rv.end);i++)items.push({cp:i,ch:String.fromCodePoint(i),name:getEmojiPuaName(i)});
-    return items;
-  }
-  return[];
+  var items=tab==='u'?getPanelItems('unicode',''):getPanelItems('emoji','');
+  var s=pg*PER_PAGE,e=Math.min(s+PER_PAGE-1,items.length-1);
+  return items.slice(s,e+1);
 }
 
 function appendRender(grid,items){
@@ -535,107 +563,33 @@ function appendRender(grid,items){
 }
 
 function appendUnicodePage(){
-  var items=getPageItems('u',state.unicodePage);
-  if(!items||!items.length)return;
+  var all=getPanelItems('unicode','');
+  var pg=state.unicodePage;
+  var s=pg*PER_PAGE,e=Math.min(s+PER_PAGE-1,all.length-1);
+  var items=all.slice(s,e+1);
+  if(!items.length)return;
   appendRender(document.getElementById('unicodeGrid'),items);
-  // Reset pagination to show current page as active
-  var total=state.totalCount||0;
-  var pages=Math.ceil(total/PER_PAGE)||1;
-  renderPagination(document.getElementById('unicodePagination'),state.unicodePage,pages,'u');
+  var pages=Math.ceil(all.length/PER_PAGE)||1;
+  renderPagination(document.getElementById('unicodePagination'),pg,pages,'u');
 }
 
 function appendEmojiPage(){
-  var t=state.emojiSub==='public'?'e':'ep';
-  var items=getPageItems(t,state.emojiPage);
-  if(!items||!items.length)return;
+  var all=getPanelItems('emoji','');
+  var pg=state.emojiPage;
+  var s=pg*PER_PAGE,e=Math.min(s+PER_PAGE-1,all.length-1);
+  var items=all.slice(s,e+1);
+  if(!items.length)return;
   appendRender(document.getElementById('emojiGrid'),items);
-  var total=state.totalCount||0;
-  var pages=Math.ceil(total/PER_PAGE)||1;
-  renderPagination(document.getElementById('emojiPagination'),state.emojiPage,pages,t);
+  var pages=Math.ceil(all.length/PER_PAGE)||1;
+  renderPagination(document.getElementById('emojiPagination'),pg,pages,state.emojiSub==='public'?'e':'ep');
 }
 
 function renderUnicode(){
-  var grid=document.getElementById('unicodeGrid'),pg=document.getElementById('unicodePagination');
-  var search=state.unicodeSearch,sub=state.unicodeSub,countEl=document.getElementById('unicodeResultCnt');
-  if(sub==='public'){
-    var blockData=getPublicBlockItems(state.publicBlock,search);
-    document.getElementById('unicodeBlockDesc').textContent=(blockData.block?blockData.block.desc:'')+' · '+blockData.total.toLocaleString()+' 个字符';
-    if(blockData.allItems){
-      state.totalCount=blockData.allItems.length;
-      var pages=Math.ceil(blockData.allItems.length/PER_PAGE)||1;
-      if(state.unicodePage>=pages)state.unicodePage=0;
-      var s=state.unicodePage*PER_PAGE,e=Math.min(s+PER_PAGE-1,blockData.allItems.length-1);
-      renderGrid(grid,blockData.allItems.slice(s,e+1),sub);
-      renderPagination(pg,state.unicodePage,pages,'u');
-    }else{
-      state.totalCount=blockData.total;
-      var result=getPagedItems(blockData.total,null,blockData.block.start,blockData.block.end,state.unicodePage,PER_PAGE);
-      renderGrid(grid,result.items,sub);
-      renderPagination(pg,result.page,result.pages,'u');
-    }
-    countEl.textContent=state.totalCount.toLocaleString()+' 个';
-  }else{
-    var puaData=getPuaItems(state.privateRange,search);
-    document.getElementById('unicodePuaDesc').textContent=puaData.range?puaData.range.desc:'';
-    if(puaData.allItems){
-      state.totalCount=puaData.allItems.length;
-      var pages=Math.ceil(puaData.allItems.length/PER_PAGE)||1;
-      if(state.unicodePage>=pages)state.unicodePage=0;
-      var s=state.unicodePage*PER_PAGE,e=Math.min(s+PER_PAGE-1,puaData.allItems.length-1);
-      renderGrid(grid,puaData.allItems.slice(s,e+1),'pua');
-      renderPagination(pg,state.unicodePage,pages,'u');
-    }else{
-      state.totalCount=puaData.total;
-      var result=getPagedItems(puaData.total,null,puaData.range.start,puaData.range.end,state.unicodePage,PER_PAGE);
-      for(var i=0;i<result.items.length;i++)result.items[i].name=getPuaName(result.items[i].cp);
-      renderGrid(grid,result.items,'pua');
-      renderPagination(pg,result.page,result.pages,'u');
-    }
-    countEl.textContent=state.totalCount.toLocaleString()+' 个';
-  }
-  document.getElementById('footerCount').textContent=state.totalCount.toLocaleString();
-  updateBadges();
+  renderPanel('unicode');
 }
 
 function renderEmoji(){
-  var grid=document.getElementById('emojiGrid'),pg=document.getElementById('emojiPagination');
-  var search=state.emojiSearch,sub=state.emojiSub,countEl=document.getElementById('emojiResultCnt');
-  if(sub==='public'){
-    var filtered=filterPublicEmoji(state.emojiCat,search);
-    state.totalCount=filtered.length;
-    var pages=Math.ceil(filtered.length/PER_PAGE)||1;
-    if(state.emojiPage>=pages)state.emojiPage=0;
-    var s=state.emojiPage*PER_PAGE,e=Math.min(s+PER_PAGE-1,filtered.length-1);
-    renderGrid(grid,filtered.slice(s,e+1),'emoji');
-    renderPagination(pg,state.emojiPage,pages,'e');
-    countEl.textContent=state.totalCount.toLocaleString()+' 个';
-  }else{
-    var range=state.emojiPuaRange,r=EMOJI_PUA_RANGES[range];
-    if(!r){grid.innerHTML='<div class="nohit">无效范围</div>';pg.innerHTML='';countEl.textContent='0';return}
-    var searchL=(search||'').toLowerCase().trim();
-    var allItems=null;
-    if(searchL){
-      allItems=[];var rM=searchL.match(/^([0-9a-f]+)\s*-\s*([0-9a-f]+)$/i);
-      if(rM){var st=parseInt(rM[1],16),en=parseInt(rM[2],16);for(var j=Math.max(r.start,st);j<=Math.min(r.end,en);j++)allItems.push({cp:j,ch:String.fromCodePoint(j),name:getEmojiPuaName(j)})}else{var sc=parseInt(searchL,16);if(!isNaN(sc)&&sc>=r.start&&sc<=r.end)allItems.push({cp:sc,ch:String.fromCodePoint(sc),name:getEmojiPuaName(sc)})}
-    }
-    if(allItems){
-      state.totalCount=allItems.length;
-      var pages=Math.ceil(allItems.length/PER_PAGE)||1;
-      if(state.emojiPage>=pages)state.emojiPage=0;
-      var s=state.emojiPage*PER_PAGE,e=Math.min(s+PER_PAGE-1,allItems.length-1);
-      renderGrid(grid,allItems.slice(s,e+1),'emoji-pua');
-      renderPagination(pg,state.emojiPage,pages,'ep');
-    }else{
-      state.totalCount=r.end-r.start+1;
-      var result=getPagedItems(r.end-r.start+1,null,r.start,r.end,state.emojiPage,PER_PAGE);
-      for(var i=0;i<result.items.length;i++)result.items[i].name=getEmojiPuaName(result.items[i].cp);
-      renderGrid(grid,result.items,'emoji-pua');
-      renderPagination(pg,result.page,result.pages,'ep');
-    }
-    countEl.textContent=state.totalCount.toLocaleString()+' 个';
-  }
-  document.getElementById('footerCount').textContent=state.totalCount.toLocaleString();
-  updateBadges();
+  renderPanel('emoji');
 }
 
 function renderHistory(){
