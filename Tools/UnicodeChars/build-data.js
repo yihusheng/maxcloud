@@ -36,7 +36,7 @@ const FOLDER_TO_ID = {
   '交通':'transport','景物':'scenery',
   '物品':'objects',  '服饰':'clothing', '心形':'objects',
   '标志':'signs',   '标识':'signs',   '记号':'signs',
-  '数学':'math',
+  '数学':'math',    '旗帜':'flags',
 };
 
 // ── 标准 Emoji 码位 → 分类（用于杂项重新归类） ──
@@ -177,10 +177,24 @@ for (const dn of fs.readdirSync(EMOJI_DIR).sort()) {
       if (!data.seqs) data.seqs = [];
       data.seqs.push({ seqHex, baseHex: firstHex, name: e.keyword||'' });
       if (e.keyword && !nameMap[firstHex]) nameMap[firstHex] = e.keyword;
-      continue; // Don't add base CP from sequence entries
+      continue;
     }
 
-    // Normal entry or VS16-only → use base CP
+    // Flags category: RI pair → map to country code, don't add base CP
+    if (catId === 'flags') {
+      if (parts.length === 2 && /^1F1[E-F][0-9A-F]$/.test(parts[0]) && /^1F1[E-F][0-9A-F]$/.test(parts[1])) {
+        // Regional indicator pair → derive ISO code
+        const ri1 = parseInt(parts[0], 16), ri2 = parseInt(parts[1], 16);
+        const code = String.fromCharCode(ri1 - 0x1F1E6 + 65) + String.fromCharCode(ri2 - 0x1F1E6 + 65);
+        if (e.keyword) {
+          if (!data.flagNames) data.flagNames = {};
+          data.flagNames[code] = e.keyword;
+        }
+        continue; // Don't add individual RI to cps
+      }
+    }
+
+    // Normal entry → use base CP
     data.cps.add(cp);
     allIniCps.add(cp);
     if (e.keyword) {
@@ -260,11 +274,22 @@ function genEmojiJS() {
   }
   const seqStr = seqLines.join(',');
 
+  // FLAG_NAMES: Chinese names from 旗帜/emoji.ini
+  const flagNameEntries = [];
+  if (byFolder['flags'] && byFolder['flags'].flagNames) {
+    const fn = byFolder['flags'].flagNames;
+    for (const code of Object.keys(fn).sort()) {
+      flagNameEntries.push(`'${code}':'${fn[code].replace(/'/g,"\\'")}'`);
+    }
+  }
+  const flagNameStr = flagNameEntries.join(',');
+
   return `// Emoji Data — auto-generated
 var EMOJI_CATS=[${catLines.join(',\n')}];
 var EMOJI_NAMES={${nameStr}};
 var EMOJI_SKIN={${skinStr}};
 var EMOJI_SEQUENCES=[${seqStr}];
+var FLAG_NAMES={${flagNameStr}};
 var FLAG_COUNTRIES=[['AD','Andorra'],['AE','UAE'],['AF','Afghanistan'],['AG','Antigua'],['AL','Albania'],['AM','Armenia'],['AO','Angola'],['AR','Argentina'],['AT','Austria'],['AU','Australia'],['AZ','Azerbaijan'],['BA','Bosnia'],['BB','Barbados'],['BD','Bangladesh'],['BE','Belgium'],['BF','Burkina Faso'],['BG','Bulgaria'],['BH','Bahrain'],['BI','Burundi'],['BJ','Benin'],['BM','Bermuda'],['BN','Brunei'],['BO','Bolivia'],['BR','Brazil'],['BS','Bahamas'],['BT','Bhutan'],['BW','Botswana'],['BY','Belarus'],['BZ','Belize'],['CA','Canada'],['CD','Congo DR'],['CF','CAR'],['CG','Congo'],['CH','Switzerland'],['CI','Cote Ivoire'],['CL','Chile'],['CM','Cameroon'],['CN','China'],['CO','Colombia'],['CR','Costa Rica'],['CU','Cuba'],['CV','Cabo Verde'],['CY','Cyprus'],['CZ','Czechia'],['DE','Germany'],['DJ','Djibouti'],['DK','Denmark'],['DM','Dominica'],['DO','Dominican Rep'],['DZ','Algeria'],['EC','Ecuador'],['EE','Estonia'],['EG','Egypt'],['ES','Spain'],['ET','Ethiopia'],['FI','Finland'],['FJ','Fiji'],['FR','France'],['GA','Gabon'],['GB','UK'],['GD','Grenada'],['GE','Georgia'],['GH','Ghana'],['GL','Greenland'],['GM','Gambia'],['GN','Guinea'],['GQ','Equatorial'],['GR','Greece'],['GT','Guatemala'],['HK','Hong Kong'],['HN','Honduras'],['HR','Croatia'],['HT','Haiti'],['HU','Hungary'],['ID','Indonesia'],['IE','Ireland'],['IL','Israel'],['IN','India'],['IQ','Iraq'],['IR','Iran'],['IS','Iceland'],['IT','Italy'],['JM','Jamaica'],['JO','Jordan'],['JP','Japan'],['KE','Kenya'],['KG','Kyrgyzstan'],['KH','Cambodia'],['KI','Kiribati'],['KM','Comoros'],['KN','St Kitts'],['KP','N Korea'],['KR','S Korea'],['KW','Kuwait'],['KZ','Kazakhstan'],['LA','Laos'],['LB','Lebanon'],['LC','St Lucia'],['LI','Liechtenstein'],['LK','Sri Lanka'],['LR','Liberia'],['LS','Lesotho'],['LT','Lithuania'],['LU','Luxembourg'],['LV','Latvia'],['LY','Libya'],['MA','Morocco'],['MC','Monaco'],['MD','Moldova'],['ME','Montenegro'],['MG','Madagascar'],['MK','N Macedonia'],['ML','Mali'],['MM','Myanmar'],['MN','Mongolia'],['MO','Macao'],['MR','Mauritania'],['MT','Malta'],['MU','Mauritius'],['MV','Maldives'],['MW','Malawi'],['MX','Mexico'],['MY','Malaysia'],['MZ','Mozambique'],['NA','Namibia'],['NE','Niger'],['NG','Nigeria'],['NI','Nicaragua'],['NL','Netherlands'],['NO','Norway'],['NP','Nepal'],['NZ','New Zealand'],['OM','Oman'],['PA','Panama'],['PE','Peru'],['PG','Papua NG'],['PH','Philippines'],['PK','Pakistan'],['PL','Poland'],['PR','Puerto Rico'],['PS','Palestine'],['PT','Portugal'],['PW','Palau'],['PY','Paraguay'],['QA','Qatar'],['RO','Romania'],['RS','Serbia'],['RU','Russia'],['RW','Rwanda'],['SA','Saudi Arabia'],['SB','Solomon'],['SC','Seychelles'],['SD','Sudan'],['SE','Sweden'],['SG','Singapore'],['SI','Slovenia'],['SK','Slovakia'],['SL','Sierra Leone'],['SM','San Marino'],['SN','Senegal'],['SO','Somalia'],['SR','Suriname'],['SS','S Sudan'],['ST','Sao Tome'],['SV','El Salvador'],['SY','Syria'],['SZ','Eswatini'],['TD','Chad'],['TG','Togo'],['TH','Thailand'],['TJ','Tajikistan'],['TL','Timor-Leste'],['TM','Turkmenistan'],['TN','Tunisia'],['TO','Tonga'],['TR','Turkey'],['TT','Trinidad'],['TV','Tuvalu'],['TW','Taiwan'],['TZ','Tanzania'],['UA','Ukraine'],['UG','Uganda'],['US','United States'],['UY','Uruguay'],['UZ','Uzbekistan'],['VA','Vatican'],['VC','St Vincent'],['VE','Venezuela'],['VG','British VI'],['VN','Vietnam'],['VU','Vanuatu'],['WS','Samoa'],['YE','Yemen'],['ZA','South Africa'],['ZM','Zambia'],['ZW','Zimbabwe']];
 var EMOJI_PUA_RANGES={zwj:{label:'零宽连字 ZWJ',start:0x200D,end:0x200D,desc:'Zero Width Joiner'},vs:{label:'异体选择符 VS',start:0xFE00,end:0xFE0F,desc:'Variation Selectors'},tags:{label:'标签 Tags',start:0xE0020,end:0xE007F,desc:'Tags'}};
 `;

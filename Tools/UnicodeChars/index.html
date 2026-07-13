@@ -244,12 +244,14 @@ function genAllEmoji(){
   for(var ci=0;ci<EMOJI_CATS.length;ci++){
     var cat=EMOJI_CATS[ci];
     if(cat.flagsOnly){
-      var indivFlags=[{cp:0x1F3C1,name:'chequered flag'},{cp:0x1F3F3,name:'white flag'},{cp:0x1F3F4,name:'black flag'},{cp:0x1F6A9,name:'triangular flag'},{cp:0x1F38C,name:'crossed flags'}];
+      var indivFlags=[{cp:0x1F3C1,name:'终点旗'},{cp:0x1F3F3,name:'白旗'},{cp:0x1F3F4,name:'黑旗'},{cp:0x1F6A9,name:'三角旗'},{cp:0x1F38C,name:'旗帜交差'}];
       for(var fi=0;fi<indivFlags.length;fi++){var f=indivFlags[fi];all.push({cp:f.cp,ch:String.fromCodePoint(f.cp),name:f.name,cat:'flags'})}
       for(var ci2=0;ci2<FLAG_COUNTRIES.length;ci2++){
         var fc=FLAG_COUNTRIES[ci2],code=fc[0],cname=fc[1];
         var ri1=0x1F1E6+code.charCodeAt(0)-65,ri2=0x1F1E6+code.charCodeAt(1)-65;
-        all.push({cp:ri1,ch:String.fromCodePoint(ri1)+String.fromCodePoint(ri2),name:'flag: '+cname,code:code,cat:'flags',isPair:true});
+        // Use Chinese name from FLAG_NAMES if available
+        var chName=(typeof FLAG_NAMES!=='undefined'&&FLAG_NAMES[code])?FLAG_NAMES[code]:cname;
+        all.push({cp:ri1,ch:String.fromCodePoint(ri1)+String.fromCodePoint(ri2),name:'🏁 '+chName,code:code,cat:'flags',isPair:true});
       }
       continue;
     }
