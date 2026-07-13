@@ -24,7 +24,7 @@
 .stab{flex:1;padding:8px 12px;border:none;border-radius:10px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:.12s;background:var(--c);color:var(--b);border:2px solid var(--s)}
 .stab:hover{border-color:var(--pp);color:var(--kd)}
 .stab.act{background:var(--s);color:var(--k);border-color:var(--s)}
-.cpills{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
+.cpills{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;margin-bottom:10px}
 .cpill{padding:5px 12px;border:2px solid var(--s);border-radius:999px;font-size:11px;font-weight:600;cursor:pointer;transition:.12s;background:transparent;color:var(--b);font-family:inherit;white-space:nowrap}
 .cpill:hover{border-color:var(--pp);color:var(--kd)}
 .cpill.act{background:var(--k);color:var(--p);border-color:var(--k)}
@@ -249,12 +249,14 @@ function saveHistory(){if(state.history.length>50)state.history=state.history.sl
 function addHistory(item){for(var i=0;i<state.history.length;i++){if(state.history[i].cp===item.cp){state.history.splice(i,1);break}}state.history.unshift(item);saveHistory();renderHistory()}
 function clearHistory(){state.history=[];setCookie('unicode_history','',-1);renderHistory()}
 
+var ALL_BLOCKS_CACHE=null;
 function getPublicBlockItems(blockId,search){
   if(blockId==='all'){
     var searchL=(search||'').toLowerCase().trim();
     if(searchL)return getAllSearchResults(searchL);
-    var total=0;for(var i=1;i<PUBLIC_BLOCKS.length;i++)total+=PUBLIC_BLOCKS[i].end-PUBLIC_BLOCKS[i].start+1;
-    return{total:total,allItems:[],block:{id:'all',desc:'在下方搜索框输入搜索全部码位'}};
+    // Combine all non-PUA blocks into one
+    if(!ALL_BLOCKS_CACHE){ALL_BLOCKS_CACHE=[];for(var bi=1;bi<PUBLIC_BLOCKS.length;bi++){var b=PUBLIC_BLOCKS[bi];for(var i=b.start;i<=b.end;i++)ALL_BLOCKS_CACHE.push({cp:i,ch:String.fromCodePoint(i)})}}
+    return{total:ALL_BLOCKS_CACHE.length,allItems:ALL_BLOCKS_CACHE,block:{id:'all',desc:'全部 Unicode 符号'}};
   }
   var blk;for(var i=0;i<PUBLIC_BLOCKS.length;i++){if(PUBLIC_BLOCKS[i].id===blockId){blk=PUBLIC_BLOCKS[i];break}}
   if(!blk)return{total:0,allItems:null};
