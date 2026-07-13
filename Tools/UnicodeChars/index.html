@@ -371,7 +371,6 @@ function renderPanel(panel){
   renderGrid(grid,items.slice(s,e+1),pageType);
   renderPagination(pg,state[pageKey],pages,pageType);
   countEl.textContent=items.length.toLocaleString()+' 个';
-  document.getElementById('footerCount').textContent=state.totalCount.toLocaleString();
   updateBadges();
 }
 
