@@ -12,7 +12,7 @@
 
   const NAV_ITEMS = [
     { icon: 'home',             label: '首页',        href: '/' },
-    { icon: 'abc',              label: 'Unicode',     href: '/Tools/UnicodeChars/' },
+    { icon: 'language', label: 'Unicode',     href: '/Tools/UnicodeChars/' },
     { icon: 'calculate',        label: '双浮点',      href: '/Tools/Double/' },
     { icon: 'lan',              label: 'MAC查询',    href: '/Tools/MacQuery/' },
     { icon: 'format_underlined',label: '下划线',      href: '/Tools/Underline/' },
