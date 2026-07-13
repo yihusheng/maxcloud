@@ -184,19 +184,19 @@ var PER_PAGE=200;
 
 
 var PUBLIC_BLOCKS=[
-  {id:'all',label:'全部 All',start:0x0,end:0x10FFFF,desc:'全部 Unicode 码位'},
-  {id:'arrows',label:'箭头 Arrows',start:0x2190,end:0x21FF,desc:'标准箭头符号 (← ↑ → ↓ ↔ 等)'},
-  {id:'math',label:'数学 Math Operators',start:0x2200,end:0x22FF,desc:'数学运算符 (∀ ∂ ∃ ∅ ∇ ∈ ∉ 等)'},
-  {id:'tech',label:'技术 Misc Technical',start:0x2300,end:0x23FF,desc:'技术符号'},
-  {id:'enclosed',label:'带圈 Enclosed',start:0x2460,end:0x24FF,desc:'带圈字母数字'},
-  {id:'boxdraw',label:'制表 Box Drawing',start:0x2500,end:0x257F,desc:'制表符'},
-  {id:'blocks',label:'方块 Block Elements',start:0x2580,end:0x259F,desc:'方块元素'},
-  {id:'shapes',label:'几何 Geometric',start:0x25A0,end:0x25FF,desc:'几何形状 (■ □ ▲ △ ○ ● 等)'},
-  {id:'misc',label:'杂项 Misc Symbols',start:0x2600,end:0x26FF,desc:'杂项符号 (☀ ☁ ☂ ☃ ☎ ☠ ☺ ♥ 等)'},
-  {id:'dingbats',label:'装饰 Dingbats',start:0x2700,end:0x27BF,desc:'装饰符号 (✀ ✁ ✂ ✃ ✄ ✅ 等)'},
-  {id:'braille',label:'盲文 Braille',start:0x2800,end:0x28FF,desc:'盲文图案'},
+  {id:'all',label:'全部',start:0x0,end:0x10FFFF,desc:'全部 Unicode 码位'},
+  {id:'arrows',label:'箭头',start:0x2190,end:0x21FF,desc:'标准箭头符号 (← ↑ → ↓ ↔ 等)'},
+  {id:'math',label:'数学',start:0x2200,end:0x22FF,desc:'数学运算符 (∀ ∂ ∃ ∅ ∇ ∈ ∉ 等)'},
+  {id:'tech',label:'技术',start:0x2300,end:0x23FF,desc:'技术符号'},
+  {id:'enclosed',label:'带圈',start:0x2460,end:0x24FF,desc:'带圈字母数字'},
+  {id:'boxdraw',label:'制表',start:0x2500,end:0x257F,desc:'制表符'},
+  {id:'blocks',label:'方块',start:0x2580,end:0x259F,desc:'方块元素'},
+  {id:'shapes',label:'几何',start:0x25A0,end:0x25FF,desc:'几何形状 (■ □ ▲ △ ○ ● 等)'},
+  {id:'misc',label:'杂项',start:0x2600,end:0x26FF,desc:'杂项符号 (☀ ☁ ☂ ☃ ☎ ☠ ☺ ♥ 等)'},
+  {id:'dingbats',label:'装饰',start:0x2700,end:0x27BF,desc:'装饰符号 (✀ ✁ ✂ ✃ ✄ ✅ 等)'},
+  {id:'braille',label:'盲文',start:0x2800,end:0x28FF,desc:'盲文图案'},
   {id:'cjk',label:'CJK 符号',start:0x3000,end:0x303F,desc:'CJK 符号与标点'},
-  {id:'egypt',label:'埃及象形 Egyptian',start:0x13000,end:0x1342F,desc:'埃及象形文字'},
+  {id:'egypt',label:'埃及象形',start:0x13000,end:0x1342F,desc:'埃及象形文字'},
 ];
 
 var PUA_RANGES={
@@ -254,7 +254,7 @@ function getPublicBlockItems(blockId,search){
     var searchL=(search||'').toLowerCase().trim();
     if(searchL)return getAllSearchResults(searchL);
     var total=0;for(var i=1;i<PUBLIC_BLOCKS.length;i++)total+=PUBLIC_BLOCKS[i].end-PUBLIC_BLOCKS[i].start+1;
-    return{total:total,allItems:[],block:{id:'all',desc:'全部 Unicode 符号'}};
+    return{total:total,allItems:[],block:{id:'all',desc:'在下方搜索框输入搜索全部码位'}};
   }
   var blk;for(var i=0;i<PUBLIC_BLOCKS.length;i++){if(PUBLIC_BLOCKS[i].id===blockId){blk=PUBLIC_BLOCKS[i];break}}
   if(!blk)return{total:0,allItems:null};
@@ -608,6 +608,7 @@ function renderEmoji(){
     var s=state.emojiPage*PER_PAGE,e=Math.min(s+PER_PAGE-1,filtered.length-1);
     renderGrid(grid,filtered.slice(s,e+1),'emoji');
     renderPagination(pg,state.emojiPage,pages,'e');
+    countEl.textContent=state.totalCount.toLocaleString()+' 个';
   }else{
     var range=state.emojiPuaRange,r=EMOJI_PUA_RANGES[range];
     if(!r){grid.innerHTML='<div class="nohit">无效范围</div>';pg.innerHTML='';countEl.textContent='0';return}
@@ -631,7 +632,7 @@ function renderEmoji(){
       renderGrid(grid,result.items,'emoji-pua');
       renderPagination(pg,result.page,result.pages,'ep');
     }
-    countEl.textContent=state.totalCount.toLocaleString();
+    countEl.textContent=state.totalCount.toLocaleString()+' 个';
   }
   document.getElementById('footerCount').textContent=state.totalCount.toLocaleString();
   updateBadges();
