@@ -156,7 +156,17 @@ for (const dn of fs.readdirSync(EMOJI_DIR).sort()) {
   if (!fs.statSync(dp).isDirectory()) continue;
   // Skip directories we can't read
   try { fs.readdirSync(dp); } catch(e) { console.log('  ⚠ 无法读取:', dn); continue; }
-  const catId = FOLDER_TO_ID[dn];
+  // Read info.ini for display name, then FOLDER_TO_ID → category
+  let folderName = dn;
+  try {
+    const infoPath = path.join(dp, 'info.ini');
+    if (fs.existsSync(infoPath)) {
+      const infoContent = fs.readFileSync(infoPath, 'utf-8');
+      const nm = infoContent.match(/^NAME=(.+)$/m);
+      if (nm) folderName = nm[1].trim();
+    }
+  } catch(e) {}
+  const catId = FOLDER_TO_ID[folderName] || FOLDER_TO_ID[dn];
   const iniPath = findIni(dp);
   if (!iniPath) { console.log('  ⚠ 无 INI:', dn); continue; }
   const entries = parseIni(iniPath);
