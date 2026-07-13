@@ -363,7 +363,13 @@ function renderPanel(panel){
   state.totalCount=items.length;
   if(panel==='unicode'){
     var bd=getPublicBlockItems(state.publicBlock,search);
-    document.getElementById('unicodeBlockDesc').textContent=(bd.block?bd.block.desc:'')+' · '+items.length.toLocaleString()+' 个';
+    var desc=bd.block?bd.block.desc:'';
+    if(state.unicodeSub==='public'){
+      document.getElementById('unicodeBlockDesc').textContent=desc+' · '+items.length.toLocaleString()+' 个';
+    }else{
+      var pd=getPuaItems(state.privateRange,search);
+      document.getElementById('unicodePuaDesc').textContent=(pd.range?pd.range.desc:'')+' · '+items.length.toLocaleString()+' 个';
+    }
   }
   var pages=Math.ceil(items.length/PER_PAGE)||1;
   if(state[pageKey]>=pages)state[pageKey]=0;
