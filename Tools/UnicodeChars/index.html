@@ -44,6 +44,8 @@
 .pg button:hover{border-color:var(--pp);color:var(--kd)}
 .pg button.act{background:var(--k);color:var(--p);border-color:var(--k)}
 .pg .pg-info{font-size:11px;color:var(--m);margin:0 4px}
+/* Prevent layout shift during page switch */
+#emojiGrid,#unicodeGrid{min-height:120px}
 .hist{margin-top:16px;border-top:2px solid var(--s);padding-top:12px}
 .hist-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .hist-hdr .lb{font-size:11px;font-weight:700;text-transform:uppercase;color:var(--m);letter-spacing:.3px;display:flex;align-items:center;gap:4px}
@@ -60,6 +62,20 @@
 .hist-empty{font-size:11px;color:var(--m);padding:6px 0}
 .toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:var(--k);color:var(--p);padding:7px 16px;border-radius:999px;font-size:12px;font-weight:600;z-index:10000;opacity:0;transition:opacity .2s;pointer-events:none}
 .toast.s{opacity:1}
+
+/* Seamless page transition */
+@keyframes gdFadeIn{from{opacity:0;transform:translateY(6px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+.sg-a>.sc{animation:gdFadeIn .2s cubic-bezier(0,0,.2,1) both}
+.sg-a>.sc:nth-child(1){animation-delay:0ms}
+.sg-a>.sc:nth-child(2){animation-delay:5ms}
+.sg-a>.sc:nth-child(3){animation-delay:10ms}
+.sg-a>.sc:nth-child(4){animation-delay:15ms}
+.sg-a>.sc:nth-child(5){animation-delay:20ms}
+.sg-a>.sc:nth-child(6){animation-delay:25ms}
+.sg-a>.sc:nth-child(7){animation-delay:30ms}
+.sg-a>.sc:nth-child(8){animation-delay:35ms}
+.sg-a>.sc:nth-child(9){animation-delay:40ms}
+.sg-a>.sc:nth-child(10){animation-delay:45ms}
 .ld{text-align:center;padding:24px;color:var(--m);font-size:13px}
 .ld .sp{display:inline-block;width:20px;height:20px;border:3px solid var(--pp);border-top-color:var(--p);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:6px}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -305,7 +321,7 @@ function filterPublicEmoji(cat,search){
 
 function renderGrid(container,items,type){
   if(!items||!items.length){container.innerHTML='<div class="nohit">没有匹配的字符</div>';return}
-  var html='<div class="sg">';
+  var html='<div class="sg sg-a">';
   for(var i=0;i<items.length;i++){
     var it=items[i],hex=it.cp.toString(16).toUpperCase();
     while(hex.length<4)hex='0'+hex;
@@ -313,7 +329,12 @@ function renderGrid(container,items,type){
     if(!name)name=type==='pua'||type==='emoji-pua'?getPuaName(it.cp):'';
     html+='<div class="sc" data-cp="'+it.cp+'" data-type="'+type+'"><div class="ch">'+it.ch+'</div><div class="cp">U+'+hex+'</div><div class="nm">'+name+'</div></div>';
   }
-  html+='</div>';container.innerHTML=html;
+  html+='</div>';
+  // Two-phase render for seamless transition: clear → fade in
+  container.style.minHeight=container.offsetHeight+'px';
+  container.innerHTML=html;
+  container.style.minHeight='';
+}
   var cells=container.querySelectorAll('.sc');
   for(var i=0;i<cells.length;i++)cells[i].addEventListener('click',function(e){
     var el=e.currentTarget,cp=parseInt(el.getAttribute('data-cp')),ch=el.querySelector('.ch').textContent;
