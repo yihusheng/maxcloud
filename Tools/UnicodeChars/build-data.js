@@ -21,7 +21,7 @@ const FOLDER_MAP = [
   { id:'scenery',     folder:'景物', label:'🏔 景物' },
   { id:'objects',     folder:'物品', label:'💡 物品' },
   { id:'clothing',    folder:'服饰', label:'👗 服饰' },
-  { id:'hearts',      folder:'心形', label:'❤ 心形' },
+
   { id:'signs',       folder:'标志', label:'🔣 标志' },   // ← 标识+记号 合并
   { id:'math',        folder:'数学', label:'∑ 数学' },
 ];
@@ -33,8 +33,7 @@ const FOLDER_TO_ID = {
   '动物':'animals', '植物':'plants',  '天气':'weather',
   '食物':'food',    '运动':'sports',
   '交通':'transport','景物':'scenery',
-  '物品':'objects',  '服饰':'clothing',
-  '心形':'hearts',
+  '物品':'objects',  '服饰':'clothing', '心形':'objects',
   '标志':'signs',   '标识':'signs',   '记号':'signs',
   '数学':'math',
 };
@@ -72,8 +71,8 @@ const RANGE_TO_CAT = [
   ['objects',   0x1F451,0x1F45F], ['objects',   0x1F48C,0x1F48F],
   ['objects',   0x1F97B,0x1F97F], ['objects',   0x1F9E0,0x1F9FF],
   ['objects',   0x1FA70,0x1FAFF], ['objects',   0x1F3F5,0x1F3F7],
-  ['hearts',    0x1F490,0x1F49F], ['hearts',    0x1F5A4,0x1F5A4],
-  ['hearts',    0x1F90D,0x1F90E], ['hearts',    0x1FA75,0x1FA77],
+  ['objects',   0x1F490,0x1F49F], ['objects',   0x1F5A4,0x1F5A4],
+  ['objects',   0x1F90D,0x1F90E], ['objects',   0x1FA75,0x1FA77],
   ['clothing',  0x1F460,0x1F467],
   ['signs',     0x2600,0x26FF],   ['signs',     0x2700,0x27BF],
   ['signs',     0x2934,0x2935],   ['signs',     0x2B05,0x2B55],
@@ -206,7 +205,7 @@ console.log(`  → 杂项: ${trulyMiscCps.length}`);
 function genEmojiJS() {
   const catLines = [];
   const allCatIds = ['smileys','gestures','people','animals','plants','weather','food','sports',
-                     'transport','scenery','objects','clothing','hearts','signs','math'];
+                     'transport','scenery','objects','clothing','signs','math'];
   for (const id of allCatIds) {
     const data = byFolder[id];
     if (!data || data.cps.size === 0) continue;
