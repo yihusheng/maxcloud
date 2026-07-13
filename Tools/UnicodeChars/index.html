@@ -314,7 +314,7 @@ function renderGrid(container,items,type){
   html+='</div>';container.innerHTML=html;
   var cells=container.querySelectorAll('.sc');
   for(var i=0;i<cells.length;i++)cells[i].addEventListener('click',function(e){
-    var el=e.currentTarget,cp=parseInt(el.getAttribute('data-cp')),ch=String.fromCodePoint(cp);
+    var el=e.currentTarget,cp=parseInt(el.getAttribute('data-cp')),ch=el.querySelector('.ch').textContent;
     var hex=cp.toString(16).toUpperCase();while(hex.length<4)hex='0'+hex;
     var nm=el.querySelector('.nm').textContent;
     copyChar(ch,cp,hex,nm);
