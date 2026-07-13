@@ -336,17 +336,88 @@ function renderPagination(container,cp,tp,type){
   if(tp<=1){container.innerHTML='<span class="pg-info">共 1 页</span>';return}
   var html='<button data-p="0" data-t="'+type+'">«</button><button data-p="'+(cp-1)+'" data-t="'+type+'"'+(cp<=0?' disabled style="opacity:.3"':'')+'">‹</button>';
   html+='<span class="pg-info">'+(cp+1)+' / '+tp+'</span>';
-  html+='<button data-p="'+(cp+1)+'" data-t="'+type+'"'+(cp>=tp-1?' disabled style="opacity:.3"':'')+'">›</button><button data-p="'+(tp-1)+'" data-t="'+type+'">»</button>';
+  html+='<button data-p="'+(cp+1)+'" data-t="'+type+'" data-next="1"'+(cp>=tp-1?' disabled style="opacity:.3"':'')+'">›</button><button data-p="'+(tp-1)+'" data-t="'+type+'">»</button>';
   var ws=Math.max(0,cp-2),we=Math.min(tp-1,cp+2);
   for(var p=ws;p<=we;p++)html+='<button class="'+(p===cp?'act':'')+'" data-p="'+p+'" data-t="'+type+'">'+(p+1)+'</button>';
   container.innerHTML=html;
   container.querySelectorAll('button').forEach(function(b){b.addEventListener('click',function(){
-    var pg=parseInt(this.getAttribute('data-p')),t=this.getAttribute('data-t');
+    var pg=parseInt(this.getAttribute('data-p')),t=this.getAttribute('data-t'),isNext=this.getAttribute('data-next')==='1';
     if(isNaN(pg))return;
-    if(t==='u'){state.unicodePage=pg;renderUnicode()}
-    else if(t==='e'||t==='ep'){state.emojiPage=pg;renderEmoji()}
-    document.getElementById(t==='u'||t==='up'?'unicodeGrid':'emojiGrid').scrollIntoView({behavior:'smooth',block:'start'});
+    if(t==='u'){state.unicodePage=pg;isNext?appendUnicodePage():renderUnicode()}
+    else if(t==='e'||t==='ep'){state.emojiPage=pg;isNext?appendEmojiPage():renderEmoji()}
   })});
+}
+
+function getPageItems(tab,pg){
+  if(tab==='u'){
+    var sub=state.unicodeSub,search=state.unicodeSearch;
+    if(sub==='public'){
+      var bd=getPublicBlockItems(state.publicBlock,search);
+      if(bd.allItems){
+        var s=pg*PER_PAGE,e=Math.min(s+PER_PAGE-1,bd.allItems.length-1);
+        return bd.allItems.slice(s,e+1);
+      }
+      var r=getPagedItems(bd.total,null,bd.block.start,bd.block.end,pg,PER_PAGE);
+      return r.items;
+    }else{
+      var pd=getPuaItems(state.privateRange,search);
+      if(pd.allItems){
+        var s=pg*PER_PAGE,e=Math.min(s+PER_PAGE-1,pd.allItems.length-1);
+        return pd.allItems.slice(s,e+1);
+      }
+      var items=[];for(var i=pd.range.start+pg*PER_PAGE;i<=Math.min(pd.range.start+(pg+1)*PER_PAGE-1,pd.range.end);i++)items.push({cp:i,ch:String.fromCodePoint(i),name:getPuaName(i)});
+      return items;
+    }
+  }
+  if(tab==='e'||tab==='ep'){
+    if(tab==='e'){
+      var filtered=filterPublicEmoji(state.emojiCat,state.emojiSearch);
+      var s=pg*PER_PAGE,e=Math.min(s+PER_PAGE-1,filtered.length-1);
+      return filtered.slice(s,e+1);
+    }
+    var range=state.emojiPuaRange,rv=EMOJI_PUA_RANGES[range];
+    if(!rv)return[];
+    var searchL=(state.emojiSearch||'').toLowerCase().trim();
+    if(searchL){
+      var sc=parseInt(searchL,16);
+      if(!isNaN(sc)&&sc>=rv.start&&sc<=rv.end)return[{cp:sc,ch:String.fromCodePoint(sc),name:getEmojiPuaName(sc)}];
+      return[];
+    }
+    var items=[];for(var i=rv.start+pg*PER_PAGE;i<=Math.min(rv.start+(pg+1)*PER_PAGE-1,rv.end);i++)items.push({cp:i,ch:String.fromCodePoint(i),name:getEmojiPuaName(i)});
+    return items;
+  }
+  return[];
+}
+
+function appendRender(grid,items){
+  if(!items||!items.length)return;
+  var html='<div class="sg sg-a">';
+  for(var i=0;i<items.length;i++){
+    var it=items[i],hex=it.cp.toString(16).toUpperCase();
+    while(hex.length<4)hex='0'+hex;
+    var name=it.name||'';
+    html+='<div class="sc" data-cp="'+it.cp+'"><div class="ch">'+it.ch+'</div><div class="cp">U+'+hex+'</div><div class="nm">'+name+'</div></div>';
+  }
+  html+='</div>';
+  grid.insertAdjacentHTML('beforeend',html);
+  var cells=grid.querySelectorAll('.sc:last-child .sc');if(!cells.length)cells=grid.lastElementChild.querySelectorAll('.sc');
+  for(var i=0;i<cells.length;i++)cells[i].addEventListener('click',function(e){
+    var el=e.currentTarget,cp=parseInt(el.getAttribute('data-cp')),ch=el.querySelector('.ch').textContent;
+    var hex=cp.toString(16).toUpperCase();while(hex.length<4)hex='0'+hex;
+    var nm=el.querySelector('.nm').textContent;
+    copyChar(ch,cp,hex,nm);
+  });
+}
+
+function appendUnicodePage(){
+  var items=getPageItems('u',state.unicodePage);
+  appendRender(document.getElementById('unicodeGrid'),items);
+}
+
+function appendEmojiPage(){
+  var t=state.emojiSub==='public'?'e':'ep';
+  var items=getPageItems(t,state.emojiPage);
+  appendRender(document.getElementById('emojiGrid'),items);
 }
 
 function renderUnicode(){
