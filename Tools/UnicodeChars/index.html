@@ -269,6 +269,16 @@ function genAllEmoji(){
     for(var i=0;i<all.length;i++){if(all[i].cp===cp){found=true;break}}
     if(!found&&isEmojiChar(cp))all.push({cp:cp,ch:String.fromCodePoint(cp),name:EMOJI_NAMES[hex],cat:'misc'});
   }
+  // ZWJ sequences
+  if(typeof EMOJI_SEQUENCES!=='undefined')for(var si=0;si<EMOJI_SEQUENCES.length;si++){
+    var sq=EMOJI_SEQUENCES[si],baseHex=sq[0],seqHex=sq[1],catId=sq[2],sname=sq[3];
+    var cp=parseInt(baseHex,16);
+    // Build full ch from sequence
+    var hexParts=seqHex.split(','),ch='';
+    for(var pi=0;pi<hexParts.length;pi++)ch+=String.fromCodePoint(parseInt(hexParts[pi],16));
+    var dup=false;for(var di=0;di<all.length;di++){if(all[di].cp===cp&&all[di].seqHex===seqHex){dup=true;break}}
+    if(!dup)all.push({cp:cp,ch:ch,seqHex:seqHex,name:sname,cat:catId});
+  }
   ALL_EMOJI=all;return all;
 }
 
