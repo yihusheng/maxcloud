@@ -670,7 +670,7 @@ function copyChar(ch,cp,hex,name){
 }
 
 function updateBadges(){
-  var ut=0;for(var i=0;i<PUBLIC_BLOCKS.length;i++)ut+=PUBLIC_BLOCKS[i].end-PUBLIC_BLOCKS[i].start+1;
+  var ut=0;for(var i=1;i<PUBLIC_BLOCKS.length;i++)ut+=PUBLIC_BLOCKS[i].end-PUBLIC_BLOCKS[i].start+1;
   document.getElementById('unicodeBadge').textContent=ut.toLocaleString();
   var em=genAllEmoji();
   document.getElementById('emojiBadge').textContent=em.length.toLocaleString();
