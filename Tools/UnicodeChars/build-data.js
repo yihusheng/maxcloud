@@ -1,11 +1,6 @@
 /**
  * build-data.js — 从 /workspace/emoji/ 提取 Emoji 数据
- * 输出: emoji-data.js (中文名/可变色) + unicode-data.js (符号区块)
- * 
- * 策略:
- * - EMOJI_CATS 使用标准完整范围（不漏缺标准 Emoji）
- * - EMOJI_NAMES 优先中文名（来自 ini），英文名作兜底
- * - EMOJI_SKIN 来自 ini 的 supportSkin 字段
+ * 分类名 = 文件夹名，保留杂项兜底
  */
 const fs = require('fs');
 const path = require('path');
@@ -13,54 +8,56 @@ const path = require('path');
 const EMOJI_DIR = '/workspace/emoji';
 const OUTPUT_DIR = '/workspace/maxcloud/Tools/UnicodeChars';
 
-// ── 标准完整 EMOJI_CATS 范围（与之前版本一致） ──
-const STANDARD_CATS = [
-  {id:'smileys',label:'😀 笑脸与人物',ranges:[
-    [0x1F600,0x1F64F],[0x1F910,0x1F92F],[0x1F970,0x1F97A],[0x1F9D0,0x1F9D0],
-    [0x1F440,0x1F487],[0x1F468,0x1F47F],[0x1F9B0,0x1F9BF],[0x1F9CC,0x1F9CF],
-    [0x1F9D1,0x1F9DF],[0x1F3FB,0x1F3FF],
-  ]},
-  {id:'animals',label:'🐾 动物与自然',ranges:[
-    [0x1F400,0x1F43F],[0x1F980,0x1F9AE],[0x1FAB0,0x1FABF],[0x1F330,0x1F33F],
-    [0x1F340,0x1F343],[0x1F490,0x1F49F],[0x1F300,0x1F31F],[0x1F324,0x1F32C],
-    [0x1F308,0x1F308],[0x1F30A,0x1F30A],[0x1F3D4,0x1F3DF],
-  ]},
-  {id:'food',label:'🍎 食物与饮料',ranges:[
-    [0x1F344,0x1F37F],[0x1F950,0x1F96F],[0x1FAD0,0x1FADF],[0x1F32D,0x1F32F],[0x1F9C0,0x1F9CB],
-  ]},
-  {id:'activities',label:'⚽ 活动',ranges:[
-    [0x1F396,0x1F3AF],[0x1F3B0,0x1F3BC],[0x1F3BD,0x1F3D3],[0x1F3F8,0x1F3FA],
-    [0x1F380,0x1F38F],[0x1F93C,0x1F93F],[0x1F940,0x1F94F],[0x1FA00,0x1FA6F],
-    [0x26BD,0x26BE],[0x26F3,0x26F3],[0x26F7,0x26F9],
-  ]},
-  {id:'travel',label:'🚗 旅行与地点',ranges:[
-    [0x1F680,0x1F6C5],[0x1F6CB,0x1F6D7],[0x1F6DC,0x1F6FC],[0x1F3E0,0x1F3F0],
-    [0x1F550,0x1F567],[0x231A,0x231B],[0x23F0,0x23F3],
-    [0x26E9,0x26FA],[0x26FD,0x26FD],[0x26F0,0x26F2],[0x26F4,0x26F6],[0x1F5FA,0x1F5FF],
-  ]},
-  {id:'objects',label:'💡 物品',ranges:[
-    [0x1F4A0,0x1F4FF],[0x1F6AA,0x1F6BF],[0x1F6CE,0x1F6D2],[0x1F6E0,0x1F6E5],
-    [0x1F451,0x1F45F],[0x1F48C,0x1F48F],[0x1F97B,0x1F97F],
-    [0x1F9E0,0x1F9FF],[0x1FA70,0x1FAFF],[0x1F3F5,0x1F3F7],
-  ]},
-  {id:'symbols',label:'🔣 符号',ranges:[
-    [0x2600,0x26FF],[0x2700,0x27BF],[0x2934,0x2935],[0x2B05,0x2B55],
-    [0x3030,0x303D],[0x3297,0x3299],[0x23E9,0x23EF],[0x23F8,0x23FA],
-    [0x24C2,0x24C2],[0x25AA,0x25FE],[0x23CF,0x23CF],
-    [0x1F500,0x1F53F],[0x1F540,0x1F55F],
-  ]},
-  {id:'flags',label:'🏁 旗帜',flagsOnly:true},
-  {id:'misc',label:'🎨 杂项',ranges:[
-    [0x1F300,0x1F30F],[0x1F320,0x1F323],[0x1F390,0x1F395],
-    [0x1F580,0x1F59F],[0x1F5A0,0x1F5FF],[0x1F900,0x1F90F],
-    [0x1F930,0x1F933],[0x1F938,0x1F93B],[0x1FA80,0x1FAFF],[0x1F6F0,0x1F6F3],
-  ]},
+// ── 文件夹 → 分类ID映射 ──
+const FOLDER_MAP = [
+  { id:'smileys',     folder:'黄脸', label:'😀 黄脸' },
+  { id:'gestures',    folder:'手势', label:'🤚 手势' },
+  { id:'actions',     folder:'动作', label:'💃 动作' },
+  { id:'family',      folder:'家庭', label:'👨‍👩‍👧‍👦 家庭' },
+  { id:'professions', folder:'职业', label:'👔 职业' },
+  { id:'animals',     folder:'动物', label:'🐾 动物' },
+  { id:'plants',      folder:'植物', label:'🌱 植物' },
+  { id:'weather',     folder:'天气', label:'🌤 天气' },
+  { id:'food',        folder:'食物', label:'🍎 食物' },
+  { id:'sports',      folder:'运动', label:'⚽ 运动' },
+  { id:'transport',   folder:'交通', label:'🚗 交通' },
+  { id:'scenery',     folder:'景物', label:'🏔 景物' },
+  { id:'objects',     folder:'物品', label:'💡 物品' },
+  { id:'clothing',    folder:'服饰', label:'👗 服饰' },
+  { id:'hearts',      folder:'心形', label:'❤ 心形' },
+  { id:'signs',       folder:'标志', label:'🔣 标志' },
+  { id:'markers',     folder:'标识', label:'📌 标识' },
+  { id:'notation',    folder:'记号', label:'✏ 记号' },
+  { id:'math',        folder:'数学', label:'∑ 数学' },
+  { id:'featured',    folder:'精选', label:'⭐ 精选' },
 ];
 
-// ═══════════════════════════════════════════
-//  Parse INI
-// ═══════════════════════════════════════════
+// Quick lookup: folder Chinese name -> category ID
+const FOLDER_TO_ID = {};
+for (const fm of FOLDER_MAP) FOLDER_TO_ID[fm.folder] = fm.id;
 
+// ── 标准 Emoji 检测范围（同 isEmojiChar） ──
+const STANDARD_EMOJI_RANGES = [
+  [0x1F600,0x1F64F],[0x1F300,0x1F5FF],[0x1F680,0x1F6FF],[0x1F900,0x1F9FF],
+  [0x1FA00,0x1FA6F],[0x1FA70,0x1FAFF],[0x1F1E6,0x1F1FF],[0x1F400,0x1F43F],
+  [0x1F440,0x1F487],[0x1F490,0x1F53F],[0x2600,0x27BF],[0x231A,0x23FF],
+  [0x24C2,0x24C2],[0x25AA,0x25FE],[0x2934,0x2935],[0x2B05,0x2B55],
+  [0x3030,0x303D],[0x3297,0x3299],[0x1F9B0,0x1F9FF],[0x1FAB0,0x1FABF],
+  [0x1FAC0,0x1FACF],[0x1FAD0,0x1FAFF],[0x1FAE0,0x1FAEF],[0x1FAF0,0x1FAFF],
+  [0x1F9D1,0x1F9DF],[0x1F91A,0x1F91F],[0x1F932,0x1F93F],[0x1F940,0x1F94F],
+  [0x1F950,0x1F97F],[0x1F980,0x1F9AF],[0x1F330,0x1F37F],[0x1F380,0x1F3FF],
+  [0x1F468,0x1F47F],[0x1F480,0x1F48F],[0x1F500,0x1F5FF],[0x1F540,0x1F55F],
+  [0x1F560,0x1F57F],[0x1F580,0x1F59F],[0x1F5A0,0x1F5FF],[0x1F3FB,0x1F3FF],
+];
+
+function isStandardEmoji(cp) {
+  for (const r of STANDARD_EMOJI_RANGES) {
+    if (cp >= r[0] && cp <= r[1]) return true;
+  }
+  return false;
+}
+
+// ── Parse INI ──
 function parseIni(filePath) {
   if (!fs.existsSync(filePath)) return [];
   const raw = fs.readFileSync(filePath, 'utf-8');
@@ -93,42 +90,97 @@ function findIniFile(dir) {
   return null;
 }
 
-// ═══════════════════════════════════════════
-//  Main
-// ═══════════════════════════════════════════
-const nameMap = {};    // hex -> Chinese keyword
-const skinMap = {};    // hex -> skin variant strings
-let totalIni = 0;
+// ── Collapse sorted CPs into ranges ──
+function toRanges(cps) {
+  cps.sort((a,b)=>a-b);
+  const ranges = [];
+  let s = null, e = null;
+  for (const cp of cps) {
+    if (s === null) { s = cp; e = cp; }
+    else if (cp === e + 1) { e = cp; }
+    else { ranges.push([s, e]); s = cp; e = cp; }
+  }
+  if (s !== null) ranges.push([s, e]);
+  return ranges;
+}
 
+// ═══ Main ═══
+const folderNameToId = {};
+for (const fm of FOLDER_MAP) folderNameToId[fm.id] = fm;
+
+const byFolder = {};    // folderId -> {cps:Set, names:Map, skins:Map}
+const allIniCps = new Set();
+const nameMap = {};
+const skinMap = {};
+
+// Parse all folders
 const dirs = fs.readdirSync(EMOJI_DIR).sort();
 for (const dn of dirs) {
   const dp = path.join(EMOJI_DIR, dn);
   if (!fs.statSync(dp).isDirectory()) continue;
+  
+// Match by folder Chinese name
+const catId = FOLDER_TO_ID[dn];
+  
   const iniPath = findIniFile(dp);
-  if (!iniPath) continue;
+  if (!iniPath) { console.log('  ⚠ 无 INI:', dn); continue; }
+  
   const entries = parseIni(iniPath);
+  const data = { cps: new Set(), names: new Map(), skins: new Map() };
+  
   for (const e of entries) {
-    const hex = (e.title || e.code || '').toUpperCase();
-    if (!hex || !/^[0-9A-F]+$/.test(hex)) continue;
-    totalIni++;
-    if (e.keyword) nameMap[hex] = e.keyword;
+    const raw = (e.title || e.code || '').toUpperCase();
+    if (!raw) continue;
+    // Take first hex component (for ZWJ sequences like "1F468,200D,1F4BB")
+    const firstHex = raw.split(',')[0].trim();
+    if (!/^[0-9A-F]+$/.test(firstHex)) continue;
+    const cp = parseInt(firstHex, 16);
+    data.cps.add(cp);
+    allIniCps.add(cp);
+    if (e.keyword) {
+      data.names.set(firstHex, e.keyword);
+      nameMap[firstHex] = e.keyword;
+    }
     if ((e.supportskin||'0') === '1' && e.skincolor) {
-      skinMap[hex] = e.skincolor.split(',').map(s => s.trim()).filter(Boolean);
+      const variants = e.skincolor.split(',').map(s => s.trim()).filter(Boolean);
+      if (variants.length > 0) data.skins.set(firstHex, variants);
+      if (variants.length > 0) skinMap[firstHex] = variants;
     }
   }
+  
+  byFolder[catId] = data;
+  console.log(`  ${dn} (→${catId}): ${data.cps.size} emoji, ${data.names.size} names, ${data.skins.size} skin`);
 }
 
-console.log('INI parsed:', totalIni, 'entries,', Object.keys(nameMap).length, 'Chinese names,', Object.keys(skinMap).length, 'skin-toned');
+// ── Build misc: standard emoji NOT in any folder ──
+console.log('\n--- 杂项: 计算遗漏 ---');
+const miscCps = [];
+for (const r of STANDARD_EMOJI_RANGES) {
+  for (let cp = r[0]; cp <= r[1]; cp++) {
+    if (!allIniCps.has(cp)) miscCps.push(cp);
+  }
+}
+console.log(`  标准 Emoji 总范围覆盖: ~${allIniCps.size + miscCps.length} 码位`);
+console.log(`  已分类: ${allIniCps.size}, 遗漏入杂项: ${miscCps.length}`);
 
-// ── Write emoji-data.js ──
+// ── Generate emoji-data.js ──
 function genEmojiJS() {
   // EMOJI_CATS
-  const catLines = STANDARD_CATS.map(c => {
-    if (c.flagsOnly) return `  {id:'${c.id}',label:'${c.label}',flagsOnly:true}`;
-    const rs = c.ranges.map(r => `[0x${r[0].toString(16).toUpperCase()},0x${r[1].toString(16).toUpperCase()}]`).join(',');
-    return `  {id:'${c.id}',label:'${c.label}',ranges:[${rs}]}`;
-  });
-  const catStr = catLines.join(',\n');
+  const catLines = [];
+  for (const fm of FOLDER_MAP) {
+    const data = byFolder[fm.id];
+    if (!data || data.cps.size === 0) continue;
+    const cps = [...data.cps].sort((a,b)=>a-b);
+    const ranges = toRanges(cps);
+    const rs = ranges.map(r => `[0x${r[0].toString(16).toUpperCase()},0x${r[1].toString(16).toUpperCase()}]`).join(',');
+    catLines.push(`  {id:'${fm.id}',label:'${fm.label}',ranges:[${rs}]}`);
+  }
+  // Misc
+  if (miscCps.length > 0) {
+    const ranges = toRanges(miscCps);
+    const rs = ranges.map(r => `[0x${r[0].toString(16).toUpperCase()},0x${r[1].toString(16).toUpperCase()}]`).join(',');
+    catLines.push(`  {id:'misc',label:'🎨 杂项',ranges:[${rs}]}`);
+  }
 
   // EMOJI_NAMES
   const nameKeys = Object.keys(nameMap).sort((a,b) => parseInt(a,16)-parseInt(b,16));
@@ -138,8 +190,9 @@ function genEmojiJS() {
   const skinKeys = Object.keys(skinMap).sort((a,b) => parseInt(a,16)-parseInt(b,16));
   const skinStr = skinKeys.map(k => `'${k}':['${skinMap[k].join("','")}']`).join(',');
 
+  // FLAG_COUNTRIES + EMOJI_PUA_RANGES (keep unchanged)
   return `// Emoji Data — auto-generated by build-data.js
-var EMOJI_CATS=[${catStr}];
+var EMOJI_CATS=[${catLines.join(',\n')}];
 
 var EMOJI_NAMES={${nameStr}};
 
@@ -195,41 +248,5 @@ var EMOJI_PUA_RANGES={
 
 const emojiJS = genEmojiJS();
 fs.writeFileSync(path.join(OUTPUT_DIR, 'emoji-data.js'), emojiJS);
-console.log('✓ emoji-data.js (' + emojiJS.length + ' bytes)');
-
-// ── Write unicode-data.js ──
-const unicodeJS = `// Unicode Symbol Data — auto-generated
-var PUBLIC_BLOCKS=[
-  {id:'arrows',label:'箭头 Arrows',start:0x2190,end:0x21FF,desc:'标准箭头'},
-  {id:'letterlike',label:'类字母 Letterlike',start:0x2100,end:0x214F,desc:'类字母符号'},
-  {id:'number',label:'数字 Number Forms',start:0x2150,end:0x218F,desc:'数字形式'},
-  {id:'math',label:'数学 Math Operators',start:0x2200,end:0x22FF,desc:'数学运算符'},
-  {id:'tech',label:'技术 Misc Technical',start:0x2300,end:0x23FF,desc:'技术符号'},
-  {id:'enclosed',label:'带圈 Enclosed',start:0x2460,end:0x24FF,desc:'带圈字母数字'},
-  {id:'boxdraw',label:'制表 Box Drawing',start:0x2500,end:0x257F,desc:'制表符'},
-  {id:'blocks',label:'方块 Block Elements',start:0x2580,end:0x259F,desc:'方块元素'},
-  {id:'shapes',label:'几何 Geometric',start:0x25A0,end:0x25FF,desc:'几何形状'},
-  {id:'misc',label:'杂项 Misc Symbols',start:0x2600,end:0x26FF,desc:'杂项符号'},
-  {id:'dingbats',label:'装饰 Dingbats',start:0x2700,end:0x27BF,desc:'装饰符号'},
-  {id:'suparrows',label:'补箭头 Suppl Arrows',start:0x27F0,end:0x27FF,desc:'补充箭头A'},
-  {id:'suparrowsb',label:'补箭头B Suppl ArrowsB',start:0x2900,end:0x297F,desc:'补充箭头B'},
-  {id:'braille',label:'盲文 Braille',start:0x2800,end:0x28FF,desc:'盲文'},
-  {id:'supmath',label:'补数学 Suppl Math',start:0x2A00,end:0x2AFF,desc:'补充数学'},
-  {id:'miscarrows',label:'杂箭头 Misc Arrows',start:0x2B00,end:0x2BFF,desc:'杂项箭头'},
-  {id:'cjk',label:'CJK 符号标点',start:0x3000,end:0x303F,desc:'CJK符号'},
-  {id:'yijing',label:'易经 Yijing',start:0x4DC0,end:0x4DFF,desc:'易经'},
-  {id:'domino',label:'多米诺 Domino',start:0x1F030,end:0x1F09F,desc:'多米诺骨牌'},
-  {id:'cards',label:'扑克 Playing Cards',start:0x1F0A0,end:0x1F0FF,desc:'扑克牌'},
-  {id:'cansyl',label:'加拿大原住民音节',start:0x1400,end:0x167F,desc:'统一加拿大原住民音节'},
-  {id:'bamum',label:'巴姆补充 Bamum Suppl',start:0x16800,end:0x16A3F,desc:'巴姆文补充'},
-  {id:'egypt',label:'埃及象形 Egyptian',start:0x13000,end:0x1342F,desc:'埃及象形文字'},
-];
-
-var PUA_RANGES={
-  bmp:{label:'BMP PUA',start:0xE000,end:0xF8FF,desc:'BMP 私人使用区 · 6400 个码位'},
-  supa:{label:'Supp PUA-A',start:0xF0000,end:0xFFFFD,desc:'补充私人使用区-A · 65534 个码位'},
-  supb:{label:'Supp PUA-B',start:0x100000,end:0x10FFFD,desc:'补充私人使用区-B · 65534 个码位'},
-};
-`;
-fs.writeFileSync(path.join(OUTPUT_DIR, 'unicode-data.js'), unicodeJS);
-console.log('✓ unicode-data.js (' + unicodeJS.length + ' bytes)');
+console.log(`\n✓ emoji-data.js (${emojiJS.length} bytes)`);
+console.log(`  ${Object.keys(nameMap).length} 中文名, ${Object.keys(skinMap).length} 可变色`);
