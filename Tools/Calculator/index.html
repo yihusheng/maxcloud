@@ -37,7 +37,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--s);
 .qc{background:var(--c);border:none;margin:0 2px;padding:3px 10px;border-radius:var(--rp);font-size:10px;font-weight:700;cursor:pointer;color:var(--b);font-family:inherit;transition:all .12s}
 .qc:hover{background:var(--pp);color:var(--kd)}
 .qc.act{background:var(--k);color:var(--p)}
-.nt{display:flex;flex-direction:column;gap:3px}
+.nt{display:flex;flex-direction:column;gap:3px;padding:0 6px}
 .nr{display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:10px;transition:background .12s}
 .nr:focus-within{background:var(--s)}
 .nr.hl{background:var(--pp)}
@@ -217,7 +217,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--s);
         '<div class="ph"><div class="ph-bdg"><span class="material-symbols-rounded">calculate</span> Nutrition Calculator</div>' +
         '<div class="ph-r"><div class="pb">A</div>' +
         '<button class="pc remove-card" data-p="A"><span class="material-symbols-rounded">close</span></button></div></div>' +
-        '<h1>营养计算器</h1>' +
+        '<h1 style="margin-bottom:16px">营养计算器</h1>' +
         '<div class="sv"><div class="sr">' +
         '<div class="ip"><label>每份</label><input type="number" id="sA" value="100" step="any" min="0" class="inp-sm"><span class="un">g</span></div>' +
         '<div class="ip"><label>总重</label><input type="number" id="twA" placeholder="—" step="any" min="0" class="inp-sm"><span class="un">g</span></div></div>' +
