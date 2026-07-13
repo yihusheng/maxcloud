@@ -12,11 +12,11 @@
 
   const NAV_ITEMS = [
     { icon: 'home',             label: '首页',        href: '/' },
-    { icon: 'language', label: 'Unicode',     href: '/Tools/UnicodeChars/' },
-    { icon: 'calculate',        label: '双浮点',      href: '/Tools/Double/' },
+    { icon: 'language',        label: 'Unicode',     href: '/Tools/UnicodeChars/' },
+    { icon: 'calculate',        label: '双浮点计算器',      href: '/Tools/Double/' },
     { icon: 'lan',              label: 'MAC查询',    href: '/Tools/MacQuery/' },
-    { icon: 'format_underlined',label: '下划线',      href: '/Tools/Underline/' },
-    { icon: 'functions',        label: '计算器',      href: '/Tools/Calculator/' },
+    { icon: 'format_underlined',label: '下划线生成器',      href: '/Tools/Underline/' },
+    { icon: 'functions',        label: '营养计算器',      href: '/Tools/Calculator/' },
     { icon: 'open_in_new',      label: '跳转工具',    href: '/Tools/JumpTools/' },
     { icon: 'device_hub',       label: 'UA查询',     href: '/Tools/UaQuery/' },
     { icon: 'dashboard',        label: 'zashboard',   href: '/Tools/zashboard/' },
