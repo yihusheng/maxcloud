@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Unicode 符号 &amp; Emoji 浏览器 · maxcloud</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" />
+<link rel="stylesheet" href="/style/wise.css">
+
+<link rel="stylesheet" href="/Tools/navbar.css">
+<script src="/Tools/navbar.js"></script>
+<style>
+:root{--cm:90px;--cg:6px}
+.tabs{display:flex;gap:6px;margin-bottom:14px}
+.tab{flex:1;padding:11px 16px;border:none;border-radius:14px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:.15s;background:var(--s);color:var(--b)}
+.tab:hover{background:var(--pp);color:var(--kd)}
+.tab.act{background:var(--k);color:var(--p)}
+.tab .badge{display:inline-block;background:rgba(159,232,112,.15);color:var(--p);padding:1px 7px;border-radius:999px;font-size:10px;margin-left:5px;vertical-align:middle}
+.tab.act .badge{background:rgba(159,232,112,.15);color:var(--p)}
+.stabs{display:flex;gap:4px;margin-bottom:12px}
+.stab{flex:1;padding:8px 12px;border:none;border-radius:10px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:.12s;background:var(--c);color:var(--b);border:2px solid var(--s)}
+.stab:hover{border-color:var(--pp);color:var(--kd)}
+.stab.act{background:var(--s);color:var(--k);border-color:var(--s)}
+.cpills{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
+.cpill{padding:5px 12px;border:2px solid var(--s);border-radius:999px;font-size:11px;font-weight:600;cursor:pointer;transition:.12s;background:transparent;color:var(--b);font-family:inherit;white-space:nowrap}
+.cpill:hover{border-color:var(--pp);color:var(--kd)}
+.cpill.act{background:var(--k);color:var(--p);border-color:var(--k)}
+.sb{display:flex;gap:8px;margin-bottom:10px}
+.sb input{flex:1;height:40px;background:var(--c);border:2px solid var(--k);border-radius:12px;padding:0 12px;font-family:var(--f);font-size:13px;color:var(--k);outline:none}
+.sb input:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(159,232,112,.2)}
+.sb .cnt{font-size:12px;font-weight:600;color:var(--m);display:flex;align-items:center;white-space:nowrap;padding:0 6px}
+.sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--cm),1fr));gap:var(--cg)}
+.sc{background:var(--c);border-radius:14px;padding:7px 3px;text-align:center;cursor:pointer;transition:.1s;border:2px solid transparent;user-select:none}
+.sc:hover{border-color:var(--p);background:var(--pp);transform:translateY(-1px)}
+.sc:active{transform:scale(.94)}
+.sc .ch{font-size:26px;line-height:1.2;min-height:1.2em;display:flex;align-items:center;justify-content:center;margin-bottom:1px;font-family:'Noto Sans Symbols','Segoe UI Symbol','Apple Symbols','Noto Sans Egyptian Hieroglyphs',sans-serif}
+.sc .cp{font-size:8.5px;font-weight:700;color:var(--m);letter-spacing:-.15px;line-height:1.2}
+.sc .nm{font-size:7.5px;color:var(--b);line-height:1.15;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;max-height:2.3em;margin-top:1px;word-break:break-all}
+.pg{display:flex;align-items:center;justify-content:center;gap:3px;margin-top:12px;flex-wrap:wrap}
+.pg button{padding:5px 10px;border:2px solid var(--s);border-radius:8px;background:transparent;color:var(--b);font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;transition:.1s}
+.pg button:hover{border-color:var(--pp);color:var(--kd)}
+.pg button.act{background:var(--k);color:var(--p);border-color:var(--k)}
+.pg .pg-info{font-size:11px;color:var(--m);margin:0 4px}
+.hist{margin-top:16px;border-top:2px solid var(--s);padding-top:12px}
+.hist-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.hist-hdr .lb{font-size:11px;font-weight:700;text-transform:uppercase;color:var(--m);letter-spacing:.3px;display:flex;align-items:center;gap:4px}
+.hist-hdr .lb .ms{font-size:13px}
+.hist-hdr .clr{font-size:10px;color:var(--b);cursor:pointer;padding:2px 10px;border-radius:999px;border:1px solid var(--s);background:transparent;font-family:inherit;font-weight:600;transition:.12s}
+.hist-hdr .clr:hover{background:var(--s);color:var(--neg)}
+.hist-grid{display:flex;gap:5px;flex-wrap:wrap}
+.hist-item{display:flex;align-items:center;gap:5px;background:var(--s);border-radius:10px;padding:3px 8px 3px 5px;cursor:pointer;transition:.1s}
+.hist-item:hover{background:var(--pp)}
+.hist-item .ch{font-size:16px;line-height:1}
+.hist-item .cp{font-size:8px;color:var(--m);font-weight:600}
+.hist-item .rm{color:var(--m);font-size:11px;cursor:pointer;padding:0 2px;opacity:.4}
+.hist-item .rm:hover{color:var(--neg);opacity:1}
+.hist-empty{font-size:11px;color:var(--m);padding:6px 0}
+.toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:var(--k);color:var(--p);padding:7px 16px;border-radius:999px;font-size:12px;font-weight:600;z-index:10000;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.s{opacity:1}
+.ld{text-align:center;padding:24px;color:var(--m);font-size:13px}
+.ld .sp{display:inline-block;width:20px;height:20px;border:3px solid var(--pp);border-top-color:var(--p);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.nohit{padding:16px;text-align:center;color:var(--neg);font-size:13px;background:var(--s);border-radius:14px;margin:8px 0}
+.bdesc{font-size:11px;color:var(--m);margin-bottom:10px;line-height:1.4;padding:6px 10px;background:var(--c);border-radius:10px}
+@media(max-width:520px){:root{--cm:74px}.sc .ch{font-size:20px}.sc .cp{font-size:7.5px}}
+@media(min-width:768px){:root{--cm:96px}}
+</style>
+</head>
+<body>
+
+<div class="wrap" style="max-width:820px">
+
+  <div class="card">
+    <div class="card-hdr">
+      <span class="dot"></span>
+      <span class="lb">Unicode &amp; Emoji Browser</span>
+      <span class="rt"><a href="/">← 首页</a></span>
+    </div>
+    <div class="card-pad" style="padding-bottom:24px">
+
+      <h1 style="font-size:26px;margin-bottom:2px">Unicode 符号 &amp; Emoji</h1>
+      <p class="sub" style="margin-bottom:12px">浏览符号与 Emoji，点击复制，历史记录自动保存</p>
+
+      <div class="tabs" id="mainTabs">
+        <button class="tab act" data-tab="unicode"><span class="material-symbols-rounded" style="font-size:15px;vertical-align:middle">abc</span> Unicode 符号 <span class="badge" id="unicodeBadge">—</span></button>
+        <button class="tab" data-tab="emoji"><span class="material-symbols-rounded" style="font-size:15px;vertical-align:middle">mood</span> Emoji <span class="badge" id="emojiBadge">—</span></button>
+      </div>
+
+      <!-- ═══ UNICODE PANEL ═══ -->
+      <div id="panelUnicode">
+        <div class="stabs" id="unicodeSubTabs">
+          <button class="stab act" data-sub="public">公共区</button>
+          <button class="stab" data-sub="private">私人区 (PUA)</button>
+        </div>
+        <div id="unicodePublicCtr" style="display:block">
+          <div class="cpills" id="unicodeBlockPills"></div>
+          <div class="bdesc" id="unicodeBlockDesc"></div>
+        </div>
+        <div id="unicodePrivateCtr" style="display:none">
+          <div class="cpills" id="unicodePuaPills">
+            <button class="cpill act" data-range="bmp">BMP PUA <small>U+E000–U+F8FF</small></button>
+            <button class="cpill" data-range="supa">Supp PUA-A <small>U+F0000–U+FFFFD</small></button>
+            <button class="cpill" data-range="supb">Supp PUA-B <small>U+100000–U+10FFFD</small></button>
+          </div>
+          <div class="bdesc" id="unicodePuaDesc"></div>
+        </div>
+        <div class="sb">
+          <input type="text" id="unicodeSearch" placeholder="搜索码点 (如 13000, 2200) 或范围 (如 13000-1342F)…" spellcheck="false">
+          <span class="cnt" id="unicodeResultCnt"></span>
+        </div>
+        <div id="unicodeGrid"></div>
+        <div class="pg" id="unicodePagination"></div>
+      </div>
+
+      <!-- ═══ EMOJI PANEL ═══ -->
+      <div id="panelEmoji" style="display:none">
+        <div class="stabs" id="emojiSubTabs">
+          <button class="stab act" data-sub="public">公共区</button>
+          <button class="stab" data-sub="private">私人区 (PUA)</button>
+        </div>
+        <div id="emojiPublicCtr" style="display:block">
+          <div class="cpills" id="emojiCatPills"></div>
+        </div>
+        <div id="emojiPrivateCtr" style="display:none">
+          <div class="cpills" id="emojiPuaPills">
+            <button class="cpill act" data-range="zwj">ZWJ <small>U+200D</small></button>
+            <button class="cpill" data-range="vs">异体选择符 <small>U+FE00–U+FE0F</small></button>
+            <button class="cpill" data-range="tags">标签 Tags <small>U+E0020–U+E007F</small></button>
+          </div>
+          <div class="bdesc" style="color:var(--m);font-size:11px;margin-bottom:8px">Emoji 辅助字符：零宽连字、异体选择符、标签序列</div>
+        </div>
+        <div class="sb">
+          <input type="text" id="emojiSearch" placeholder="搜索 emoji 名称或码点…" spellcheck="false">
+          <span class="cnt" id="emojiResultCnt"></span>
+        </div>
+        <div id="emojiGrid"></div>
+        <div class="pg" id="emojiPagination"></div>
+      </div>
+
+      <div class="hist" id="history">
+        <div class="hist-hdr">
+          <span class="lb"><span class="material-symbols-rounded ms">history</span> 复制历史</span>
+          <button class="clr" id="clearHistory">清空</button>
+        </div>
+        <div class="hist-grid" id="histGrid"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="card-dark" style="padding:12px 24px;text-align:center">
+    <p style="font-size:10px;color:rgba(232,235,230,.5)">Unicode Symbol &amp; Emoji Browser · <span id="footerCount">0</span> 个字符</p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+var PER_PAGE=200;
+
+var PUBLIC_BLOCKS=[
+  {id:'arrows',label:'箭头 Arrows',start:0x2190,end:0x21FF,desc:'标准箭头符号 (← ↑ → ↓ ↔ 等)'},
+  {id:'letterlike',label:'类字母 Letterlike',start:0x2100,end:0x214F,desc:'类字母符号 (° ℂ ℃ ℉ ℗ ℠ ™ 等)'},
+  {id:'number',label:'数字 Number Forms',start:0x2150,end:0x218F,desc:'分数、罗马数字等数字形式'},
+  {id:'math',label:'数学 Math Operators',start:0x2200,end:0x22FF,desc:'数学运算符 (∀ ∂ ∃ ∅ ∇ ∈ ∉ 等)'},
+  {id:'tech',label:'技术 Misc Technical',start:0x2300,end:0x23FF,desc:'技术符号 (⌂ ⌈ ⌊ 〈 〉 ⍀ 等)'},
+  {id:'enclosed',label:'带圈 Enclosed',start:0x2460,end:0x24FF,desc:'带圈字母数字、括号字母数字'},
+  {id:'boxdraw',label:'制表 Box Drawing',start:0x2500,end:0x257F,desc:'制表符边框线'},
+  {id:'blocks',label:'方块 Block Elements',start:0x2580,end:0x259F,desc:'方块元素 (▀ ▁ ▂ ▃ ▄ ▅ ▆ ▇ █ 等)'},
+  {id:'shapes',label:'几何 Geometric',start:0x25A0,end:0x25FF,desc:'几何形状 (■ □ ▲ △ ○ ● 等)'},
+  {id:'misc',label:'杂项 Misc Symbols',start:0x2600,end:0x26FF,desc:'杂项符号 (☀ ☁ ☂ ☃ ☎ ☠ ☺ ♥ 等)'},
+  {id:'dingbats',label:'装饰 Dingbats',start:0x2700,end:0x27BF,desc:'装饰符号 (✀ ✁ ✂ ✃ ✄ ✅ ✆ ✇ 等)'},
+  {id:'suparrows',label:'补箭头 Suppl Arrows',start:0x27F0,end:0x27FF,desc:'补充箭头A'},
+  {id:'suparrowsb',label:'补箭头B Suppl ArrowsB',start:0x2900,end:0x297F,desc:'补充箭头B (⤀ ⤁ ⤂ ⤃ ⤄ 等)'},
+  {id:'braille',label:'盲文 Braille',start:0x2800,end:0x28FF,desc:'盲文图案'},
+  {id:'supmath',label:'补数学 Suppl Math',start:0x2A00,end:0x2AFF,desc:'补充数学运算符 (⨀ ⨁ ⨂ ⨃ ⨄ 等)'},
+  {id:'miscarrows',label:'杂箭头 Misc Arrows',start:0x2B00,end:0x2BFF,desc:'杂项箭头与符号 (⬀ ⬁ ⬂ ⬃ 等)'},
+  {id:'cjk',label:'CJK 符号标点',start:0x3000,end:0x303F,desc:'CJK 符号与标点 (、 。〃〄 々 〆 〇 等)'},
+  {id:'yijing',label:'易经 Yijing',start:0x4DC0,end:0x4DFF,desc:'易经六爻符号'},
+  {id:'domino',label:'多米诺 Domino',start:0x1F030,end:0x1F09F,desc:'多米诺骨牌 (🀰 🀱 🀲 🀳 等)'},
+  {id:'cards',label:'扑克 Playing Cards',start:0x1F0A0,end:0x1F0FF,desc:'扑克牌符号 (🂠 🂡 🂢 🂣 等)'},
+  {id:'cansyl',label:'加拿大原住民音节',start:0x1400,end:0x167F,desc:'统一加拿大原住民音节文字 (᐀ ᐁ ᐂ ᐃ 等)'},
+  {id:'bamum',label:'巴姆补充 Bamum Suppl',start:0x16800,end:0x16A3F,desc:'巴姆文补充 (𖠀 𖠁 𖠂 𖠃 等)'},
+  {id:'egypt',label:'埃及象形 Egyptian',start:0x13000,end:0x1342F,desc:'埃及象形文字 (𓀀 𓀁 𓀂 𓀃 等)'},
+];
+
+var PUA_RANGES={
+  bmp:{label:'BMP PUA',start:0xE000,end:0xF8FF,desc:'BMP 私人使用区 · 6400 个码位'},
+  supa:{label:'Supp PUA-A',start:0xF0000,end:0xFFFFD,desc:'补充私人使用区-A · 65534 个码位'},
+  supb:{label:'Supp PUA-B',start:0x100000,end:0x10FFFD,desc:'补充私人使用区-B · 65534 个码位'},
+};
+
+var EMOJI_PUA_RANGES={
+  zwj:{label:'零宽连字 ZWJ',start:0x200D,end:0x200D,desc:'Zero Width Joiner · 用于 Emoji 序列组合'},
+  vs:{label:'异体选择符 VS',start:0xFE00,end:0xFE0F,desc:'Variation Selectors · 文本/Emoji 呈现选择 (VS16: U+FE0F)'},
+  tags:{label:'标签 Tags',start:0xE0020,end:0xE007F,desc:'Tags 标签 · 用于 Emoji 细分旗标签序列'},
+};
+
+var EMOJI_CATS=[
+  {id:'smileys',label:'😀 笑脸与情绪',ranges:[[0x1F600,0x1F64F]]},
+  {id:'people',label:'🧑 人物与身体',ranges:[[0x1F9B0,0x1F9FF],[0x1F468,0x1F487],[0x1F9D1,0x1F9DF]]},
+  {id:'gesture',label:'💃 动作与手势',ranges:[[0x1F44A,0x1F44F],[0x1F64B,0x1F64F],[0x1F91A,0x1F91F],[0x1F932,0x1F93A],[0x1F9BE,0x1F9BF]]},
+  {id:'animals',label:'🐾 动物与植物',ranges:[[0x1F400,0x1F43F],[0x1F980,0x1F9AE],[0x1FAB0,0x1FABF],[0x1F330,0x1F33F],[0x1F490,0x1F49F]]},
+  {id:'food',label:'🍎 食物与饮料',ranges:[[0x1F340,0x1F37F],[0x1F950,0x1F96F],[0x1FAD0,0x1FADF]]},
+  {id:'travel',label:'🚗 旅行与交通',ranges:[[0x1F680,0x1F6FF]]},
+  {id:'objects',label:'💡 物品',ranges:[[0x1F4A0,0x1F4FF],[0x1F9F0,0x1F9FF],[0x1FA70,0x1FAFF]]},
+  {id:'symbols',label:'🔣 符号',ranges:[[0x2600,0x26FF],[0x2700,0x27BF],[0x2934,0x2935],[0x2B05,0x2B55],[0x3030,0x303D],[0x3297,0x3299],[0x23E9,0x23F3],[0x23F8,0x23FA],[0x24C2,0x24C2],[0x25AA,0x25FE],[0x231A,0x231B],[0x23CF,0x23CF]]},
+  {id:'flags',label:'🏁 旗帜',flagsOnly:true},
+  {id:'misc',label:'🎨 杂项',ranges:[[0x1F300,0x1F32F],[0x1F380,0x1F3FF],[0x1F500,0x1F5FF],[0x1F900,0x1F93F],[0x1F940,0x1F94F],[0x1FA00,0x1FA6F]]}
+];
+
+var FLAG_COUNTRIES=[
+  ['AD','Andorra'],['AE','UAE'],['AF','Afghanistan'],['AG','Antigua'],['AI','Anguilla'],['AL','Albania'],['AM','Armenia'],
+  ['AO','Angola'],['AR','Argentina'],['AT','Austria'],['AU','Australia'],['AZ','Azerbaijan'],
+  ['BA','Bosnia'],['BB','Barbados'],['BD','Bangladesh'],['BE','Belgium'],['BF','Burkina Faso'],['BG','Bulgaria'],
+  ['BH','Bahrain'],['BI','Burundi'],['BJ','Benin'],['BM','Bermuda'],['BN','Brunei'],['BO','Bolivia'],
+  ['BR','Brazil'],['BS','Bahamas'],['BT','Bhutan'],['BW','Botswana'],['BY','Belarus'],['BZ','Belize'],
+  ['CA','Canada'],['CD','Congo DR'],['CF','CAR'],['CG','Congo'],['CH','Switzerland'],['CI','Cote Ivoire'],
+  ['CL','Chile'],['CM','Cameroon'],['CN','China'],['CO','Colombia'],['CR','Costa Rica'],['CU','Cuba'],
+  ['CV','Cabo Verde'],['CY','Cyprus'],['CZ','Czechia'],['DE','Germany'],['DJ','Djibouti'],['DK','Denmark'],
+  ['DM','Dominica'],['DO','Dominican Rep'],['DZ','Algeria'],['EC','Ecuador'],['EE','Estonia'],
+  ['EG','Egypt'],['ES','Spain'],['ET','Ethiopia'],['FI','Finland'],['FJ','Fiji'],['FR','France'],
+  ['GA','Gabon'],['GB','UK'],['GD','Grenada'],['GE','Georgia'],['GH','Ghana'],['GL','Greenland'],
+  ['GM','Gambia'],['GN','Guinea'],['GQ','Equatorial'],['GR','Greece'],['GT','Guatemala'],
+  ['HK','Hong Kong'],['HN','Honduras'],['HR','Croatia'],['HT','Haiti'],['HU','Hungary'],
+  ['ID','Indonesia'],['IE','Ireland'],['IL','Israel'],['IN','India'],['IQ','Iraq'],['IR','Iran'],
+  ['IS','Iceland'],['IT','Italy'],['JM','Jamaica'],['JO','Jordan'],['JP','Japan'],
+  ['KE','Kenya'],['KG','Kyrgyzstan'],['KH','Cambodia'],['KI','Kiribati'],['KM','Comoros'],
+  ['KN','St Kitts'],['KP','N Korea'],['KR','S Korea'],['KW','Kuwait'],['KZ','Kazakhstan'],
+  ['LA','Laos'],['LB','Lebanon'],['LC','St Lucia'],['LI','Liechtenstein'],['LK','Sri Lanka'],['LR','Liberia'],
+  ['LS','Lesotho'],['LT','Lithuania'],['LU','Luxembourg'],['LV','Latvia'],['LY','Libya'],
+  ['MA','Morocco'],['MC','Monaco'],['MD','Moldova'],['ME','Montenegro'],['MG','Madagascar'],['MK','N Macedonia'],
+  ['ML','Mali'],['MM','Myanmar'],['MN','Mongolia'],['MO','Macao'],['MR','Mauritania'],['MT','Malta'],
+  ['MU','Mauritius'],['MV','Maldives'],['MW','Malawi'],['MX','Mexico'],['MY','Malaysia'],['MZ','Mozambique'],
+  ['NA','Namibia'],['NE','Niger'],['NG','Nigeria'],['NI','Nicaragua'],['NL','Netherlands'],['NO','Norway'],
+  ['NP','Nepal'],['NZ','New Zealand'],
+  ['OM','Oman'],
+  ['PA','Panama'],['PE','Peru'],['PG','Papua NG'],['PH','Philippines'],['PK','Pakistan'],['PL','Poland'],
+  ['PR','Puerto Rico'],['PS','Palestine'],['PT','Portugal'],['PW','Palau'],['PY','Paraguay'],
+  ['QA','Qatar'],
+  ['RO','Romania'],['RS','Serbia'],['RU','Russia'],['RW','Rwanda'],
+  ['SA','Saudi Arabia'],['SB','Solomon'],['SC','Seychelles'],['SD','Sudan'],['SE','Sweden'],
+  ['SG','Singapore'],['SI','Slovenia'],['SK','Slovakia'],['SL','Sierra Leone'],['SM','San Marino'],
+  ['SN','Senegal'],['SO','Somalia'],['SR','Suriname'],['SS','S Sudan'],['ST','Sao Tome'],
+  ['SV','El Salvador'],['SY','Syria'],['SZ','Eswatini'],
+  ['TD','Chad'],['TG','Togo'],['TH','Thailand'],['TJ','Tajikistan'],['TL','Timor-Leste'],
+  ['TM','Turkmenistan'],['TN','Tunisia'],['TO','Tonga'],['TR','Turkey'],['TT','Trinidad'],
+  ['TV','Tuvalu'],['TW','Taiwan'],['TZ','Tanzania'],
+  ['UA','Ukraine'],['UG','Uganda'],['US','United States'],['UY','Uruguay'],['UZ','Uzbekistan'],
+  ['VA','Vatican'],['VC','St Vincent'],['VE','Venezuela'],['VG','British VI'],['VN','Vietnam'],['VU','Vanuatu'],
+  ['WS','Samoa'],
+  ['YE','Yemen'],
+  ['ZA','South Africa'],['ZM','Zambia'],['ZW','Zimbabwe']
+];
+
+var EMOJI_NAMES={
+'1F600':'grinning face','1F601':'beaming face with smiling eyes','1F602':'face with tears of joy',
+'1F603':'grinning face with big eyes','1F604':'grinning face with smiling eyes','1F605':'grinning face with sweat',
+'1F606':'grinning squinting face','1F607':'smiling face with halo','1F608':'smiling face with horns',
+'1F609':'winking face','1F60A':'smiling face with smiling eyes','1F60B':'face savoring food',
+'1F60C':'relieved face','1F60D':'smiling face with heart-eyes','1F60E':'smiling face with sunglasses',
+'1F60F':'smirking face','1F610':'neutral face','1F611':'expressionless face',
+'1F612':'unamused face','1F613':'face with cold sweat','1F614':'pensive face',
+'1F615':'confused face','1F616':'confounded face','1F617':'kissing face','1F618':'face blowing a kiss',
+'1F619':'kissing face with smiling eyes','1F61A':'kissing face with closed eyes','1F61B':'face with tongue',
+'1F61C':'winking face with tongue','1F61D':'squinting face with tongue','1F61E':'disappointed face',
+'1F61F':'worried face','1F620':'angry face','1F621':'pouting face','1F622':'crying face',
+'1F623':'persevering face','1F624':'face with steam from nose','1F625':'sad but relieved face',
+'1F626':'frowning face with open mouth','1F627':'anguished face','1F628':'fearful face','1F629':'weary face',
+'1F62A':'sleepy face','1F62B':'tired face','1F62C':'grimacing face','1F62D':'loudly crying face',
+'1F62E':'face with open mouth','1F62F':'hushed face','1F630':'anxious face with sweat',
+'1F631':'face screaming in fear','1F632':'astonished face','1F633':'flushed face','1F634':'sleeping face',
+'1F635':'dizzy face','1F636':'face without mouth','1F637':'face with medical mask',
+'1F638':'grinning cat with smiling eyes','1F639':'cat with tears of joy','1F63A':'grinning cat',
+'1F63B':'smiling cat with heart-eyes','1F63C':'cat with wry smile','1F63D':'kissing cat','1F63E':'pouting cat',
+'1F63F':'crying cat','1F640':'weary cat','1F641':'slightly frowning face','1F642':'slightly smiling face',
+'1F643':'upside-down face','1F644':'face with rolling eyes','1F645':'no gesture','1F646':'ok gesture',
+'1F647':'person bowing','1F648':'see-no-evil monkey','1F649':'hear-no-evil monkey','1F64A':'speak-no-evil monkey',
+'1F64B':'raising hand','1F64C':'raised hands','1F64D':'person frowning','1F64E':'person pouting',
+'1F64F':'folded hands','1F44A':'raised fist','1F44B':'waving hand','1F44C':'raised back of hand',
+'1F44D':'thumbs up','1F44E':'thumbs down','1F44F':'clapping hands','1F91A':'raised fist',
+'1F91B':'left-facing fist','1F91C':'right-facing fist','1F91D':'handshake','1F91E':'crossed fingers',
+'1F91F':'love-you gesture','1F932':'palms up together','1F933':'selfie','1F934':'person getting haircut',
+'1F935':'person in suit levitating','1F936':'mother Christmas','1F937':'person shrugging',
+'1F938':'person doing cartwheel','1F939':'juggling','1F93A':'person fencing','1F93C':'wrestlers',
+'1F93D':'water polo','1F93E':'handball',
+'1F400':'rat','1F401':'mouse','1F402':'ox','1F403':'water buffalo','1F404':'cow','1F405':'tiger',
+'1F406':'leopard','1F407':'rabbit','1F408':'cat','1F409':'dragon','1F40A':'crocodile','1F40B':'whale',
+'1F40C':'snail','1F40D':'snake','1F40E':'horse','1F40F':'ram','1F410':'goat','1F411':'sheep',
+'1F412':'monkey','1F413':'rooster','1F414':'chicken','1F415':'dog','1F416':'pig','1F417':'boar',
+'1F418':'elephant','1F419':'octopus','1F41A':'spiral shell','1F41B':'bug','1F41C':'ant','1F41D':'honeybee',
+'1F41E':'lady beetle','1F41F':'fish','1F420':'tropical fish','1F421':'blowfish','1F422':'turtle',
+'1F423':'hatching chick','1F424':'baby chick','1F425':'front-facing baby chick','1F426':'bird','1F427':'penguin',
+'1F428':'koala','1F429':'poodle','1F42A':'camel','1F42B':'two-hump camel','1F42C':'dolphin','1F42D':'mouse face',
+'1F42E':'cow face','1F42F':'tiger face','1F430':'rabbit face','1F431':'cat face','1F432':'dragon face',
+'1F433':'spouting whale','1F434':'horse face','1F435':'monkey face','1F436':'dog face','1F437':'pig face',
+'1F438':'frog','1F439':'hamster','1F43A':'wolf','1F43B':'bear','1F43C':'panda','1F43D':'pig nose',
+'1F43E':'paw prints','1F43F':'chipmunk',
+'1F330':'chestnut','1F331':'seedling','1F332':'evergreen tree','1F333':'deciduous tree','1F334':'palm tree',
+'1F335':'cactus','1F336':'hot pepper','1F337':'tulip','1F338':'cherry blossom','1F339':'rose',
+'1F33A':'hibiscus','1F33B':'sunflower','1F33C':'blossom','1F33D':'ear of corn',
+'1F340':'four leaf clover','1F341':'maple leaf','1F342':'fallen leaf','1F343':'leaf fluttering in wind',
+'1F344':'mushroom','1F345':'tomato','1F346':'eggplant','1F347':'grapes','1F348':'melon','1F349':'watermelon',
+'1F34A':'tangerine','1F34B':'lemon','1F34C':'banana','1F34D':'pineapple','1F34E':'red apple',
+'1F34F':'green apple','1F350':'pear','1F351':'peach','1F352':'cherries','1F353':'strawberry',
+'1F354':'hamburger','1F355':'pizza','1F356':'meat on bone','1F357':'poultry leg','1F358':'rice cracker',
+'1F359':'rice ball','1F35A':'cooked rice','1F35B':'curry rice','1F35C':'steaming bowl','1F35D':'spaghetti',
+'1F35E':'bread','1F35F':'french fries','1F360':'roasted sweet potato','1F361':'dango','1F362':'oden',
+'1F363':'sushi','1F364':'fried shrimp','1F365':'fish cake with swirl','1F366':'soft ice cream',
+'1F367':'shaved ice','1F368':'ice cream','1F369':'doughnut','1F36A':'cookie','1F36B':'chocolate bar',
+'1F36C':'candy','1F36D':'lollipop','1F36E':'custard','1F36F':'honey pot','1F370':'shortcake',
+'1F371':'bento box','1F372':'pot of food','1F373':'cooking','1F374':'fork and knife',
+'1F375':'teacup without handle','1F376':'sake','1F377':'wine glass','1F378':'cocktail glass',
+'1F379':'tropical drink','1F37A':'beer mug','1F37B':'clinking beer mugs','1F37C':'clinking glasses',
+'1F37D':'fork and knife with plate','1F37E':'bottle with popping cork','1F37F':'popcorn',
+'1F300':'cyclone','1F301':'foggy','1F302':'closed umbrella','1F303':'night with stars',
+'1F304':'sunrise over mountains','1F305':'sunrise','1F306':'cityscape at dusk','1F307':'sunset',
+'1F308':'rainbow','1F309':'bridge at night','1F30A':'water wave','1F30B':'volcano','1F30C':'milky way',
+'1F30D':'globe europe-africa','1F30E':'globe americas','1F30F':'globe asia-australia','1F310':'globe meridians',
+'1F311':'new moon','1F312':'waxing crescent','1F313':'first quarter moon','1F314':'full moon',
+'1F315':'waning gibbous','1F316':'last quarter moon','1F317':'waning crescent','1F318':'crescent moon',
+'1F319':'crescent moon','1F31A':'new moon face','1F31B':'first quarter moon face','1F31C':'last quarter moon face',
+'1F31D':'full moon face','1F31E':'sun with face','1F31F':'glowing star','1F320':'shooting star',
+'1F321':'thermometer','1F324':'mostly sunny','1F325':'sun behind clouds','1F326':'sun behind rain cloud',
+'1F327':'rain cloud','1F328':'snow cloud','1F329':'lightning cloud','1F32A':'tornado','1F32B':'fog',
+'1F32C':'wind face','1F32D':'hot dog','1F32E':'taco','1F32F':'burrito',
+'1F680':'rocket','1F681':'helicopter','1F682':'locomotive','1F683':'train','1F684':'high-speed train',
+'1F685':'bullet train','1F686':'train','1F687':'metro','1F688':'light rail','1F689':'station','1F68A':'tram',
+'1F68B':'tram car','1F68C':'bus','1F68D':'oncoming bus','1F68E':'trolleybus','1F68F':'bus stop',
+'1F690':'minibus','1F691':'ambulance','1F692':'fire engine','1F693':'police car','1F694':'oncoming police car',
+'1F695':'taxi','1F696':'oncoming taxi','1F697':'car','1F698':'oncoming car','1F699':'SUV','1F69A':'delivery truck',
+'1F69B':'articulated lorry','1F69C':'tractor','1F69D':'racing car','1F69E':'motorcycle','1F69F':'scooter',
+'1F6A0':'mountain','1F6A1':'suspension railway','1F6A2':'mountain cableway','1F6A3':'aerial tramway',
+'1F6A4':'speedboat','1F6A5':'horizontal traffic light','1F6A6':'vertical traffic light','1F6A7':'construction',
+'1F6A8':'police car light','1F6A9':'triangular flag','1F6AA':'door','1F6AB':'prohibited','1F6AC':'smoking',
+'1F6AD':'no smoking','1F6AE':'put litter','1F6AF':'do not litter','1F6B0':'potable water','1F6B1':'non-potable',
+'1F6B2':'bicycle','1F6B3':'no bikes','1F6B4':'person biking','1F6B5':'mountain biker','1F6B6':'person walking',
+'1F6B7':'no pedestrians','1F6B8':'children crossing','1F6B9':'men\'s room','1F6BA':'women\'s room',
+'1F6BB':'restroom','1F6BC':'baby symbol','1F6BD':'toilet','1F6BE':'water closet','1F6BF':'shower',
+'1F6C0':'bath','1F6C1':'bathtub','1F6C2':'passport control','1F6C3':'customs','1F6C4':'baggage claim',
+'1F6C5':'left luggage','1F6CB':'couch and lamp','1F6CC':'sleeping','1F6CD':'shopping bags','1F6CE':'bellhop bell',
+'1F6CF':'bed','1F6D0':'place of worship','1F6D1':'stop sign','1F6D2':'oil drum','1F6D5':'hindu temple',
+'1F6D6':'hut','1F6D7':'elevator','1F6DC':'wireless','1F6DD':'playground slide','1F6DE':'wheel',
+'1F6DF':'ring buoy','1F6E0':'hammer and wrench','1F6E1':'shield','1F6E5':'motor boat','1F6E9':'airplane departure',
+'1F6EA':'airplane arrival','1F6EB':'airplane','1F6EC':'airplane','1F6F0':'satellite','1F6F3':'passenger ship',
+'1F6F4':'kick scooter','1F6F5':'motor scooter','1F6F6':'canoe','1F6F7':'sled','1F6F8':'flying saucer',
+'1F6F9':'skateboard','1F6FA':'auto rickshaw','1F6FB':'pickup truck','1F6FC':'roller skate',
+'2600':'sun','2601':'cloud','2602':'umbrella','2603':'snowman','2604':'comet','260E':'telephone',
+'2611':'ballot box check','2614':'umbrella rain','2615':'hot beverage','261D':'index finger up',
+'2620':'skull crossbones','2622':'radioactive','2623':'biohazard','2626':'orthodox cross','262A':'star crescent',
+'262E':'peace','262F':'yin yang','2639':'frowning face','263A':'smiling face','2640':'female sign',
+'2642':'male sign','2648':'aries','2649':'taurus','264A':'gemini','264B':'cancer','264C':'leo','264D':'virgo',
+'264E':'libra','264F':'scorpio','2650':'sagittarius','2651':'capricorn','2652':'aquarius','2653':'pisces',
+'265F':'chess pawn','2660':'spade','2663':'club','2665':'heart','2666':'diamond','2668':'hot springs',
+'267B':'recycling','267E':'infinity','267F':'wheelchair','2692':'hammer pick','2693':'anchor',
+'2694':'crossed swords','2695':'staff','2696':'scales','2697':'alembic','2699':'gear','269B':'atom',
+'269C':'fleur-de-lis','26A0':'warning','26A1':'high voltage','26AA':'white circle','26AB':'black circle',
+'26B0':'coffin','26B1':'funeral urn','26BD':'soccer ball','26BE':'baseball','26C4':'snowman no snow',
+'26C5':'sun behind cloud','26CE':'ophiuchus','26CF':'pick','26D1':'helmet','26D3':'chains','26D4':'no entry',
+'26E9':'shinto shrine','26EA':'church','26F0':'mountain','26F1':'umbrella ground','26F2':'fountain',
+'26F3':'golf','26F4':'ferry','26F5':'sailboat','26F7':'skier','26F8':'ice skate','26F9':'person ball',
+'26FA':'tent','26FD':'fuel pump','2702':'scissors','2705':'green check','2708':'airplane','2709':'envelope',
+'270A':'raised fist','270B':'raised hand','270C':'victory hand','270D':'writing hand','270F':'pencil',
+'2712':'black nib','2714':'check mark','2716':'multiplication','271D':'latin cross','2721':'star of david',
+'2728':'sparkles','2733':'eight spoked asterisk','2734':'eight pointed star','2744':'snowflake',
+'2747':'sparkle','274C':'cross mark','274E':'cross mark button','2753':'question mark',
+'2754':'white question mark','2755':'white exclamation','2757':'exclamation','2763':'heart exclamation',
+'2764':'red heart','2795':'plus','2796':'minus','2797':'division','27A1':'right arrow','27B0':'curly loop',
+'27BF':'double curly loop','2934':'up arrow','2935':'down arrow','2B05':'left arrow','2B06':'up arrow',
+'2B07':'down arrow','2B1B':'black large square','2B1C':'white large square','2B50':'star','2B55':'heavy circle',
+'3030':'wavy dash','303D':'part alternation','3297':'congratulations','3299':'secret',
+'23E9':'fast-forward','23EA':'rewind','23EB':'fast up','23EC':'fast down','23ED':'next track',
+'23EE':'last track','23EF':'play/pause','23F0':'alarm clock','23F1':'stopwatch','23F2':'timer clock',
+'23F3':'hourglass done','23F8':'play button','23F9':'pause button','23FA':'record button','24C2':'circled M',
+'25AA':'black small square','25AB':'white small square','25B6':'play button','25C0':'reverse button',
+'25FB':'white medium square','25FC':'black medium square','25FD':'white med-small square',
+'25FE':'black med-small square','231A':'watch','231B':'hourglass','23CF':'eject button',
+'1F380':'ribbon','1F381':'wrapped gift','1F382':'birthday cake','1F383':'jack-o-lantern',
+'1F384':'Christmas tree','1F385':'Santa','1F386':'fireworks','1F387':'sparkler','1F388':'balloon',
+'1F389':'party popper','1F38A':'confetti ball','1F38B':'tanabata tree','1F38C':'crossed flags',
+'1F38D':'pine decoration','1F38E':'Japanese dolls','1F38F':'carp streamer','1F390':'wind chime',
+'1F391':'moon ceremony','1F392':'backpack','1F393':'graduation cap','1F396':'military medal',
+'1F397':'reminder ribbon','1F398':'studio mic','1F399':'level slider','1F39A':'control knobs',
+'1F39B':'musical notes','1F39E':'film frames','1F39F':'admission tickets','1F3A0':'carousel horse',
+'1F3A1':'ferris wheel','1F3A2':'roller coaster','1F3A3':'fishing pole','1F3A4':'microphone',
+'1F3A5':'video camera','1F3A6':'headphone','1F3A7':'headphone','1F3A8':'artist palette','1F3A9':'top hat',
+'1F3AA':'circus tent','1F3AB':'ticket','1F3AC':'clapper board','1F3AD':'performing arts','1F3AE':'video game',
+'1F3AF':'direct hit','1F3B0':'slot machine','1F3B1':'8 ball','1F3B2':'game die','1F3B3':'bowling',
+'1F3B4':'flower playing cards','1F3B5':'musical note','1F3B6':'multiple musical notes','1F3B7':'saxophone',
+'1F3B8':'guitar','1F3B9':'keyboard','1F3BA':'trumpet','1F3BB':'violin','1F3BC':'musical score',
+'1F3BD':'running shirt','1F3BE':'tennis','1F3BF':'skis','1F3C0':'basketball','1F3C1':'chequered flag',
+'1F3C2':'snowboarder','1F3C3':'person running','1F3C4':'person surfing','1F3C5':'sports medal',
+'1F3C6':'trophy','1F3C7':'horse racing','1F3C8':'football','1F3C9':'rugby','1F3CA':'person swimming',
+'1F3CB':'person lifting','1F3CC':'person golfing','1F3CD':'motorcycle','1F3CE':'racing car',
+'1F3CF':'cricket','1F3D0':'volleyball','1F3D1':'field hockey','1F3D2':'ice hockey','1F3D3':'ping pong',
+'1F3D4':'snowy mountain','1F3D5':'camping','1F3D6':'beach','1F3D7':'construction','1F3D8':'houses',
+'1F3D9':'cityscape','1F3DA':'derelict house','1F3DB':'classical building','1F3DC':'desert',
+'1F3DD':'desert island','1F3DE':'national park','1F3DF':'stadium','1F3E0':'house','1F3E1':'house garden',
+'1F3E2':'office','1F3E3':'Japanese post','1F3E4':'post','1F3E5':'hospital','1F3E6':'bank',
+'1F3E7':'ATM','1F3E8':'hotel','1F3E9':'love hotel','1F3EA':'convenience store','1F3EB':'school',
+'1F3EC':'department store','1F3ED':'factory','1F3EE':'lantern','1F3EF':'castle','1F3F0':'castle',
+'1F3F3':'white flag','1F3F4':'black flag','1F3F5':'rosette','1F3F7':'label','1F3F8':'badminton',
+'1F3F9':'bow arrow','1F3FA':'amphora','1F3FB':'light skin','1F3FC':'med-light skin','1F3FD':'medium skin',
+'1F3FE':'med-dark skin','1F3FF':'dark skin',
+'1F4A0':'diamond dot','1F4A1':'bulb','1F4A2':'anger','1F4A3':'bomb','1F4A4':'zzz','1F4A5':'collision',
+'1F4A6':'sweat','1F4A7':'dash','1F4A8':'dash','1F4A9':'poo','1F4AA':'biceps','1F4AB':'dizzy',
+'1F4AC':'speech balloon','1F4AD':'thought balloon','1F4AE':'white flower','1F4AF':'hundred points',
+'1F4B0':'money bag','1F4B1':'exchange','1F4B2':'dollar','1F4B3':'credit card','1F4B4':'yen','1F4B5':'dollar',
+'1F4B6':'euro','1F4B7':'pound','1F4B8':'money wings','1F4B9':'chart up','1F4BA':'seat','1F4BB':'laptop',
+'1F4BC':'briefcase','1F4BD':'minidisc','1F4BE':'floppy','1F4BF':'cd','1F4C0':'dvd','1F4C1':'folder',
+'1F4C2':'open folder','1F4C3':'page curl','1F4C4':'page','1F4C5':'calendar','1F4C6':'tear-off calendar',
+'1F4C7':'card index','1F4C8':'chart up','1F4C9':'chart down','1F4CA':'bar chart','1F4CB':'clipboard',
+'1F4CC':'pushpin','1F4CD':'round pushpin','1F4CE':'paperclip','1F4CF':'ruler','1F4D0':'triangular ruler',
+'1F4D1':'bookmark tabs','1F4D2':'ledger','1F4D3':'notebook','1F4D4':'notebook decorative','1F4D5':'closed book',
+'1F4D6':'open book','1F4D7':'green book','1F4D8':'blue book','1F4D9':'orange book','1F4DA':'books',
+'1F4DB':'name badge','1F4DC':'scroll','1F4DD':'memo','1F4DE':'telephone','1F4DF':'pager','1F4E0':'fax',
+'1F4E1':'satellite antenna','1F4E2':'loudspeaker','1F4E3':'megaphone','1F4E4':'outbox','1F4E5':'inbox',
+'1F4E6':'package','1F4E7':'email','1F4E8':'incoming envelope','1F4E9':'envelope arrow','1F4EA':'closed mailbox',
+'1F4EB':'closed mailbox','1F4EC':'open mailbox','1F4ED':'open mailbox','1F4EE':'postbox','1F4EF':'postal horn',
+'1F4F0':'newspaper','1F4F1':'mobile phone','1F4F2':'phone arrow','1F4F3':'vibration','1F4F4':'phone off',
+'1F4F5':'no phones','1F4F6':'antenna','1F4F7':'camera','1F4F8':'camera flash','1F4F9':'video camera',
+'1F4FA':'tv','1F4FB':'radio','1F4FC':'videocassette','1F4FD':'projector','1F4FE':'stereo','1F4FF':'prayer beads',
+'1F900':'circled cross','1F901':'circled star','1F902':'circled saltire','1F903':'left half circle',
+'1F904':'right half circle','1F905':'black drop','1F906':'white sun','1F907':'circle','1F908':'down triangle',
+'1F909':'up triangle','1F90C':'pinched fingers','1F90D':'white heart','1F90E':'brown heart',
+'1F90F':'pinching hand','1F910':'zipper face','1F911':'money face','1F912':'thermometer face',
+'1F913':'nerd face','1F914':'thinking face','1F915':'bandage face','1F916':'robot face','1F917':'hug face',
+'1F918':'horns','1F919':'call me','1F91A':'raised back hand','1F91B':'left fist','1F91C':'right fist',
+'1F91D':'handshake','1F91E':'crossed fingers','1F91F':'love gesture','1F920':'cowboy face','1F921':'clown face',
+'1F922':'nauseated face','1F923':'rofl','1F924':'drooling face','1F925':'lying face','1F926':'face palm',
+'1F927':'sneezing face','1F928':'raised eyebrow','1F929':'star struck','1F92A':'zany face',
+'1F92B':'shushing face','1F92C':'symbols mouth','1F92D':'hand over mouth','1F92E':'vomiting face',
+'1F92F':'exploding head','1F930':'pregnant woman','1F931':'breast feeding','1F932':'palms up',
+'1F933':'selfie','1F934':'prince','1F935':'tuxedo','1F936':'mother christmas','1F937':'shrug',
+'1F938':'cartwheel','1F939':'juggling','1F93A':'fencing','1F93D':'water polo','1F93E':'handball',
+'1F940':'wilted flower','1F941':'drum','1F942':'clink glasses','1F943':'clink glasses','1F944':'spoon',
+'1F945':'goal net','1F947':'1st medal','1F948':'2nd medal','1F949':'3rd medal','1F94A':'boxing glove',
+'1F94B':'martial arts','1F94C':'curling','1F94D':'lacrosse','1F94E':'softball','1F94F':'flying disc',
+'1F950':'croissant','1F951':'avocado','1F952':'cucumber','1F953':'bacon','1F954':'potato','1F955':'carrot',
+'1F956':'baguette','1F957':'salad','1F958':'pan food','1F959':'stuffed flatbread','1F95A':'egg',
+'1F95B':'glass milk','1F95C':'peanuts','1F95D':'kiwi','1F95E':'pancakes','1F95F':'dumpling',
+'1F960':'fortune cookie','1F961':'takeout','1F962':'chopsticks','1F963':'bowl spoon','1F964':'cup straw',
+'1F965':'coconut','1F966':'broccoli','1F967':'pie','1F968':'pretzel','1F969':'cut meat','1F96A':'sandwich',
+'1F96B':'canned','1F96C':'leafy green','1F96D':'mango','1F96E':'moon cake','1F96F':'bagel',
+'1F970':'smiling hearts','1F971':'yawning','1F972':'smiling tear','1F973':'partying','1F974':'woozy',
+'1F975':'hot face','1F976':'cold face','1F977':'ninja','1F978':'disguised','1F979':'holding tears',
+'1F97A':'pleading','1F97B':'sari','1F97C':'lab coat','1F97D':'goggles','1F97E':'hiking boot','1F97F':'flat shoe',
+'1F980':'crab','1F981':'lion','1F982':'scorpion','1F983':'turkey','1F984':'unicorn','1F985':'eagle',
+'1F986':'duck','1F987':'bat','1F988':'shark','1F989':'owl','1F98A':'fox','1F98B':'butterfly','1F98C':'deer',
+'1F98D':'gorilla','1F98E':'lizard','1F98F':'rhino','1F990':'shrimp','1F991':'squid','1F992':'giraffe',
+'1F993':'zebra','1F994':'hedgehog','1F995':'sauropod','1F996':'T-Rex','1F997':'cricket','1F998':'kangaroo',
+'1F999':'llama','1F99A':'peacock','1F99B':'hippo','1F99C':'parrot','1F99D':'raccoon','1F99E':'lobster',
+'1F99F':'mosquito','1F9A0':'microbe','1F9A1':'badger','1F9A2':'swan','1F9A4':'dodo','1F9A5':'sloth',
+'1F9A6':'otter','1F9A7':'orangutan','1F9A8':'skunk','1F9A9':'flamingo','1F9AA':'oyster',
+'1F9AE':'guide dog','1F9AF':'white cane','1F9B0':'red hair','1F9B1':'curly hair','1F9B2':'bald',
+'1F9B3':'white hair','1F9B4':'bone','1F9B5':'leg','1F9B6':'foot','1F9B7':'tooth','1F9B8':'superhero',
+'1F9B9':'supervillain','1F9BA':'safety vest','1F9BB':'hearing aid','1F9BC':'motor wheelchair',
+'1F9BD':'manual wheelchair','1F9BE':'mechanical arm','1F9BF':'mechanical leg',
+'1F9C0':'cheese','1F9C1':'cupcake','1F9C2':'salt','1F9C3':'beverage box','1F9C4':'garlic','1F9C5':'onion',
+'1F9C6':'falafel','1F9C7':'waffle','1F9C8':'butter','1F9C9':'mate','1F9CA':'ice','1F9CB':'bubble tea',
+'1F9CD':'standing person','1F9CE':'kneeling person','1F9CF':'deaf person','1F9D0':'monocle face',
+'1F9D1':'adult','1F9D2':'child','1F9D3':'older adult','1F9D4':'bearded person','1F9D5':'headscarf',
+'1F9D6':'steamy room','1F9D7':'climbing','1F9D8':'lotus','1F9D9':'mage','1F9DA':'fairy','1F9DB':'vampire',
+'1F9DC':'merperson','1F9DD':'elf','1F9DE':'genie','1F9DF':'zombie','1F9E0':'brain','1F9E1':'orange heart',
+'1F9E2':'billed cap','1F9E3':'scarf','1F9E4':'gloves','1F9E5':'coat','1F9E6':'socks','1F9E7':'red envelope',
+'1F9E8':'firecracker','1F9E9':'puzzle','1F9EA':'test tube','1F9EB':'petri dish','1F9EC':'DNA','1F9ED':'compass',
+'1F9EE':'abacus','1F9EF':'fire extinguisher','1F9F0':'toolbox','1F9F1':'brick','1F9F2':'magnet',
+'1F9F3':'luggage','1F9F4':'lotion','1F9F5':'thread','1F9F6':'yarn','1F9F7':'safety pin','1F9F8':'teddy bear',
+'1F9F9':'broom','1F9FA':'basket','1F9FB':'roll paper','1F9FC':'soap','1F9FD':'toothbrush','1F9FE':'sponge',
+'1F9FF':'headstone',
+'1FA70':'ballet shoes','1FA71':'swimsuit','1FA72':'briefs','1FA73':'shorts','1FA74':'thong sandal',
+'1FA75':'light blue heart','1FA76':'grey heart','1FA77':'pink heart','1FA78':'drop blood','1FA79':'bandage',
+'1FA7A':'stethoscope','1FA80':'yo-yo','1FA81':'kite','1FA82':'parachute','1FA83':'boomerang',
+'1FA84':'magic wand','1FA85':'pinata','1FA86':'nesting dolls','1FA90':'ringed planet','1FA91':'chair',
+'1FA92':'razor','1FA93':'axe','1FA94':'diya','1FA95':'banjo','1FA96':'helmet','1FA97':'accordion',
+'1FA98':'long drum','1FA99':'coin','1FA9A':'saw','1FA9B':'screwdriver','1FA9C':'ladder','1FA9D':'hook',
+'1FA9E':'mirror','1FA9F':'window','1FAA0':'plunger','1FAA1':'needle','1FAA2':'knot','1FAA3':'bucket',
+'1FAA4':'mouse trap','1FAA5':'toothbrush','1FAA6':'headstone','1FAA7':'placard','1FAA8':'rock',
+'1FAA9':'mirror ball','1FAAA':'id card','1FAAB':'low battery','1FAAC':'hamsa','1FAAD':'folding fan',
+'1FAB0':'fly','1FAB1':'worm','1FAB2':'beetle','1FAB3':'cockroach','1FAB4':'leaf','1FAB5':'wood',
+'1FAB6':'feather','1FAB7':'lotus','1FAB8':'coral','1FAB9':'empty nest','1FABA':'nest eggs',
+'1FAC0':'anatomical heart','1FAC1':'lungs','1FAC2':'hug','1FAC3':'pregnant man','1FAC4':'pregnant person',
+'1FAC5':'crown','1FAD0':'blueberries','1FAD1':'bell pepper','1FAD2':'olive','1FAD3':'flatbread',
+'1FAD4':'tamale','1FAD5':'fondue','1FAD6':'teapot','1FAD7':'pouring liquid','1FAD8':'beans','1FAD9':'jar',
+'1FAE0':'melting face','1FAE1':'saluting face','1FAE2':'open eyes face','1FAE3':'peeking eye',
+'1FAE4':'diagonal mouth','1FAE5':'dotted line face','1FAE6':'biting lip','1FAE7':'bubble','1FAE8':'shaking face',
+'1FAF0':'crossed fingers hand','1FAF1':'rightwards hand','1FAF2':'leftwards hand','1FAF3':'palm down',
+'1FAF4':'palm up','1FAF5':'push left','1FAF6':'push right','1FAF9':'bang bang','1FAFA':'burst anger'
+};
+
+var state={
+  tab:'unicode',unicodeSub:'public',privateRange:'bmp',publicBlock:'arrows',
+  unicodePage:0,unicodeSearch:'',
+  emojiSub:'public',emojiCat:'all',emojiPuaRange:'zwj',
+  emojiSearch:'',emojiPage:0,history:[]
+};
+
+function getCookie(n){var m=document.cookie.match(new RegExp('(?:^|; )'+n.replace(/([.$?*|{}()[\]\\/+^])/g,'\\$1')+'=([^;]*)'));return m?decodeURIComponent(m[1]):null}
+function setCookie(n,v,d){var e=new Date();e.setDate(e.getDate()+d);document.cookie=n+'='+encodeURIComponent(v)+'; expires='+e.toUTCString()+'; path=/'}
+function getPuaName(cp){return cp<=0xF8FF?'Private Use, BMP PUA':cp<=0xFFFFD?'Private Use, Supp PUA-A':'Private Use, Supp PUA-B'}
+function getEmojiPuaName(cp){
+  if(cp===0x200D)return 'Zero Width Joiner, Emoji ZWJ';
+  if(cp>=0xFE00&&cp<=0xFE0F)return 'Variation Selector-'+(cp-0xFE00+1)+', Emoji Presentation';
+  if(cp>=0xE0020&&cp<=0xE007F)return 'Tag '+(cp-0xE0020).toString()+', Emoji Tag Sequence';
+  return 'Emoji Private Use';
+}
+function getEmojiName(cp){var h=cp.toString(16).toUpperCase();while(h.length>1&&h.charAt(0)==='0')h=h.substring(1);return EMOJI_NAMES[h]||''}
+function isEmojiChar(cp){
+  if(cp>=0x1F600&&cp<=0x1F64F)return 1;if(cp>=0x1F300&&cp<=0x1F5FF)return 1;if(cp>=0x1F680&&cp<=0x1F6FF)return 1;
+  if(cp>=0x1F900&&cp<=0x1F9FF)return 1;if(cp>=0x1FA00&&cp<=0x1FA6F)return 1;if(cp>=0x1FA70&&cp<=0x1FAFF)return 1;
+  if(cp>=0x1F1E6&&cp<=0x1F1FF)return 1;if(cp>=0x1F400&&cp<=0x1F43F)return 1;if(cp>=0x1F440&&cp<=0x1F487)return 1;
+  if(cp>=0x1F490&&cp<=0x1F53F)return 1;if(cp>=0x2600&&cp<=0x27BF)return 1;if(cp>=0x231A&&cp<=0x23FF)return 1;
+  if(cp===0x24C2)return 1;if(cp>=0x25AA&&cp<=0x25FE)return 1;if(cp>=0x2934&&cp<=0x2935)return 1;
+  if(cp>=0x2B05&&cp<=0x2B55)return 1;if(cp>=0x3030&&cp<=0x303D)return 1;if(cp>=0x3297&&cp<=0x3299)return 1;
+  if(cp>=0x1F9B0&&cp<=0x1F9FF)return 1;if(cp>=0x1FAB0&&cp<=0x1FABF)return 1;if(cp>=0x1FAC0&&cp<=0x1FACF)return 1;
+  if(cp>=0x1FAD0&&cp<=0x1FAFF)return 1;if(cp>=0x1FAE0&&cp<=0x1FAEF)return 1;if(cp>=0x1FAF0&&cp<=0x1FAFF)return 1;
+  if(cp>=0x1F9D1&&cp<=0x1F9DF)return 1;if(cp>=0x1F91A&&cp<=0x1F91F)return 1;if(cp>=0x1F932&&cp<=0x1F93F)return 1;
+  if(cp>=0x1F940&&cp<=0x1F94F)return 1;if(cp>=0x1F950&&cp<=0x1F97F)return 1;if(cp>=0x1F980&&cp<=0x1F9AF)return 1;
+  if(cp>=0x1F330&&cp<=0x1F37F)return 1;if(cp>=0x1F380&&cp<=0x1F3FF)return 1;if(cp>=0x1F468&&cp<=0x1F47F)return 1;
+  if(cp>=0x1F480&&cp<=0x1F48F)return 1;if(cp>=0x1F500&&cp<=0x1F5FF)return 1;if(cp>=0x1F540&&cp<=0x1F55F)return 1;
+  if(cp>=0x1F560&&cp<=0x1F57F)return 1;if(cp>=0x1F580&&cp<=0x1F59F)return 1;if(cp>=0x1F5A0&&cp<=0x1F5FF)return 1;
+  return 0;
+}
+function loadHistory(){try{var r=getCookie('unicode_history');if(r){state.history=JSON.parse(r);if(!Array.isArray(state.history))state.history=[]}}catch(e){state.history=[]}}
+function saveHistory(){if(state.history.length>50)state.history=state.history.slice(0,50);setCookie('unicode_history',JSON.stringify(state.history),365)}
+function addHistory(item){for(var i=0;i<state.history.length;i++){if(state.history[i].cp===item.cp){state.history.splice(i,1);break}}state.history.unshift(item);saveHistory();renderHistory()}
+function clearHistory(){state.history=[];setCookie('unicode_history','',-1);renderHistory()}
+
+function getPublicBlockItems(blockId,search){
+  var blk;for(var i=0;i<PUBLIC_BLOCKS.length;i++){if(PUBLIC_BLOCKS[i].id===blockId){blk=PUBLIC_BLOCKS[i];break}}
+  if(!blk)return{total:0,items:[]};
+  var searchL=(search||'').toLowerCase().trim();
+  if(searchL){
+    var items=[],rM=searchL.match(/^([0-9a-f]+)\s*-\s*([0-9a-f]+)$/i);
+    if(rM){var s=parseInt(rM[1],16),e=parseInt(rM[2],16);for(var j=Math.max(blk.start,s);j<=Math.min(blk.end,e);j++)items.push({cp:j,ch:String.fromCodePoint(j)})}else{var sc=parseInt(searchL,16);if(!isNaN(sc)&&sc>=blk.start&&sc<=blk.end)items.push({cp:sc,ch:String.fromCodePoint(sc)})}
+    return{total:items.length,allItems:items,block:blk};
+  }
+  return{total:blk.end-blk.start+1,allItems:null,block:blk};
+}
+function getPuaItems(range,search){
+  var r=PUA_RANGES[range];if(!r)return{total:0,items:[]};
+  var searchL=(search||'').toLowerCase().trim();
+  if(searchL){
+    var items=[],rM=searchL.match(/^([0-9a-f]+)\s*-\s*([0-9a-f]+)$/i);
+    if(rM){var s=parseInt(rM[1],16),e=parseInt(rM[2],16);for(var j=Math.max(r.start,s);j<=Math.min(r.end,e);j++)items.push({cp:j,ch:String.fromCodePoint(j)})}else{var sc=parseInt(searchL,16);if(!isNaN(sc)&&sc>=r.start&&sc<=r.end)items.push({cp:sc,ch:String.fromCodePoint(sc)})}
+    return{total:items.length,allItems:items,range:r};
+  }
+  return{total:r.end-r.start+1,allItems:null,range:r};
+}
+function getPagedItems(total,allItems,rangeStart,rangeEnd,page,perPage){
+  if(allItems){
+    var pages=Math.ceil(allItems.length/perPage)||1;
+    if(page>=pages)page=pages-1;
+    var start=page*perPage,end=Math.min(start+perPage-1,allItems.length-1);
+    return{items:allItems.slice(start,end+1),total:allItems.length,pages:pages,page:page};
+  }
+  var pages=Math.ceil(total/perPage);
+  if(page>=pages)page=pages-1;
+  var s=rangeStart+page*perPage,e=Math.min(s+perPage-1,rangeEnd),items=[];
+  for(var i=s;i<=e;i++)items.push({cp:i,ch:String.fromCodePoint(i)});
+  return{items:items,total:total,pages:pages,page:page};
+}
+
+var ALL_EMOJI=null;
+function genAllEmoji(){
+  if(ALL_EMOJI)return ALL_EMOJI;
+  var all=[];
+  for(var ci=0;ci<EMOJI_CATS.length;ci++){
+    var cat=EMOJI_CATS[ci];
+    if(cat.flagsOnly){
+      var indivFlags=[{cp:0x1F3C1,name:'chequered flag'},{cp:0x1F3F3,name:'white flag'},{cp:0x1F3F4,name:'black flag'},{cp:0x1F6A9,name:'triangular flag'},{cp:0x1F38C,name:'crossed flags'}];
+      for(var fi=0;fi<indivFlags.length;fi++){var f=indivFlags[fi];all.push({cp:f.cp,ch:String.fromCodePoint(f.cp),name:f.name,cat:'flags'})}
+      for(var ci2=0;ci2<FLAG_COUNTRIES.length;ci2++){
+        var fc=FLAG_COUNTRIES[ci2],code=fc[0],cname=fc[1];
+        var ri1=0x1F1E6+code.charCodeAt(0)-65,ri2=0x1F1E6+code.charCodeAt(1)-65;
+        all.push({cp:ri1,ch:String.fromCodePoint(ri1)+String.fromCodePoint(ri2),name:'flag: '+cname,code:code,cat:'flags',isPair:true});
+      }
+      continue;
+    }
+    for(var ri=0;ri<cat.ranges.length;ri++){
+      var ra=cat.ranges[ri];
+      for(var cp=ra[0];cp<=ra[1];cp++){
+        var n=getEmojiName(cp);
+        if(n||isEmojiChar(cp)){
+          var dup=false;for(var di=0;di<all.length;di++){if(all[di].cp===cp){dup=true;break}}
+          if(!dup)all.push({cp:cp,ch:String.fromCodePoint(cp),name:n,cat:cat.id});
+        }
+      }
+    }
+  }
+  for(var hex in EMOJI_NAMES){
+    var cp=parseInt(hex,16);var found=false;
+    for(var i=0;i<all.length;i++){if(all[i].cp===cp){found=true;break}}
+    if(!found&&isEmojiChar(cp))all.push({cp:cp,ch:String.fromCodePoint(cp),name:EMOJI_NAMES[hex],cat:'misc'});
+  }
+  ALL_EMOJI=all;return all;
+}
+
+function filterPublicEmoji(cat,search){
+  var all=genAllEmoji();
+  var f=cat&&cat!=='all'?all.filter(function(it){return it.cat===cat}):all;
+  var sl=(search||'').toLowerCase().trim();
+  if(sl){
+    var sc=parseInt(sl,16);
+    f=f.filter(function(it){
+      var h=it.cp.toString(16).toUpperCase();
+      return it.name.toLowerCase().indexOf(sl)!==-1||h.indexOf(sl.toUpperCase())!==-1||(sc&&it.cp===sc);
+    });
+  }
+  return f;
+}
+
+function renderGrid(container,items,type){
+  if(!items||!items.length){container.innerHTML='<div class="nohit">没有匹配的字符</div>';return}
+  var html='<div class="sg">';
+  for(var i=0;i<items.length;i++){
+    var it=items[i],hex=it.cp.toString(16).toUpperCase();
+    while(hex.length<4)hex='0'+hex;
+    var name=it.name||'';
+    if(!name)name=type==='pua'||type==='emoji-pua'?getPuaName(it.cp):'';
+    html+='<div class="sc" data-cp="'+it.cp+'" data-type="'+type+'"><div class="ch">'+it.ch+'</div><div class="cp">U+'+hex+'</div><div class="nm">'+name+'</div></div>';
+  }
+  html+='</div>';container.innerHTML=html;
+  var cells=container.querySelectorAll('.sc');
+  for(var i=0;i<cells.length;i++)cells[i].addEventListener('click',function(e){
+    var el=e.currentTarget,cp=parseInt(el.getAttribute('data-cp')),ch=String.fromCodePoint(cp);
+    var hex=cp.toString(16).toUpperCase();while(hex.length<4)hex='0'+hex;
+    var nm=el.querySelector('.nm').textContent;
+    copyChar(ch,cp,hex,nm);
+  });
+}
+function renderPagination(container,cp,tp,type){
+  if(tp<=1){container.innerHTML='<span class="pg-info">共 1 页</span>';return}
+  var html='<button data-p="0" data-t="'+type+'">«</button><button data-p="'+(cp-1)+'" data-t="'+type+'"'+(cp<=0?' disabled style="opacity:.3"':'')+'">‹</button>';
+  html+='<span class="pg-info">'+(cp+1)+' / '+tp+'</span>';
+  html+='<button data-p="'+(cp+1)+'" data-t="'+type+'"'+(cp>=tp-1?' disabled style="opacity:.3"':'')+'">›</button><button data-p="'+(tp-1)+'" data-t="'+type+'">»</button>';
+  var ws=Math.max(0,cp-2),we=Math.min(tp-1,cp+2);
+  for(var p=ws;p<=we;p++)html+='<button class="'+(p===cp?'act':'')+'" data-p="'+p+'" data-t="'+type+'">'+(p+1)+'</button>';
+  container.innerHTML=html;
+  container.querySelectorAll('button').forEach(function(b){b.addEventListener('click',function(){
+    var pg=parseInt(this.getAttribute('data-p')),t=this.getAttribute('data-t');
+    if(isNaN(pg))return;
+    if(t==='u'){state.unicodePage=pg;renderUnicode()}
+    else if(t==='e'||t==='ep'){state.emojiPage=pg;renderEmoji()}
+    document.getElementById(t==='u'||t==='up'?'unicodeGrid':'emojiGrid').scrollIntoView({behavior:'smooth',block:'start'});
+  })});
+}
+
+function renderUnicode(){
+  var grid=document.getElementById('unicodeGrid'),pg=document.getElementById('unicodePagination');
+  var search=state.unicodeSearch,sub=state.unicodeSub,countEl=document.getElementById('unicodeResultCnt');
+  if(sub==='public'){
+    var blockData=getPublicBlockItems(state.publicBlock,search);
+    document.getElementById('unicodeBlockDesc').textContent=(blockData.block?blockData.block.desc:'')+' · '+blockData.total.toLocaleString()+' 个字符';
+    if(blockData.allItems){
+      state.totalCount=blockData.allItems.length;
+      var pages=Math.ceil(blockData.allItems.length/PER_PAGE)||1;
+      if(state.unicodePage>=pages)state.unicodePage=0;
+      var s=state.unicodePage*PER_PAGE,e=Math.min(s+PER_PAGE-1,blockData.allItems.length-1);
+      renderGrid(grid,blockData.allItems.slice(s,e+1),sub);
+      renderPagination(pg,state.unicodePage,pages,'u');
+    }else{
+      state.totalCount=blockData.total;
+      var result=getPagedItems(blockData.total,null,blockData.block.start,blockData.block.end,state.unicodePage,PER_PAGE);
+      renderGrid(grid,result.items,sub);
+      renderPagination(pg,result.page,result.pages,'u');
+    }
+    countEl.textContent=state.totalCount.toLocaleString()+' 个';
+  }else{
+    var puaData=getPuaItems(state.privateRange,search);
+    document.getElementById('unicodePuaDesc').textContent=puaData.range?puaData.range.desc:'';
+    if(puaData.allItems){
+      state.totalCount=puaData.allItems.length;
+      var pages=Math.ceil(puaData.allItems.length/PER_PAGE)||1;
+      if(state.unicodePage>=pages)state.unicodePage=0;
+      var s=state.unicodePage*PER_PAGE,e=Math.min(s+PER_PAGE-1,puaData.allItems.length-1);
+      renderGrid(grid,puaData.allItems.slice(s,e+1),'pua');
+      renderPagination(pg,state.unicodePage,pages,'u');
+    }else{
+      state.totalCount=puaData.total;
+      var result=getPagedItems(puaData.total,null,puaData.range.start,puaData.range.end,state.unicodePage,PER_PAGE);
+      for(var i=0;i<result.items.length;i++)result.items[i].name=getPuaName(result.items[i].cp);
+      renderGrid(grid,result.items,'pua');
+      renderPagination(pg,result.page,result.pages,'u');
+    }
+    countEl.textContent=state.totalCount.toLocaleString()+' 个';
+  }
+  document.getElementById('footerCount').textContent=state.totalCount.toLocaleString();
+  updateBadges();
+}
+
+function renderEmoji(){
+  var grid=document.getElementById('emojiGrid'),pg=document.getElementById('emojiPagination');
+  var search=state.emojiSearch,sub=state.emojiSub,countEl=document.getElementById('emojiResultCnt');
+  if(sub==='public'){
+    var filtered=filterPublicEmoji(state.emojiCat,search);
+    state.totalCount=filtered.length;
+    var pages=Math.ceil(filtered.length/PER_PAGE)||1;
+    if(state.emojiPage>=pages)state.emojiPage=0;
+    var s=state.emojiPage*PER_PAGE,e=Math.min(s+PER_PAGE-1,filtered.length-1);
+    renderGrid(grid,filtered.slice(s,e+1),'emoji');
+    renderPagination(pg,state.emojiPage,pages,'e');
+  }else{
+    var range=state.emojiPuaRange,r=EMOJI_PUA_RANGES[range];
+    if(!r){grid.innerHTML='<div class="nohit">无效范围</div>';pg.innerHTML='';countEl.textContent='0';return}
+    var searchL=(search||'').toLowerCase().trim();
+    var allItems=null;
+    if(searchL){
+      allItems=[];var rM=searchL.match(/^([0-9a-f]+)\s*-\s*([0-9a-f]+)$/i);
+      if(rM){var st=parseInt(rM[1],16),en=parseInt(rM[2],16);for(var j=Math.max(r.start,st);j<=Math.min(r.end,en);j++)allItems.push({cp:j,ch:String.fromCodePoint(j),name:getEmojiPuaName(j)})}else{var sc=parseInt(searchL,16);if(!isNaN(sc)&&sc>=r.start&&sc<=r.end)allItems.push({cp:sc,ch:String.fromCodePoint(sc),name:getEmojiPuaName(sc)})}
+    }
+    if(allItems){
+      state.totalCount=allItems.length;
+      var pages=Math.ceil(allItems.length/PER_PAGE)||1;
+      if(state.emojiPage>=pages)state.emojiPage=0;
+      var s=state.emojiPage*PER_PAGE,e=Math.min(s+PER_PAGE-1,allItems.length-1);
+      renderGrid(grid,allItems.slice(s,e+1),'emoji-pua');
+      renderPagination(pg,state.emojiPage,pages,'ep');
+    }else{
+      state.totalCount=r.end-r.start+1;
+      var result=getPagedItems(r.end-r.start+1,null,r.start,r.end,state.emojiPage,PER_PAGE);
+      for(var i=0;i<result.items.length;i++)result.items[i].name=getEmojiPuaName(result.items[i].cp);
+      renderGrid(grid,result.items,'emoji-pua');
+      renderPagination(pg,result.page,result.pages,'ep');
+    }
+    countEl.textContent=state.totalCount.toLocaleString();
+  }
+  document.getElementById('footerCount').textContent=state.totalCount.toLocaleString();
+  updateBadges();
+}
+
+function renderHistory(){
+  var grid=document.getElementById('histGrid');
+  if(!state.history||!state.history.length){grid.innerHTML='<div class="hist-empty">还没有复制记录，点击任一符号即可添加</div>';return}
+  var h='';
+  for(var i=0;i<Math.min(state.history.length,30);i++){
+    var it=state.history[i];
+    h+='<div class="hist-item" data-idx="'+i+'"><span class="ch">'+it.ch+'</span><span class="cp">'+it.label+'</span><span class="rm" data-act="rm" data-idx="'+i+'">✕</span></div>';
+  }
+  grid.innerHTML=h;
+  grid.querySelectorAll('.hist-item').forEach(function(el){
+    el.addEventListener('click',function(e){
+      if(e.target.getAttribute('data-act')==='rm')return;
+      var idx=parseInt(this.getAttribute('data-idx')),item=state.history[idx];
+      if(item)copyChar(item.ch,item.cp,item.hex,item.name);
+    });
+  });
+  grid.querySelectorAll('.rm').forEach(function(el){
+    el.addEventListener('click',function(e){e.stopPropagation();var idx=parseInt(this.getAttribute('data-idx'));state.history.splice(idx,1);saveHistory();renderHistory()});
+  });
+}
+
+var toastTimer=null;
+function showToast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('s');if(toastTimer)clearTimeout(toastTimer);toastTimer=setTimeout(function(){t.classList.remove('s')},1800)}
+function copyChar(ch,cp,hex,name){
+  navigator.clipboard.writeText(ch).then(function(){showToast('已复制 '+ch+'  ·  '+hex+'  '+(name||''))}).catch(function(){
+    var ta=document.createElement('textarea');ta.value=ch;ta.style.position='fixed';ta.style.opacity='0';
+    document.body.appendChild(ta);ta.select();try{document.execCommand('copy');showToast('已复制 '+hex)}catch(e){showToast('复制失败')}
+    document.body.removeChild(ta);
+  });
+  addHistory({ch:ch,cp:cp,hex:hex,label:'U+'+hex,name:name});
+}
+
+function updateBadges(){
+  var ut=0;for(var i=0;i<PUBLIC_BLOCKS.length;i++)ut+=PUBLIC_BLOCKS[i].end-PUBLIC_BLOCKS[i].start+1;
+  document.getElementById('unicodeBadge').textContent=ut.toLocaleString();
+  var em=genAllEmoji();
+  document.getElementById('emojiBadge').textContent=em.length.toLocaleString();
+}
+
+function init(){
+  loadHistory();
+  var mt=document.querySelectorAll('#mainTabs .tab');
+  mt.forEach(function(t){t.addEventListener('click',function(){
+    mt.forEach(function(x){x.classList.remove('act')});this.classList.add('act');
+    state.tab=this.getAttribute('data-tab');
+    document.getElementById('panelUnicode').style.display=state.tab==='unicode'?'':'none';
+    document.getElementById('panelEmoji').style.display=state.tab==='emoji'?'':'none';
+  })});
+  var us=document.querySelectorAll('#unicodeSubTabs .stab');
+  us.forEach(function(t){t.addEventListener('click',function(){
+    us.forEach(function(x){x.classList.remove('act')});this.classList.add('act');
+    state.unicodeSub=this.getAttribute('data-sub');
+    state.unicodePage=0;state.unicodeSearch='';document.getElementById('unicodeSearch').value='';
+    document.getElementById('unicodePublicCtr').style.display=state.unicodeSub==='public'?'block':'none';
+    document.getElementById('unicodePrivateCtr').style.display=state.unicodeSub==='private'?'block':'none';
+    renderUnicode();
+  })});
+  var es=document.querySelectorAll('#emojiSubTabs .stab');
+  es.forEach(function(t){t.addEventListener('click',function(){
+    es.forEach(function(x){x.classList.remove('act')});this.classList.add('act');
+    state.emojiSub=this.getAttribute('data-sub');
+    state.emojiPage=0;state.emojiSearch='';document.getElementById('emojiSearch').value='';
+    document.getElementById('emojiPublicCtr').style.display=state.emojiSub==='public'?'block':'none';
+    document.getElementById('emojiPrivateCtr').style.display=state.emojiSub==='private'?'block':'none';
+    if(state.emojiSub==='private'&&!state.emojiPuaRange)state.emojiPuaRange='zwj';
+    renderEmoji();
+  })});
+  (function buildBlockPills(){
+    var c=document.getElementById('unicodeBlockPills');
+    var h='';for(var i=0;i<PUBLIC_BLOCKS.length;i++){var b=PUBLIC_BLOCKS[i],a=b.id===state.publicBlock?' act':'';h+='<button class="cpill'+a+'" data-blk="'+b.id+'">'+b.label+'</button>'}
+    c.innerHTML=h;
+    c.querySelectorAll('.cpill').forEach(function(p){p.addEventListener('click',function(){
+      c.querySelectorAll('.cpill').forEach(function(x){x.classList.remove('act')});this.classList.add('act');
+      state.publicBlock=this.getAttribute('data-blk');state.unicodePage=0;renderUnicode();
+    })});
+  })();
+  document.querySelectorAll('#unicodePuaPills .cpill').forEach(function(p){p.addEventListener('click',function(){
+    document.querySelectorAll('#unicodePuaPills .cpill').forEach(function(x){x.classList.remove('act')});this.classList.add('act');
+    state.privateRange=this.getAttribute('data-range');state.unicodePage=0;renderUnicode();
+  })});
+  (function buildEmojiCats(){
+    var c=document.getElementById('emojiCatPills');
+    var h='<button class="cpill act" data-cat="all">全部</button>';
+    for(var i=0;i<EMOJI_CATS.length;i++)h+='<button class="cpill" data-cat="'+EMOJI_CATS[i].id+'">'+EMOJI_CATS[i].label+'</button>';
+    c.innerHTML=h;
+    c.querySelectorAll('.cpill').forEach(function(p){p.addEventListener('click',function(){
+      c.querySelectorAll('.cpill').forEach(function(x){x.classList.remove('act')});this.classList.add('act');
+      state.emojiCat=this.getAttribute('data-cat');state.emojiPage=0;renderEmoji();
+    })});
+  })();
+  document.querySelectorAll('#emojiPuaPills .cpill').forEach(function(p){p.addEventListener('click',function(){
+    document.querySelectorAll('#emojiPuaPills .cpill').forEach(function(x){x.classList.remove('act')});this.classList.add('act');
+    state.emojiPuaRange=this.getAttribute('data-range');state.emojiPage=0;renderEmoji();
+  })});
+  var uSearch=document.getElementById('unicodeSearch'),eSearch=document.getElementById('emojiSearch');
+  var st=null;
+  uSearch.addEventListener('input',function(){if(st)clearTimeout(st);var s=this;st=setTimeout(function(){state.unicodeSearch=s.value;state.unicodePage=0;renderUnicode()},250)});
+  eSearch.addEventListener('input',function(){if(st)clearTimeout(st);var s=this;st=setTimeout(function(){state.emojiSearch=s.value;state.emojiPage=0;renderEmoji()},250)});
+  document.getElementById('clearHistory').addEventListener('click',function(){if(state.history.length>0&&confirm('确认清空所有复制历史？')){clearHistory();showToast('历史已清空')}});
+  renderUnicode();renderHistory();updateBadges();
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'){
+      if(state.tab==='unicode'&&state.unicodeSearch){state.unicodeSearch='';uSearch.value='';state.unicodePage=0;renderUnicode()}
+      else if(state.tab==='emoji'&&state.emojiSearch){state.emojiSearch='';eSearch.value='';state.emojiPage=0;renderEmoji()}
+    }
+  });
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+</body>
+</html>

@@ -61,3 +61,72 @@ input[type=color]::-webkit-color-swatch{border:none;border-radius:8px}
 .in-w .ic{padding:0 12px;color:var(--m);flex-shrink:0;font-size:20px}
 .em{color:var(--neg);font-size:12px;margin-top:6px;opacity:0;font-weight:500}
 .em.s{opacity:1}
+
+/* ══════════════════════════════════════════
+   Tool Components (merged from Tools/wise.css)
+   ══════════════════════════════════════════ */
+
+/* Card Header */
+.card-hdr{display:flex;align-items:center;gap:10px;padding:14px 32px;border-bottom:1px solid var(--s)}
+.card-hdr .dot{width:12px;height:12px;border-radius:50%;background:var(--p);flex-shrink:0}
+.card-hdr .lb{font-size:15px;font-weight:600;letter-spacing:-.2px}
+.card-hdr .rt{margin-left:auto;display:flex;align-items:center;gap:8px}
+.card-hdr .rt a{font-size:13px;font-weight:600;color:var(--k);text-decoration:none;padding:6px 16px;border-radius:999px;border:1px solid var(--k);transition:.15s}
+.card-hdr .rt a:hover{background:var(--k);color:var(--p)}
+.card-pad{padding:32px 32px 40px}
+
+/* Drop Zone */
+.drop-zone{border:2px dashed var(--m);border-radius:var(--rm);padding:40px 20px;text-align:center;cursor:pointer;transition:.2s;margin-bottom:16px}
+.drop-zone:hover,.drop-zone.dragover{border-color:var(--p);background:var(--pp)}
+.drop-zone .ic{font-size:36px;line-height:1;margin-bottom:6px}
+.drop-zone .ds{font-weight:600;margin-bottom:4px}
+.drop-zone .ht{color:var(--b);font-size:13px}
+
+/* File List */
+.fl{display:none;flex-direction:column;gap:4px;margin-bottom:16px}
+.fl.show{display:flex}
+.fl .fi{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--s);border-radius:8px;font-size:13px}
+.fl .fi .st{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0}
+.fl .fi .st.pd{border:2px solid var(--m)}
+.fl .fi .st.dn{background:var(--p);color:var(--k)}
+.fl .fi .st.er{background:var(--s);color:#d03238;border:2px solid #d03238;font-size:12px}
+.fl .fi .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+.fl .fi .tag{display:inline-block;border-radius:999px;padding:1px 7px;font-size:10px;font-weight:600;line-height:16px;margin-right:4px;border:1px solid}
+.fl .fi .tag.kgm{color:#7c3aed;border-color:#7c3aed40;background:#7c3aed0d}
+.fl .fi .tag.ncm{color:#e74c3c;border-color:#e74c3c40;background:#e74c3c0d}
+.fl .fi .tag.qmc{color:#2563eb;border-color:#2563eb40;background:#2563eb0d}
+.fl .fi .tag.kwm{color:#d97706;border-color:#d9770640;background:#d977060d}
+.fl .fi .tag.xm{color:#059669;border-color:#05966940;background:#0596690d}
+.fl .fi .tag.raw{color:var(--b);border-color:var(--s);background:var(--s)}
+.fl .fi .sz{color:var(--m);font-size:12px;white-space:nowrap}
+.fl .fi .dl{background:var(--k);color:var(--c);padding:3px 10px;border-radius:999px;text-decoration:none;font-size:11px;font-weight:600;opacity:.3;pointer-events:none}
+.fl .fi .dl.ok{opacity:1;pointer-events:auto}
+.fl .fi .rm{color:var(--m);cursor:pointer;font-size:14px;padding:2px 6px;border-radius:4px;transition:.15s}
+.fl .fi .rm:hover{color:#d03238;background:var(--s)}
+
+/* Tool Button */
+.btn{display:block;width:100%;padding:14px;border:none;border-radius:var(--rm);font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;transition:.15s;text-align:center;background:var(--k);color:var(--c)}
+.btn:hover{background:var(--kd)}
+.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn:not(:disabled):active{transform:scale(.98)}
+
+/* Progress */
+.pg{margin-top:16px;display:none}.pg.show{display:block}
+.pb{height:6px;background:var(--s);border-radius:3px;overflow:hidden;margin-bottom:8px}
+.pf{height:100%;width:0%;background:linear-gradient(90deg,var(--p),var(--pa));border-radius:3px;transition:width .3s}
+.pt{font-size:13px;color:var(--b);text-align:center;margin-bottom:4px}
+
+/* Error Message */
+.er{display:none;padding:12px 16px;background:var(--s);border-radius:var(--rm);margin-top:12px;color:#d03238;font-size:13px;line-height:1.5}
+.er.show{display:block}
+
+/* Note */
+.nt{font-size:13px;color:var(--m);line-height:1.8;padding:14px 18px}
+.nt strong{color:var(--b)}
+.nt code{background:var(--s);padding:1px 6px;border-radius:4px;font-size:12px}
+
+/* Batch Actions */
+.ba{display:none;margin-top:12px;gap:8px}
+.ba.show{display:flex}
+.ba .dla{flex:1;background:var(--k);color:var(--c);padding:10px;border-radius:var(--rm);text-decoration:none;font-size:13px;font-weight:600;text-align:center;transition:.15s}
+.ba .dla:hover{background:var(--kd)}
