@@ -39,6 +39,19 @@
 .sc .ch{font-size:26px;line-height:1.2;min-height:1.2em;display:flex;align-items:center;justify-content:center;margin-bottom:1px;font-family:'Noto Sans Symbols','Segoe UI Symbol','Apple Symbols','Noto Sans Egyptian Hieroglyphs',sans-serif}
 .sc .cp{font-size:8.5px;font-weight:700;color:var(--m);letter-spacing:-.15px;line-height:1.2}
 .sc .nm{font-size:7.5px;color:var(--b);line-height:1.15;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;max-height:2.3em;margin-top:1px;word-break:break-all}
+/* Skin color picker */
+.sc.skin-open{border-color:var(--p);background:var(--pp)}
+.sc .skin-picker{display:none;position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:var(--k);border-radius:999px;padding:4px 10px;gap:5px;z-index:10;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.sc .skin-picker.s{display:flex}
+.sc .skin-picker span{width:20px;height:20px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:.1s}
+.sc .skin-picker span:hover{border-color:var(--p);transform:scale(1.2)}
+.sc .skin-picker span.sk-d{background:#ffda7a;border-color:#d4a53a}
+.sc .skin-picker span.sk-a{background:#f3d2a2}
+.sc .skin-picker span.sk-b{background:#d9a76d}
+.sc .skin-picker span.sk-c{background:#b57e45}
+.sc .skin-picker span.sk-d{background:#7a5a32}
+.sc .skin-picker span.sk-e{background:#4a3219}
+
 .pg{display:flex;align-items:center;justify-content:center;gap:3px;margin-top:12px;flex-wrap:wrap}
 .pg button{padding:5px 10px;border:2px solid var(--s);border-radius:8px;background:transparent;color:var(--b);font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;transition:.1s}
 .pg button:hover{border-color:var(--pp);color:var(--kd)}
@@ -91,7 +104,7 @@
       <p class="sub" style="margin-bottom:12px">浏览符号与 Emoji，点击复制，历史记录自动保存</p>
 
       <div class="tabs" id="mainTabs">
-        <button class="tab act" data-tab="unicode"><span class="material-symbols-rounded" style="font-size:15px;vertical-align:middle">abc</span> Unicode 符号 <span class="badge" id="unicodeBadge">—</span></button>
+        <button class="tab act" data-tab="unicode"><span class="material-symbols-rounded" style="font-size:15px;vertical-align:middle">▲</span> Unicode <span class="badge" id="unicodeBadge">—</span></button>
         <button class="tab" data-tab="emoji"><span class="material-symbols-rounded" style="font-size:15px;vertical-align:middle">mood</span> Emoji <span class="badge" id="emojiBadge">—</span></button>
       </div>
 
@@ -100,6 +113,10 @@
         <div class="stabs" id="unicodeSubTabs">
           <button class="stab act" data-sub="public">公共区</button>
           <button class="stab" data-sub="private">私人区 (PUA)</button>
+        </div>
+        <div class="sb">
+          <input type="text" id="unicodeSearch" placeholder="搜索码点/中英文/符号 (如 13000, →, 箭头)…" spellcheck="false">
+          <span class="cnt" id="unicodeResultCnt"></span>
         </div>
         <div id="unicodePublicCtr" style="display:block">
           <div class="cpills" id="unicodeBlockPills"></div>
@@ -113,10 +130,6 @@
           </div>
           <div class="bdesc" id="unicodePuaDesc"></div>
         </div>
-        <div class="sb">
-          <input type="text" id="unicodeSearch" placeholder="搜索码点 (如 13000, 2200) 或范围 (如 13000-1342F)…" spellcheck="false">
-          <span class="cnt" id="unicodeResultCnt"></span>
-        </div>
         <div id="unicodeGrid"></div>
         <div class="pg" id="unicodePagination"></div>
       </div>
@@ -126,6 +139,10 @@
         <div class="stabs" id="emojiSubTabs">
           <button class="stab act" data-sub="public">公共区</button>
           <button class="stab" data-sub="private">私人区 (PUA)</button>
+        </div>
+        <div class="sb">
+          <input type="text" id="emojiSearch" placeholder="搜索 emoji 名称/码点/emoji 字符…" spellcheck="false">
+          <span class="cnt" id="emojiResultCnt"></span>
         </div>
         <div id="emojiPublicCtr" style="display:block">
           <div class="cpills" id="emojiCatPills"></div>
@@ -137,10 +154,6 @@
             <button class="cpill" data-range="tags">标签 Tags <small>U+E0020–U+E007F</small></button>
           </div>
           <div class="bdesc" style="color:var(--m);font-size:11px;margin-bottom:8px">Emoji 辅助字符：零宽连字、异体选择符、标签序列</div>
-        </div>
-        <div class="sb">
-          <input type="text" id="emojiSearch" placeholder="搜索 emoji 名称或码点…" spellcheck="false">
-          <span class="cnt" id="emojiResultCnt"></span>
         </div>
         <div id="emojiGrid"></div>
         <div class="pg" id="emojiPagination"></div>
@@ -170,8 +183,36 @@
 var PER_PAGE=200;
 
 
+var PUBLIC_BLOCKS=[
+  {id:'all',label:'全部 All',start:0x0,end:0x10FFFF,desc:'全部 Unicode 码位'},
+  {id:'arrows',label:'箭头 Arrows',start:0x2190,end:0x21FF,desc:'标准箭头符号 (← ↑ → ↓ ↔ 等)'},
+  {id:'math',label:'数学 Math Operators',start:0x2200,end:0x22FF,desc:'数学运算符 (∀ ∂ ∃ ∅ ∇ ∈ ∉ 等)'},
+  {id:'tech',label:'技术 Misc Technical',start:0x2300,end:0x23FF,desc:'技术符号'},
+  {id:'enclosed',label:'带圈 Enclosed',start:0x2460,end:0x24FF,desc:'带圈字母数字'},
+  {id:'boxdraw',label:'制表 Box Drawing',start:0x2500,end:0x257F,desc:'制表符'},
+  {id:'blocks',label:'方块 Block Elements',start:0x2580,end:0x259F,desc:'方块元素'},
+  {id:'shapes',label:'几何 Geometric',start:0x25A0,end:0x25FF,desc:'几何形状 (■ □ ▲ △ ○ ● 等)'},
+  {id:'misc',label:'杂项 Misc Symbols',start:0x2600,end:0x26FF,desc:'杂项符号 (☀ ☁ ☂ ☃ ☎ ☠ ☺ ♥ 等)'},
+  {id:'dingbats',label:'装饰 Dingbats',start:0x2700,end:0x27BF,desc:'装饰符号 (✀ ✁ ✂ ✃ ✄ ✅ 等)'},
+  {id:'braille',label:'盲文 Braille',start:0x2800,end:0x28FF,desc:'盲文图案'},
+  {id:'cjk',label:'CJK 符号',start:0x3000,end:0x303F,desc:'CJK 符号与标点'},
+  {id:'egypt',label:'埃及象形 Egyptian',start:0x13000,end:0x1342F,desc:'埃及象形文字'},
+];
+
+var PUA_RANGES={
+  bmp:{label:'BMP PUA',start:0xE000,end:0xF8FF,desc:'BMP 私人使用区 · 6400 个码位'},
+  supa:{label:'Supp PUA-A',start:0xF0000,end:0xFFFFD,desc:'补充私人使用区-A · 65534 个码位'},
+  supb:{label:'Supp PUA-B',start:0x100000,end:0x10FFFD,desc:'补充私人使用区-B · 65534 个码位'},
+};
+
+var EMOJI_PUA_RANGES={
+  zwj:{label:'零宽连字 ZWJ',start:0x200D,end:0x200D,desc:'Zero Width Joiner · 用于 Emoji 序列组合'},
+  vs:{label:'异体选择符 VS',start:0xFE00,end:0xFE0F,desc:'Variation Selectors · 文本/Emoji 呈现选择 (VS16: U+FE0F)'},
+  tags:{label:'标签 Tags',start:0xE0020,end:0xE007F,desc:'Tags 标签 · 用于 Emoji 细分旗标签序列'},
+};
+
 var state={
-  tab:'unicode',unicodeSub:'public',privateRange:'bmp',publicBlock:'arrows',
+  tab:'unicode',unicodeSub:'public',privateRange:'bmp',publicBlock:'all',
   unicodePage:0,unicodeSearch:'',
   emojiSub:'public',emojiCat:'all',emojiPuaRange:'zwj',
   emojiSearch:'',emojiPage:0,history:[]
@@ -209,18 +250,46 @@ function addHistory(item){for(var i=0;i<state.history.length;i++){if(state.histo
 function clearHistory(){state.history=[];setCookie('unicode_history','',-1);renderHistory()}
 
 function getPublicBlockItems(blockId,search){
+  if(blockId==='all'){
+    var searchL=(search||'').toLowerCase().trim();
+    if(searchL)return getAllSearchResults(searchL);
+    var total=0;for(var i=1;i<PUBLIC_BLOCKS.length;i++)total+=PUBLIC_BLOCKS[i].end-PUBLIC_BLOCKS[i].start+1;
+    return{total:total,allItems:[],block:{id:'all',desc:'全部 Unicode 符号'}};
+  }
   var blk;for(var i=0;i<PUBLIC_BLOCKS.length;i++){if(PUBLIC_BLOCKS[i].id===blockId){blk=PUBLIC_BLOCKS[i];break}}
-  if(!blk)return{total:0,items:[]};
+  if(!blk)return{total:0,allItems:null};
   var searchL=(search||'').toLowerCase().trim();
   if(searchL){
     var items=[],rM=searchL.match(/^([0-9a-f]+)\s*-\s*([0-9a-f]+)$/i);
     if(rM){var s=parseInt(rM[1],16),e=parseInt(rM[2],16);for(var j=Math.max(blk.start,s);j<=Math.min(blk.end,e);j++)items.push({cp:j,ch:String.fromCodePoint(j)})}else{var sc=parseInt(searchL,16);if(!isNaN(sc)&&sc>=blk.start&&sc<=blk.end)items.push({cp:sc,ch:String.fromCodePoint(sc)})}
+    // If hex search fails, try matching by symbol character
+    if(!items.length&&searchL.length===1){
+      for(var j=blk.start;j<=blk.end;j++){var ch=String.fromCodePoint(j);if(ch===searchL||ch.indexOf(searchL)>=0){items.push({cp:j,ch:ch});break}}
+    }
     return{total:items.length,allItems:items,block:blk};
   }
   return{total:blk.end-blk.start+1,allItems:null,block:blk};
 }
+
+function getAllSearchResults(searchL){
+  var items=[],sc=parseInt(searchL,16);
+  var rM=searchL.match(/^([0-9a-f]+)\s*-\s*([0-9a-f]+)$/i);
+  if(rM){var s=parseInt(rM[1],16),e=parseInt(rM[2],16);for(var j=s;j<=e;j++)items.push({cp:j,ch:String.fromCodePoint(j)})}
+  else if(!isNaN(sc)&&sc>0){items.push({cp:sc,ch:String.fromCodePoint(sc)})}
+  else{
+    // Search by symbol character across all blocks (limit 200)
+    for(var bi=1;bi<PUBLIC_BLOCKS.length&&items.length<200;bi++){
+      var blk=PUBLIC_BLOCKS[bi];
+      for(var j=blk.start;j<=blk.end&&items.length<200;j++){
+        var ch=String.fromCodePoint(j);
+        if(ch===searchL||ch.indexOf(searchL)>=0){items.push({cp:j,ch:ch})}
+      }
+    }
+  }
+  return{total:items.length,allItems:items,block:{id:'all',desc:'搜索结果'}};
+}
 function getPuaItems(range,search){
-  var r=PUA_RANGES[range];if(!r)return{total:0,items:[]};
+  var r=PUA_RANGES[range];if(!r)return{total:0,allItems:null};
   var searchL=(search||'').toLowerCase().trim();
   if(searchL){
     var items=[],rM=searchL.match(/^([0-9a-f]+)\s*-\s*([0-9a-f]+)$/i);
@@ -317,7 +386,7 @@ function renderGrid(container,items,type){
     while(hex.length<4)hex='0'+hex;
     var name=it.name||'';
     if(!name)name=type==='pua'||type==='emoji-pua'?getPuaName(it.cp):'';
-    html+='<div class="sc" data-cp="'+it.cp+'" data-type="'+type+'"><div class="ch">'+it.ch+'</div><div class="cp">U+'+hex+'</div><div class="nm">'+name+'</div></div>';
+    html+='<div class="sc" data-cp="'+it.cp+'" data-type="'+type+'" data-hex="'+hex+'"><div class="ch">'+it.ch+'</div><div class="cp">U+'+hex+'</div><div class="nm">'+name+'</div><div class="skin-picker" id="sp-'+hex+'"><span class="sk-d" data-skin=""></span><span class="sk-a" data-skin="1F3FB"></span><span class="sk-b" data-skin="1F3FC"></span><span class="sk-c" data-skin="1F3FD"></span><span class="sk-d" data-skin="1F3FE"></span><span class="sk-e" data-skin="1F3FF"></span></div></div>';
   }
   html+='</div>';
   // Two-phase render for seamless transition: clear → fade in
@@ -329,6 +398,8 @@ function renderGrid(container,items,type){
     var el=e.currentTarget,cp=parseInt(el.getAttribute('data-cp')),ch=el.querySelector('.ch').textContent;
     var hex=cp.toString(16).toUpperCase();while(hex.length<4)hex='0'+hex;
     var nm=el.querySelector('.nm').textContent;
+    var hexKey=cp.toString(16).toUpperCase();while(hexKey.length>1&&hexKey.charAt(0)==='0')hexKey=hexKey.substring(1);
+    if(typeof EMOJI_SKIN!=='undefined'&&EMOJI_SKIN[hexKey]){showSkinPicker(el,hexKey,ch,cp,hex,nm);return}
     copyChar(ch,cp,hex,nm);
   });
 }
@@ -347,6 +418,58 @@ function renderPagination(container,cp,tp,type){
     else if(t==='e'||t==='ep'){state.emojiPage=pg;isNext?appendEmojiPage():renderEmoji()}
   })});
 }
+
+
+var _skinTimer=null;
+function showSkinPicker(el,hexKey,ch,cp,hex,nm){
+  // Close any open skin picker
+  document.querySelectorAll('.skin-picker.s').forEach(function(p){p.classList.remove('s')});
+  document.querySelectorAll('.sc.skin-open').forEach(function(p){p.classList.remove('skin-open')});
+  var picker=el.querySelector('.skin-picker');
+  if(!picker)return;
+  // Toggle
+  if(picker.classList.contains('s')){picker.classList.remove('s');el.classList.remove('skin-open');return}
+  picker.classList.add('s');el.classList.add('skin-open');
+  // Click on skin tone
+  var closePicker=function(){picker.classList.remove('s');el.classList.remove('skin-open')};
+  picker.querySelectorAll('span').forEach(function(sp){
+    sp.addEventListener('click',function(ev){
+      ev.stopPropagation();
+      var skin=this.getAttribute('data-skin');
+      var varHex,skinCp;
+      if(!skin){
+        // Default (no skin tone) - use base CP
+        copyChar(ch,cp,hex,nm);
+      }else{
+        skinCp=parseInt(skin,16);
+        var baseCp=parseInt(hexKey,16);
+        // Some skins use ZWJ sequences, build the char
+        var parts=EMOJI_SKIN[hexKey][0].split('_'); // e.g. ['1F466','1F3FB']
+        var skinCodes=EMOJI_SKIN[hexKey]; 
+        // Find matching skin variant for this tone
+        for(var si=0;si<skinCodes.length;si++){
+          if(skinCodes[si].indexOf(skin)>0||skinCodes[si].indexOf('_'+skin)>=0){
+            var codeParts=skinCodes[si].split('_');
+            var skinCh='';
+            for(var pi=0;pi<codeParts.length;pi++)skinCh+=String.fromCodePoint(parseInt(codeParts[pi],16));
+            var skinHex=skinCodes[si].replace(/_/g,', ');
+            copyChar(skinCh,skinCp,skinHex,nm);
+            // Update the displayed emoji
+            el.querySelector('.ch').textContent=skinCh;
+            break;
+          }
+        }
+      }
+      closePicker();
+    });
+  });
+  // Close on click outside
+  if(_skinTimer)clearTimeout(_skinTimer);
+  _skinTimer=setTimeout(function(){
+    document.addEventListener('click',function _sc(e){if(!el.contains(e.target)){closePicker();document.removeEventListener('click',_sc)}},{once:true});
+  },100);
+}
+
 
 function getPageItems(tab,pg){
   if(tab==='u'){
@@ -396,7 +519,7 @@ function appendRender(grid,items){
     var it=items[i],hex=it.cp.toString(16).toUpperCase();
     while(hex.length<4)hex='0'+hex;
     var name=it.name||'';
-    html+='<div class="sc" data-cp="'+it.cp+'"><div class="ch">'+it.ch+'</div><div class="cp">U+'+hex+'</div><div class="nm">'+name+'</div></div>';
+    html+='<div class="sc" data-cp="'+it.cp+'" data-hex="'+hex+'"><div class="ch">'+it.ch+'</div><div class="cp">U+'+hex+'</div><div class="nm">'+name+'</div><div class="skin-picker" id="sp-'+hex+'"><span class="sk-d" data-skin=""></span><span class="sk-a" data-skin="1F3FB"></span><span class="sk-b" data-skin="1F3FC"></span><span class="sk-c" data-skin="1F3FD"></span><span class="sk-d" data-skin="1F3FE"></span><span class="sk-e" data-skin="1F3FF"></span></div></div>';
   }
   html+='</div>';
   grid.insertAdjacentHTML('beforeend',html);
@@ -405,6 +528,8 @@ function appendRender(grid,items){
     var el=e.currentTarget,cp=parseInt(el.getAttribute('data-cp')),ch=el.querySelector('.ch').textContent;
     var hex=cp.toString(16).toUpperCase();while(hex.length<4)hex='0'+hex;
     var nm=el.querySelector('.nm').textContent;
+    var hexKey=cp.toString(16).toUpperCase();while(hexKey.length>1&&hexKey.charAt(0)==='0')hexKey=hexKey.substring(1);
+    if(typeof EMOJI_SKIN!=='undefined'&&EMOJI_SKIN[hexKey]){showSkinPicker(el,hexKey,ch,cp,hex,nm);return}
     copyChar(ch,cp,hex,nm);
   });
 }
