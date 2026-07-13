@@ -84,6 +84,8 @@
 @keyframes spin{to{transform:rotate(360deg)}}
 .nohit{padding:16px;text-align:center;color:var(--neg);font-size:13px;background:var(--s);border-radius:14px;margin:8px 0}
 .bdesc{font-size:11px;color:var(--m);margin-bottom:10px;line-height:1.4;padding:6px 10px;background:var(--c);border-radius:10px}
+/* Emoji category pills: 4 per row */
+#emojiCatPills .cpill{flex:1 1 calc(25% - 4px);min-width:0;text-align:center}
 @media(max-width:520px){:root{--cm:74px}.sc .ch{font-size:20px}.sc .cp{font-size:7.5px}}
 @media(min-width:768px){:root{--cm:96px}}
 </style>
@@ -93,10 +95,9 @@
 <div class="wrap" style="max-width:820px">
 
   <div class="card">
-    <div class="card-hdr">
-      <span class="dot"></span>
-      <span class="lb">Unicode &amp; Emoji Browser</span>
-      <span class="rt"><a href="/">← 首页</a></span>
+    <div class="logo" style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+      <span style="width:10px;height:10px;border-radius:50%;background:var(--p);display:inline-block;flex-shrink:0"></span>
+      <span style="font-size:16px;font-weight:800;letter-spacing:-.3px;color:var(--k)">Unicode</span>
     </div>
     <div class="card-pad" style="padding-bottom:24px">
 
