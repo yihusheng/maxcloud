@@ -73,11 +73,6 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--s);
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="card" style="padding:var(--sxl)">
-    <div class="badge-positive"><span class="material-symbols-rounded">calculate</span> Nutrition Calculator</div>
-    <h1>营养计算器</h1>
-  </div>
 <div class="g" id="grid"></div>
 <div class="add-card-wrap">
   <button class="add-card" id="addCardBtn" title="添加面板"><span class="material-symbols-rounded">add</span></button>
@@ -219,6 +214,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--s);
       var dummy = document.createElement('div');
       dummy.innerHTML = '<div class="card card-pad" id="pa">' +
         '<div class="ph"><div class="ph-bdg"><span class="material-symbols-rounded">calculate</span> Nutrition Calculator</div>' +
+        '<h1>营养计算器</h1>' +
         '<div class="ph-r"><div class="pb">A</div>' +
         '<button class="pc remove-card" data-p="A"><span class="material-symbols-rounded">close</span></button></div></div>' +
         '<div class="sv"><div class="sr">' +
