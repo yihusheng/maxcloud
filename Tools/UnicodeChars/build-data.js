@@ -24,6 +24,7 @@ const FOLDER_MAP = [
 
   { id:'signs',       folder:'标志', label:'🔣 标志' },   // ← 标识+记号 合并
   { id:'math',        folder:'数学', label:'∑ 数学' },
+  { id:'flags',       folder:'旗帜', label:'🏁 旗帜' },   // 虚拟分类, flagsOnly
 ];
 
 // 20 个文件夹 → 15 个分类ID
@@ -153,6 +154,8 @@ const skinMap = {};
 for (const dn of fs.readdirSync(EMOJI_DIR).sort()) {
   const dp = path.join(EMOJI_DIR, dn);
   if (!fs.statSync(dp).isDirectory()) continue;
+  // Skip directories we can't read
+  try { fs.readdirSync(dp); } catch(e) { console.log('  ⚠ 无法读取:', dn); continue; }
   const catId = FOLDER_TO_ID[dn];
   const iniPath = findIni(dp);
   if (!iniPath) { console.log('  ⚠ 无 INI:', dn); continue; }
@@ -205,8 +208,12 @@ console.log(`  → 杂项: ${trulyMiscCps.length}`);
 function genEmojiJS() {
   const catLines = [];
   const allCatIds = ['smileys','gestures','people','animals','plants','weather','food','sports',
-                     'transport','scenery','objects','clothing','signs','math'];
+                     'transport','scenery','objects','clothing','flags','signs','math'];
   for (const id of allCatIds) {
+    if (id === 'flags') {
+      catLines.push(`  {id:'flags',label:'🏁 旗帜',flagsOnly:true}`);
+      continue;
+    }
     const data = byFolder[id];
     if (!data || data.cps.size === 0) continue;
     const cps = [...data.cps].sort((a,b)=>a-b);
