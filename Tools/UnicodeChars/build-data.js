@@ -11,7 +11,7 @@ const OUTPUT_DIR = '/workspace/maxcloud/Tools/UnicodeChars';
 const FOLDER_MAP = [
   { id:'smileys',     folder:'黄脸', label:'😀 黄脸' },
   { id:'gestures',    folder:'手势', label:'🤚 手势' },
-  { id:'people',      folder:'人类', label:'🧑 人类' },   // ← 动作+家庭+职业 合并
+  { id:'people',      folder:'人物', label:'🧑 人物' },   // 动作+家庭+职业+人物 合并
   { id:'animals',     folder:'动物', label:'🐾 动物' },
   { id:'plants',      folder:'植物', label:'🌱 植物' },
   { id:'weather',     folder:'天气', label:'🌤 天气' },
@@ -30,7 +30,7 @@ const FOLDER_MAP = [
 // 20 个文件夹 → 15 个分类ID
 const FOLDER_TO_ID = {
   '黄脸':'smileys','手势':'gestures',
-  '动作':'people',  '家庭':'people',  '职业':'people',
+  '动作':'people',  '家庭':'people',  '职业':'people',  '人物':'people',
   '动物':'animals', '植物':'plants',  '天气':'weather',
   '食物':'food',    '运动':'sports',
   '交通':'transport','景物':'scenery',
