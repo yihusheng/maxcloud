@@ -348,7 +348,7 @@ function renderPanel(panel){
     gridId='unicodeGrid';paginationId='unicodePagination';pageKey='unicodePage';pageType='u';
     countEl=document.getElementById('unicodeResultCnt');
   }else{
-    gridId='emojiGrid';paginationId='emojiPagination';pageKey='emojiPage';pageType=state.emojiSub==='public'?'emoji':'emoji-pua';
+    gridId='emojiGrid';paginationId='emojiPagination';pageKey='emojiPage';pageType=state.emojiSub==='public'?'e':'ep';
     countEl=document.getElementById('emojiResultCnt');
   }
   var grid=document.getElementById(gridId),pg=document.getElementById(paginationId);
@@ -447,7 +447,7 @@ function renderGrid(container,items,type){
     var it=items[i],hex=it.cp.toString(16).toUpperCase();
     while(hex.length<4)hex='0'+hex;
     var name=it.name||'';
-    if(!name)name=type==='pua'||type==='emoji-pua'?getPuaName(it.cp):'';
+    if(!name)name=type==='pua'||type==='emoji-pua'||type==='ep'?getPuaName(it.cp):'';
     html+='<div class="sc" data-cp="'+it.cp+'" data-type="'+type+'" data-hex="'+hex+'"><div class="ch">'+it.ch+'</div><div class="cp">U+'+hex+'</div><div class="nm">'+name+'</div><div class="skin-picker" id="sp-'+hex+'"><span class="sk-d" data-skin=""></span><span class="sk-a" data-skin="1F3FB"></span><span class="sk-b" data-skin="1F3FC"></span><span class="sk-c" data-skin="1F3FD"></span><span class="sk-d" data-skin="1F3FE"></span><span class="sk-e" data-skin="1F3FF"></span></div></div>';
   }
   html+='</div>';
