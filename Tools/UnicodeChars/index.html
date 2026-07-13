@@ -400,7 +400,7 @@ function appendRender(grid,items){
   }
   html+='</div>';
   grid.insertAdjacentHTML('beforeend',html);
-  var cells=grid.querySelectorAll('.sc:last-child .sc');if(!cells.length)cells=grid.lastElementChild.querySelectorAll('.sc');
+  var cells=grid.lastElementChild.querySelectorAll('.sc');
   for(var i=0;i<cells.length;i++)cells[i].addEventListener('click',function(e){
     var el=e.currentTarget,cp=parseInt(el.getAttribute('data-cp')),ch=el.querySelector('.ch').textContent;
     var hex=cp.toString(16).toUpperCase();while(hex.length<4)hex='0'+hex;
@@ -411,13 +411,22 @@ function appendRender(grid,items){
 
 function appendUnicodePage(){
   var items=getPageItems('u',state.unicodePage);
+  if(!items||!items.length)return;
   appendRender(document.getElementById('unicodeGrid'),items);
+  // Reset pagination to show current page as active
+  var total=state.totalCount||0;
+  var pages=Math.ceil(total/PER_PAGE)||1;
+  renderPagination(document.getElementById('unicodePagination'),state.unicodePage,pages,'u');
 }
 
 function appendEmojiPage(){
   var t=state.emojiSub==='public'?'e':'ep';
   var items=getPageItems(t,state.emojiPage);
+  if(!items||!items.length)return;
   appendRender(document.getElementById('emojiGrid'),items);
+  var total=state.totalCount||0;
+  var pages=Math.ceil(total/PER_PAGE)||1;
+  renderPagination(document.getElementById('emojiPagination'),state.emojiPage,pages,t);
 }
 
 function renderUnicode(){
