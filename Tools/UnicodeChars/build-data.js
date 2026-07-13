@@ -162,15 +162,17 @@ for (const dn of fs.readdirSync(EMOJI_DIR).sort()) {
   const entries = parseIni(iniPath);
   const data = { cps: new Set(), names: new Map(), skins: new Map() };
   for (const e of entries) {
-    const raw = (e.title || e.code || '').toUpperCase();
+    const raw = (e.title || e.code || '').toUpperCase().trim();
     if (!raw) continue;
-    const parts = raw.split(',').map(s => s.trim()).filter(Boolean);
+    // Normalize: spaces between hex → commas (some ini uses spaces instead of commas)
+    const hexStr = raw.replace(/\s+/g, ',');
+    const parts = hexStr.split(',').map(s => s.trim()).filter(Boolean);
     const firstHex = parts[0];
     if (!/^[0-9A-F]+$/.test(firstHex)) continue;
     const cp = parseInt(firstHex, 16);
 
     // ZWJ sequence (contains 200D) → store full hex for compound rendering
-    if (parts.length > 1 && raw.includes('200D')) {
+    if (parts.length > 1 && hexStr.includes('200D')) {
       const seqHex = parts.join(',');
       if (!data.seqs) data.seqs = [];
       data.seqs.push({ seqHex, baseHex: firstHex, name: e.keyword||'' });

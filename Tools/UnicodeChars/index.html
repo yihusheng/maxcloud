@@ -290,7 +290,12 @@ function filterPublicEmoji(cat,search){
     var sc=parseInt(sl,16);
     f=f.filter(function(it){
       var h=it.cp.toString(16).toUpperCase();
-      return it.name.toLowerCase().indexOf(sl)!==-1||h.indexOf(sl.toUpperCase())!==-1||(sc&&it.cp===sc);
+      // Search by: name, hex code, decimal cp, emoji char, seqHex
+      return it.name.toLowerCase().indexOf(sl)!==-1 ||
+             h.indexOf(sl.toUpperCase())!==-1 ||
+             (sc&&it.cp===sc) ||
+             (it.ch&&it.ch.indexOf(sl)!==-1) ||
+             (it.seqHex&&it.seqHex.indexOf(sl.toUpperCase())!==-1);
     });
   }
   return f;
