@@ -90,7 +90,7 @@ h1{font-size:28px;font-weight:900;letter-spacing:-.03em;line-height:1.15}
    ═══════════════════════════════════════════════ */
 
 .card{background:var(--c);border-radius:var(--rx);box-shadow:0 4px 24px rgba(14,15,12,.06);overflow:hidden}
-.card-dark{background:var(--k);color:var(--p);border-radius:var(--rx)}
+.card-dark{background:var(--k);color:var(--p);border-radius:var(--rx);width:100%}
 .card-pad{padding:var(--s2xl) var(--s2xl) 40px}
 
 /* Feature cards */
