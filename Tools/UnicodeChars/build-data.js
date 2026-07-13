@@ -29,7 +29,7 @@ const FOLDER_MAP = [
   { id:'markers',     folder:'标识', label:'📌 标识' },
   { id:'notation',    folder:'记号', label:'✏ 记号' },
   { id:'math',        folder:'数学', label:'∑ 数学' },
-  { id:'featured',    folder:'精选', label:'⭐ 精选' },
+
 ];
 
 // Quick lookup: folder Chinese name -> category ID
