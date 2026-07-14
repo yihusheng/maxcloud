@@ -285,8 +285,21 @@ function getPuaItems(range,search){
   var r=PUA_RANGES[range];if(!r)return{total:0,allItems:null};
   var searchL=(search||'').toLowerCase().trim();
   if(searchL){
-    var items=[],rM=searchL.match(/^([0-9a-f]+)\s*-\s*([0-9a-f]+)$/i);
-    if(rM){var s=parseInt(rM[1],16),e=parseInt(rM[2],16);for(var j=Math.max(r.start,s);j<=Math.min(r.end,e);j++)items.push({cp:j,ch:String.fromCodePoint(j)})}else{var sc=parseInt(searchL,16);if(!isNaN(sc)&&sc>=r.start&&sc<=r.end)items.push({cp:sc,ch:String.fromCodePoint(sc)})}
+    var items=[];
+    // Hex range
+    var rM=searchL.match(/^([0-9a-f]+)\s*-\s*([0-9a-f]+)$/i);
+    if(rM){var s=parseInt(rM[1],16),e=parseInt(rM[2],16);for(var j=Math.max(r.start,s);j<=Math.min(r.end,e);j++)items.push({cp:j,ch:String.fromCodePoint(j),name:getPuaName(j)});return{total:items.length,allItems:items,range:r}}
+    // Single hex codepoint
+    var sc=parseInt(searchL,16);
+    if(!isNaN(sc)&&sc>=r.start&&sc<=r.end){items.push({cp:sc,ch:String.fromCodePoint(sc),name:getPuaName(sc)});return{total:1,allItems:items,range:r}}
+    // Text / partial hex search — iterate range
+    for(var i=r.start;i<=r.end;i++){
+      var nm=getPuaName(i),h=i.toString(16).toLowerCase();
+      if(nm.toLowerCase().indexOf(searchL)!==-1||h.indexOf(searchL)!==-1||String.fromCodePoint(i)===searchL){
+        items.push({cp:i,ch:String.fromCodePoint(i),name:nm});
+        if(items.length>=200)break;
+      }
+    }
     return{total:items.length,allItems:items,range:r};
   }
   return{total:r.end-r.start+1,allItems:null,range:r};
