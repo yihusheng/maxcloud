@@ -102,6 +102,23 @@ def r2_key_from_src(src):
     return None
 
 
+
+def upload_music_list():
+    """上传 music_list.js 到 R2"""
+    if not TOKEN or not ACCOUNT_ID:
+        print('❌ R2 credentials required for upload')
+        sys.exit(1)
+    with open('scripts/music_list.js', 'r') as f:
+        data = f.read()
+    from urllib.parse import quote
+    encoded = quote('music_list.js', safe='')
+    url = f'https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/r2/buckets/{BUCKET}/objects/{encoded}'
+    req = urllib.request.Request(url, data=data.encode('utf-8'), method='PUT',
+        headers={'Authorization': f'Bearer {TOKEN}', 'Content-Type': 'application/javascript'})
+    resp = urllib.request.urlopen(req)
+    print(f'uploaded music_list.js ({resp.status})')
+
+
 def download_from_r2(r2_key, local_path):
     """从 R2 下载文件到本地"""
     from urllib.parse import quote
@@ -211,4 +228,22 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    import sys
+    if len(sys.argv) > 1 and sys.argv[1] == 'upload':
+        upload_music_list()
+    elif len(sys.argv) > 1 and sys.argv[1] == 'download':
+        # Download music_list.js only (used by workflow before sync)
+        from urllib.parse import quote
+        url = f'https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/r2/buckets/{BUCKET}/objects/{quote("music_list.js", safe="")}'
+        req = urllib.request.Request(url, headers={'Authorization': f'Bearer {TOKEN}'})
+        try:
+            resp = urllib.request.urlopen(req)
+            text = resp.read().decode('utf-8')
+            os.makedirs('scripts', exist_ok=True)
+            with open('scripts/music_list.js', 'w', encoding='utf-8') as f:
+                f.write(text)
+            print('📥 Downloaded music_list.js from R2')
+        except Exception as e:
+            print('⚠️  R2 not found, starting fresh')
+    else:
+        main()

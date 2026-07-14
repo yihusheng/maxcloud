@@ -14,7 +14,6 @@ on:
       - '.github/scripts/sync-r2.py'
       - '.github/scripts/decrypt_kgm.py'
       - 'kugou_key.xz'
-      - '.github/scripts/r2-music-list.py'
       - '.github/scripts/embed-cover.py'
       - '.github/workflows/update-music.yml'
   workflow_dispatch:
@@ -80,7 +79,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          if [ ! -f scripts/music_list.js ]; then python3 .github/scripts/r2-music-list.py download; fi
+          if [ ! -f scripts/music_list.js ]; then python3 .github/scripts/sync-r2.py download; fi
 
       - name: Install deps
         if: steps.check.outputs.has_new == 'true' || steps.sync.outputs.synced == 'true' || env.kgm_decrypted == 'true'
@@ -142,7 +141,7 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: python3 .github/scripts/r2-music-list.py upload
+        run: python3 .github/scripts/sync-r2.py upload
 
       - name: Clean repo — delete all processed files (audio/covers/lyrics/music_list)
         if: steps.check.outputs.has_new == 'true' || steps.sync.outputs.synced == 'true' || env.kgm_decrypted == 'true'
