@@ -255,9 +255,13 @@ function getPublicBlockItems(blockId,search){
   if(searchL){
     var items=[],rM=searchL.match(/^([0-9a-f]+)\s*-\s*([0-9a-f]+)$/i);
     if(rM){var s=parseInt(rM[1],16),e=parseInt(rM[2],16);for(var j=Math.max(blk.start,s);j<=Math.min(blk.end,e);j++)items.push({cp:j,ch:String.fromCodePoint(j)})}else{var sc=parseInt(searchL,16);if(!isNaN(sc)&&sc>=blk.start&&sc<=blk.end)items.push({cp:sc,ch:String.fromCodePoint(sc)})}
-    // If hex search fails, try matching by symbol character
-    if(!items.length&&searchL.length===1){
-      for(var j=blk.start;j<=blk.end;j++){var ch=String.fromCodePoint(j);if(ch===searchL||ch.indexOf(searchL)>=0){items.push({cp:j,ch:ch});break}}
+    // If hex search fails, try symbol character match or partial code point
+    if(!items.length){
+      var sc=parseInt(searchL,16);
+      for(var j=blk.start;j<=blk.end;j++){
+        var ch=String.fromCodePoint(j),h=j.toString(16).toUpperCase();
+        if(ch===searchL||h.indexOf(searchL.toUpperCase())>=0||(!isNaN(sc)&&j===sc)){items.push({cp:j,ch:ch});break}
+      }
     }
     return{total:items.length,allItems:items,block:blk};
   }
@@ -324,6 +328,8 @@ function getPanelItems(panel,search){
     if(state.unicodeSub==='public'){
       var bd=getPublicBlockItems(state.publicBlock,search);
       if(bd.allItems&&bd.allItems.length)return bd.allItems;
+      // 有搜索词但无匹配 → 不降级到「显示全部分组」
+      if(search&&search.trim()&&bd.allItems!==null&&!bd.allItems.length)return[];
       if(bd.block&&bd.block.id!=='all'&&bd.block.start!==undefined){
         var items=[];for(var i=bd.block.start;i<=bd.block.end;i++)items.push({cp:i,ch:String.fromCodePoint(i)});
         return items;
