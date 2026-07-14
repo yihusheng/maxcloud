@@ -19,7 +19,6 @@
     { icon: 'functions',        label: '营养计算器',      href: '/Tools/Calculator/' },
     { icon: 'open_in_new',      label: '跳转工具',    href: '/Tools/JumpTools/' },
     { icon: 'device_hub',       label: 'UA查询',     href: '/Tools/UaQuery/' },
-    { icon: 'dashboard',        label: 'Metacubexd',  href: '/Tools/Metacubexd/' },
   ];
 
   window.WiseNavbarData = NAV_ITEMS.slice();
