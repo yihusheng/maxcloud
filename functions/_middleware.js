@@ -202,7 +202,6 @@ const SKIP_EXTS = new Set([
   'woff','woff2','ttf','eot','json','webmanifest','xml','txt',
   'map','gz','tgz','zip','pdf','mp4','webm',
 ]);
-const NAVBAR_PATHS = [];
 const MUSIC_PATHS = ['/Music'];
 
 function isHtml(pathname, ct) {
@@ -249,29 +248,21 @@ export async function onRequest(context) {
   }
 
   // ── Injection ──
-  const needsNavbar = NAVBAR_PATHS.some(p => path.startsWith(p));
   const needsWise = MUSIC_PATHS.some(p => path.startsWith(p));
 
   // 不需要注入 → 交给 next()
-  if (!needsNavbar && !needsWise && !path.startsWith('/public/music/')) {
+  if (!needsWise && !path.startsWith('/public/music/')) {
     return next();
   }
 
   // 注入场景：需要处理 response
   // 但 /public/music/ 在未命中 R2 时也需要 next() 回退到静态资源
-  const response = needsNavbar || needsWise
-    ? await next()
-    : await next(); // for /public/music/ fallback
+  const response = await next();
 
   if (!isHtml(path, response.headers.get('content-type'))) return response;
 
   try {
     let rewriter = new HTMLRewriter();
-    if (needsNavbar) {
-      rewriter = rewriter
-        .on('head', new NavbarHeadHandler())
-        .on('body', new NavbarBodyHandler());
-    }
     if (needsWise) {
       rewriter = rewriter
         .on('head', new WiseHeadHandler())

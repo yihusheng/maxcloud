@@ -3,7 +3,7 @@
  *  Wise Navbar — 可拖拽导航按钮 + 动态图标
  *  - 首页按钮图标根据当前页面动态变化
  *  - 两枚按钮可拖拽移动，位置存入 localStorage
- *  - Metacubexd / zashboard 等 SPA 同样生效
+ *  - SPA 同样生效
  * ═══════════════════════════════════════════════════════════════
  */
 
@@ -19,7 +19,6 @@
     { icon: 'functions',        label: '营养计算器',      href: '/Tools/Calculator/' },
     { icon: 'open_in_new',      label: '跳转工具',    href: '/Tools/JumpTools/' },
     { icon: 'device_hub',       label: 'UA查询',     href: '/Tools/UaQuery/' },
-    { icon: 'dashboard',        label: 'zashboard',   href: '/Tools/zashboard/' },
     { icon: 'dashboard',        label: 'Metacubexd',  href: '/Tools/Metacubexd/' },
   ];
 
@@ -76,7 +75,6 @@
 
   function injectSpacerCSS() {
     var p = window.location.pathname;
-    if (p.includes('/zashboard/') || p.includes('/Metacubexd/')) return;
     var style = document.createElement('style');
     style.id = 'wiseNavbarSpacerCSS';
     style.textContent =
