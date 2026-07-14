@@ -14,7 +14,6 @@ on:
       - '.github/scripts/sync-r2.py'
       - '.github/scripts/decrypt_kgm.py'
       - 'kugou_key.xz'
-      - '.github/scripts/embed-cover.py'
       - '.github/workflows/update-music.yml'
   workflow_dispatch:
   schedule:

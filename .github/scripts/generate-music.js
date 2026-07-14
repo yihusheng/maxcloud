@@ -192,13 +192,6 @@ function extractUSLT(filePath) {
               newDownload = true;
             }
 
-            // 只要 MP3 无内嵌封面就尝试嵌入（即使外部 JPG 已存在）
-            try {
-              execSync(`python3 .github/scripts/embed-cover.py "${filePath}" "${coverPath}"`, { timeout: 15000 });
-              if (newDownload) console.log(`  💉 嵌入封面到 MP3: ${audioFile}`);
-            } catch (embedErr) {
-              console.warn(`  ⚠️  嵌入封面失败: ${audioFile}`);
-            }
             extractedCover = coverFile;
           }
         } catch (e) {
