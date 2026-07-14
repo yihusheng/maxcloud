@@ -3,7 +3,7 @@
  *
  * [API]   /api/decrypt-key       → KGM 密钥段 (R2 Range)
  * [Proxy] /public/music/*        → R2 Bucket → 回退静态资源
- * [Inject]/Tools/Metacubexd/zashboard → 浮动导航栏 + SW 注销
+ * [Inject] 浮动导航栏 + SW 注销
  * [Inject]/Music/*               → Wise CSS + KGM 入口 + SW 注销
  */
 
@@ -202,7 +202,7 @@ const SKIP_EXTS = new Set([
   'woff','woff2','ttf','eot','json','webmanifest','xml','txt',
   'map','gz','tgz','zip','pdf','mp4','webm',
 ]);
-const NAVBAR_PATHS = ['/Tools/Metacubexd', '/Tools/zashboard'];
+const NAVBAR_PATHS = [];
 const MUSIC_PATHS = ['/Music'];
 
 function isHtml(pathname, ct) {
