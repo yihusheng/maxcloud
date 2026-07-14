@@ -10,13 +10,12 @@ on:
       - 'public/music/*.aac'
       - 'public/music/*.kgm'
       - 'public/music/*.kgm.flac'
-      - 'generate-music.js'
-      - 'sync-r2.py'
-      - 'decrypt_kgm.py'
+      - '.github/scripts/generate-music.js'
+      - '.github/scripts/sync-r2.py'
+      - '.github/scripts/decrypt_kgm.py'
       - 'kugou_key.xz'
-      - 'download-music-list.py'
-      - 'upload-music-list.py'
-      - 'embed-cover.py'
+      - '.github/scripts/r2-music-list.py'
+      - '.github/scripts/embed-cover.py'
       - '.github/workflows/update-music.yml'
   workflow_dispatch:
   schedule:
@@ -49,7 +48,7 @@ jobs:
           count=$(ls public/music/*.kgm public/music/*.kgm.flac 2>/dev/null | wc -l)
           if [ "$count" -gt 0 ]; then
             echo "Found $count KGM file(s), decrypting..."
-            python3 decrypt_kgm.py public/music/*.kgm public/music/*.kgm.flac
+            python3 .github/scripts/decrypt_kgm.py public/music/*.kgm public/music/*.kgm.flac
             rm -f public/music/*.kgm public/music/*.kgm.flac
             echo "kgm_decrypted=true" >> "$GITHUB_ENV"
           else
@@ -73,7 +72,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          python3 sync-r2.py
+          python3 .github/scripts/sync-r2.py
 
       - name: Download current music_list.js from R2 (for merge)
         if: steps.check.outputs.has_new == 'true' || steps.sync.outputs.synced == 'true' || env.kgm_decrypted == 'true'
@@ -81,7 +80,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          if [ ! -f scripts/music_list.js ]; then python3 download-music-list.py; fi
+          if [ ! -f scripts/music_list.js ]; then python3 .github/scripts/r2-music-list.py download; fi
 
       - name: Install deps
         if: steps.check.outputs.has_new == 'true' || steps.sync.outputs.synced == 'true' || env.kgm_decrypted == 'true'
@@ -95,7 +94,7 @@ jobs:
 
       - name: Generate music_list.js + extract covers + lyrics
         if: steps.check.outputs.has_new == 'true' || steps.sync.outputs.synced == 'true' || env.kgm_decrypted == 'true'
-        run: node generate-music.js
+        run: node .github/scripts/generate-music.js
 
       - name: Upload all files to R2
         if: steps.check.outputs.has_new == 'true' || steps.sync.outputs.synced == 'true' || env.kgm_decrypted == 'true'
@@ -143,7 +142,7 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: python3 upload-music-list.py
+        run: python3 .github/scripts/r2-music-list.py upload
 
       - name: Clean repo — delete all processed files (audio/covers/lyrics/music_list)
         if: steps.check.outputs.has_new == 'true' || steps.sync.outputs.synced == 'true' || env.kgm_decrypted == 'true'
