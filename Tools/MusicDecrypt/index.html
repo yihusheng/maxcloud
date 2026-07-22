@@ -95,28 +95,12 @@ function runInWorker(arrayBuffer,format,fileName,extra){
   return new Promise((resolve,reject)=>{
     const id=++nextMsgId;
     callbacks.set(id,{resolve,reject});
-    const w=getWorker(); // 每个任务新建一个 Worker
+    const w=getWorker();
     w._currentId=id;
     const msg={id,arrayBuffer,format,fileName,origin:location.origin};
     const transfer=[arrayBuffer];
     if(extra&&extra.keyData){msg.keyData=extra.keyData;transfer.push(extra.keyData)}
     console.log('[Dispatch]',fileName,'→ Worker',w._idx,'id:',id);
-    w.postMessage(msg,transfer);
-  });
-}
-
-function runInWorker(arrayBuffer,format,fileName,extra){
-  return new Promise((resolve,reject)=>{
-    const id=++nextMsgId;
-    callbacks.set(id,{resolve,reject});
-    // round-robin 分配
-    const w=workerPool[poolRR%POOL_SIZE];
-    poolRR++;
-    w._currentId=id;
-    const msg={id,arrayBuffer,format,fileName,origin:location.origin};
-    const transfer=[arrayBuffer];
-    if(extra&&extra.keyData){msg.keyData=extra.keyData;transfer.push(extra.keyData)}
-    console.log('[Dispatch] 文件',fileName,'→ Worker',w._id,'id:',id);
     w.postMessage(msg,transfer);
   });
 }
@@ -151,21 +135,6 @@ function getKgmKeySlice(fileByteLength){
   const sn=Math.ceil(al/KSS);
   const len=Math.min(sn,_kgmKey.length);
   return _kgmKey.slice(0,len).buffer;
-}
-
-function runInWorker(arrayBuffer,format,fileName,extra){
-  return new Promise((resolve,reject)=>{
-    const id=++nextMsgId;
-    callbacks.set(id,{resolve,reject});
-    let w=workerPool.find(w=>!w._busy);
-    if(!w) w=workerPool[0];
-    w._busy=true;
-    w._currentId=id;
-    const msg={id,arrayBuffer,format,fileName,origin:location.origin};
-    const transfer=[arrayBuffer];
-    if(extra&&extra.keyData){msg.keyData=extra.keyData;transfer.push(extra.keyData)}
-    w.postMessage(msg,transfer);
-  });
 }
 
 // ── DOM ──
