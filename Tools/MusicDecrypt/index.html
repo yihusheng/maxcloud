@@ -356,12 +356,12 @@ async function decryptAll(){
         pf.style.width=(20+(completed/total*80))+'%';
         pt.textContent='已完成 '+doneCount+'/'+total+' 文件'+(errCount>0?', 失败 '+errCount:'')+(completed<total?', 解密中 '+(total-completed)+' 个':'');
       })
-  );
+  });
 
   await Promise.all(workerPromises);
 
-  for(const w of idleWorkers){w.terminate();w._terminated=true}
-  idleWorkers=[];
+  // 清理 Worker 池（标记所有为空闲）
+  for(const w of workerPool){w._busy=false;w._terminated=false}
 
   isDecrypting=false;
   go.disabled=false;pg.classList.remove('show');
