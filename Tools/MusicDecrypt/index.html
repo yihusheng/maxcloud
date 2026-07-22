@@ -129,8 +129,10 @@ async function loadLzmaLib(){
   if(_lzmaLib) return _lzmaLib;
   const urls=[
     'https://cdnjs.cloudflare.com/ajax/libs/LZMA-JS/2.1.3/lzma.js',
-    'https://unpkg.com/lzma-js@2.1.3/src/lzma.js',
-    'https://cdn.jsdelivr.net/npm/lzma-js@2.1.3/src/lzma.js',
+    'https://unpkg.com/lzma-js/src/lzma-d.js',
+    'https://cdn.jsdelivr.net/npm/lzma-js/src/lzma-d.js',
+    'https://unpkg.com/lzma-js/src/lzma.js',
+    'https://cdn.jsdelivr.net/npm/lzma-js/src/lzma.js',
   ];
   for(const url of urls){
     try{
@@ -141,14 +143,10 @@ async function loadLzmaLib(){
         s.onerror=reject;
         document.head.appendChild(s);
       });
-      _lzmaLib=window.LZMA;
-      console.log('[KGM] LZMA 库已加载:', url);
-      return _lzmaLib;
-    }catch(e){
-      console.warn('[KGM] LZMA CDN 失败:', url);
-    }
+      if(window.LZMA){_lzmaLib=window.LZMA;console.log('[KGM] LZMA:',url);return _lzmaLib}
+    }catch(e){/* try next */}
   }
-  throw new Error('LZMA 库加载失败 (已尝试 3 个 CDN)');
+  throw new Error('LZMA 库加载失败 (已尝试 5 个 URL)');
 }
 
 async function getKugouKey(){
