@@ -347,4 +347,4 @@ self.onmessage=async function(e){
   }catch(err){
     self.postMessage({id,success:false,error:err.message});
   }
-};
+};self.postMessage({type:"ready"});

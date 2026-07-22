@@ -63,41 +63,47 @@
 // Worker 逻辑在独立的 worker.js 中
 const WORKER_URL = "worker.js";
 
-// ── Worker 池 ──
-let idleWorkers=[];
+// ── Worker 池：页面加载时预创建 4 个 Worker ──
+const POOL_SIZE=4;
+let workerPool=[];
 let callbacks=new Map();
-let nextWorkerId=0;
+let nextMsgId=0;
 
-function createWorker(){
-  const w=new Worker(WORKER_URL);
-  w._id=++nextWorkerId;
-  w.onmessage=function(ev){
-    const msg=ev.data;
-    const cb=callbacks.get(msg.id);
-    if(cb){
-      callbacks.delete(msg.id);
-      if(msg.success) cb.resolve(msg);
-      else cb.reject(new Error(msg.error||'解密失败'));
-    }
-    if(!w._terminated) idleWorkers.push(w);
-  };
-  w.onerror=function(ev){
-    const cb=callbacks.get(w._currentId);
-    if(cb){callbacks.delete(w._currentId);cb.reject(new Error('Worker 错误: '+ev.message))}
-  };
-  return w;
+function initWorkerPool(){
+  for(let i=0;i<POOL_SIZE;i++){
+    const w=new Worker(WORKER_URL);
+    w._busy=false;  // 标记是否正在处理
+    w._id=i;
+    w.onmessage=function(ev){
+      const msg=ev.data;
+      if(msg.type==='ready') return; // Worker 就绪信号
+      const cb=callbacks.get(msg.id);
+      if(cb){
+        callbacks.delete(msg.id);
+        if(msg.success) cb.resolve(msg);
+        else cb.reject(new Error(msg.error||'解密失败'));
+      }
+      w._busy=false;
+    };
+    w.onerror=function(ev){
+      // Worker 出错时 reject 当前任务并重建
+      const cb=callbacks.get(w._currentId);
+      if(cb){callbacks.delete(w._currentId);cb.reject(new Error('Worker '+w._id+' 错误: '+ev.message))}
+      w._busy=false;
+    };
+    workerPool.push(w);
+  }
 }
-
-function getWorker(){
-  if(idleWorkers.length>0) return idleWorkers.pop();
-  return createWorker();
-}
+initWorkerPool();
 
 function runInWorker(arrayBuffer,format,fileName){
   return new Promise((resolve,reject)=>{
-    const id=Date.now()+Math.random();
+    const id=++nextMsgId;
     callbacks.set(id,{resolve,reject});
-    const w=getWorker();
+    // 找一个空闲 Worker，没有则等待（round-robin）
+    let w=workerPool.find(w=>!w._busy);
+    if(!w) w=workerPool[0]; // 全部繁忙时用第一个（不会发生，因并发数=池大小）
+    w._busy=true;
     w._currentId=id;
     w.postMessage({id,arrayBuffer,format,fileName,origin:location.origin},[arrayBuffer]);
   });
