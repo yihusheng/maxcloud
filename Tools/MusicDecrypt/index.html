@@ -121,59 +121,36 @@ function runInWorker(arrayBuffer,format,fileName,extra){
   });
 }
 
-// ── KGM 密钥：下载 xz → 浏览器解压 → 内存缓存 ──
-let _kgmKey=null; // 解压后的完整密钥 (Uint8Array)
-let _lzmaLib=null;
+// ── KGM 密钥：主线程一次 API 请求拿全部所需密钥段 → 内存缓存 ──
+let _kgmKey=null;
 
-async function loadLzmaLib(){
-  if(_lzmaLib) return _lzmaLib;
-  const urls=[
-    'https://cdnjs.cloudflare.com/ajax/libs/LZMA-JS/2.1.3/lzma.js',
-    'https://unpkg.com/lzma-js/src/lzma-d.js',
-    'https://cdn.jsdelivr.net/npm/lzma-js/src/lzma-d.js',
-    'https://unpkg.com/lzma-js/src/lzma.js',
-    'https://cdn.jsdelivr.net/npm/lzma-js/src/lzma.js',
-  ];
-  for(const url of urls){
-    try{
-      await new Promise((resolve,reject)=>{
-        const s=document.createElement('script');
-        s.src=url;
-        s.onload=resolve;
-        s.onerror=reject;
-        document.head.appendChild(s);
-      });
-      if(window.LZMA){_lzmaLib=window.LZMA;console.log('[KGM] LZMA:',url);return _lzmaLib}
-    }catch(e){/* try next */}
-  }
-  throw new Error('LZMA 库加载失败 (已尝试 5 个 URL)');
-}
-
-async function getKugouKey(){
+async function getKugouKey(fileBuffers){
   if(_kgmKey) return _kgmKey;
-  // 下载 xz 文件 (92KB)
-  const resp=await fetch('kugou_key.xz');
-  if(!resp.ok) throw new Error('密钥文件下载失败');
-  const compressed=new Uint8Array(await resp.arrayBuffer());
-  // 加载 LZMA 库并解压
-  const LZMA=await loadLzmaLib();
-  const decompressed=await new Promise((resolve,reject)=>{
-    LZMA.decompress(compressed,function(result,error){
-      if(error) reject(new Error('密钥解压失败'));
-      else resolve(result);
-    });
-  });
-  _kgmKey=decompressed;
-  console.log('[KGM] 密钥已加载,',(_kgmKey.length/1048576).toFixed(1),'MB');
+  // 计算所有 KGM 文件所需的最大密钥长度
+  let maxSn=0;
+  for(let i=0;i<fileBuffers.length;i++){
+    if(files[i].fmt==='kgm'){
+      const al=fileBuffers[i].byteLength-1024;
+      const sn=Math.ceil(al/KSS);
+      if(sn>maxSn) maxSn=sn;
+    }
+  }
+  if(maxSn===0) return null;
+  // 一次 API 请求获取全部所需密钥段
+  pt.textContent='获取 KGM 密钥…('+maxSn+' bytes)';
+  const resp=await fetch('/api/decrypt-key?slots=0&count='+maxSn);
+  if(!resp.ok) throw new Error('密钥获取失败');
+  _kgmKey=new Uint8Array(await resp.arrayBuffer());
+  console.log('[KGM] 密钥已获取:',_kgmKey.length,'bytes');
   return _kgmKey;
 }
 
 function getKgmKeySlice(fileByteLength){
-  const al=fileByteLength-1024; // HL=1024
-  const sn=Math.ceil(al/KSS);
   if(!_kgmKey) return null;
+  const al=fileByteLength-1024;
+  const sn=Math.ceil(al/KSS);
   const len=Math.min(sn,_kgmKey.length);
-  return _kgmKey.slice(0,len).buffer; // 复制为 ArrayBuffer 用于 transfer
+  return _kgmKey.slice(0,len).buffer;
 }
 
 function runInWorker(arrayBuffer,format,fileName,extra){
@@ -353,7 +330,7 @@ async function decryptAll(){
     pt.textContent='加载 KGM 密钥…';
     pf.style.width='15%';
     try{
-      await getKugouKey(); // 预加载并缓存
+      await getKugouKey(fileBuffers); // 预加载并缓存
     }catch(e){
       console.warn('[KGM] 本地密钥加载失败，回退 API:', e.message);
     }
