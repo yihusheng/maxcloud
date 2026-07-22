@@ -343,6 +343,7 @@ async function decryptAll(){
         f.url=URL.createObjectURL(f.blob);
         f.dlName=msg.dlName||f.name;
         f.status='done';
+        f._t=msg._t1-msg._t0; // 解密耗时(ms)
         doneCount++;
       })
       .catch(err=>{
@@ -354,7 +355,7 @@ async function decryptAll(){
         completed++;
         renderList();
         pf.style.width=(20+(completed/total*80))+'%';
-        pt.textContent='已完成 '+doneCount+'/'+total+' 文件'+(errCount>0?', 失败 '+errCount:'')+(completed<total?', 解密中 '+(total-completed)+' 个':'');
+        pt.textContent='已完成 '+doneCount+'/'+total+' 文件'+(errCount>0?', 失败 '+errCount:'')+(completed<total?', 解密中 '+(total-completed)+' 个':' ✓ 耗时(ms): '+files.filter(f=>f._t).map(f=>f._t).join(', ')+'');
       })
   });
 

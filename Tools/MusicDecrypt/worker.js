@@ -146,7 +146,7 @@ async function kgmDecrypt(fileBuf,origin,keyData){
     if(!kr.ok) throw new Error('密钥获取失败');
     kt=new Uint8Array(await kr.arrayBuffer());
   }
-  const out=new Uint8Array(al);const CH=262144;let p=0;
+  const out=new Uint8Array(al);const CH=1048576;let p=0;
   while(p<al){
     const e=Math.min(p+CH,al);
     for(let j=p;j<e;j++){
@@ -158,7 +158,6 @@ async function kgmDecrypt(fileBuf,origin,keyData){
       out[j]=v^w;
     }
     p=e;
-    if(p<al) await sleep(0);
   }
   return out;
 }
@@ -332,6 +331,7 @@ function tmDecrypt(fileBuf){
 }
 self.onmessage=async function(e){
   const {id,arrayBuffer,format,fileName,origin,keyData}=e.data;
+  const _t0=Date.now();
   try{
     let outRaw;
     switch(format){
@@ -348,7 +348,8 @@ self.onmessage=async function(e){
     const mime=af?af.mime:'application/octet-stream';
     const cn=cleanName(fileName,format);
     const dlName=/\.[\w]+$/.test(cn)?cn:cn+'.'+ext;
-    self.postMessage({id,success:true,result:outRaw.buffer,audioExt:ext,audioMime:mime,dlName},[outRaw.buffer]);
+    const _t1=Date.now();
+    self.postMessage({id,success:true,result:outRaw.buffer,audioExt:ext,audioMime:mime,dlName,_t0,_t1},[outRaw.buffer]);
   }catch(err){
     self.postMessage({id,success:false,error:err.message});
   }
