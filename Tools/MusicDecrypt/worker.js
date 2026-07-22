@@ -331,6 +331,7 @@ function tmDecrypt(fileBuf){
 }
 self.onmessage=async function(e){
   const {id,arrayBuffer,format,fileName,origin,keyData}=e.data;
+  console.log('[Worker] 开始:',fileName,'格式:',format);
   const _t0=Date.now();
   try{
     let outRaw;
