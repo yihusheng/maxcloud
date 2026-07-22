@@ -75,9 +75,10 @@ function getWorker(){
   const w=new Worker(WORKER_URL);
   const idx=workerPool.length;
   w._idx=idx;
+  w._ready=new Promise(resolve=>{w._readyResolve=resolve});
   w.onmessage=function(ev){
     const msg=ev.data;
-    if(msg.type==='ready'){console.log('[Worker]',idx,'就绪');return}
+    if(msg.type==='ready'){console.log('[Worker]',idx,'就绪');w._readyResolve();return}
     const cb=callbacks.get(msg.id);
     if(cb){callbacks.delete(msg.id);if(msg.success) cb.resolve(msg);else cb.reject(new Error(msg.error||'解密失败'))}
     else console.warn('[Worker]',idx,'未知 msg id:',msg.id);
@@ -89,20 +90,6 @@ function getWorker(){
   };
   workerPool.push(w);
   return w;
-}
-
-function runInWorker(arrayBuffer,format,fileName,extra){
-  return new Promise((resolve,reject)=>{
-    const id=++nextMsgId;
-    callbacks.set(id,{resolve,reject});
-    const w=getWorker();
-    w._currentId=id;
-    const msg={id,arrayBuffer,format,fileName,origin:location.origin};
-    const transfer=[arrayBuffer];
-    if(extra&&extra.keyData){msg.keyData=extra.keyData;transfer.push(extra.keyData)}
-    console.log('[Dispatch]',fileName,'→ Worker',w._idx,'id:',id);
-    w.postMessage(msg,transfer);
-  });
 }
 
 // ── KGM 密钥：主线程一次 API 请求拿全部所需密钥段 → 内存缓存 ──
@@ -307,17 +294,33 @@ async function decryptAll(){
     pt.textContent='解密中 0/'+total;
   }
 
-  // Phase 3: 同时派给所有 Worker
+  // Phase 2.75: 创建所有需要的 Worker 并等待就绪
+  const needed=fileBuffers.length;
+  for(let i=0;i<needed;i++) getWorker();
+  await Promise.all(workerPool.slice(0,needed).map(w=>w._ready));
+  console.log('[Worker]',needed,'个全部就绪');
+
+  // Phase 3: 从就绪的 Worker 池同时派发
   let completed=0;
+  let rr=0;
   const workerPromises=fileBuffers.map((buf,i)=>{
     const extra={};
     if(files[i].fmt==='kgm'){
       const slice=getKgmKeySlice(buf.byteLength);
       if(slice) extra.keyData=slice;
     }
-    files[i]._t0=Date.now(); // dispatch 时刻
-    return runInWorker(buf,files[i].fmt,files[i].name,extra)
-      .then(msg=>{
+    files[i]._t0=Date.now();
+    const w=workerPool[rr%needed]; rr++;
+    const id=++nextMsgId;
+    const msg={id,arrayBuffer:buf,format:files[i].fmt,fileName:files[i].name,origin:location.origin};
+    const transfer=[buf];
+    if(extra&&extra.keyData){msg.keyData=extra.keyData;transfer.push(extra.keyData)}
+    console.log('[Dispatch]',files[i].name,'→ Worker',w._idx,'id:',id);
+    return new Promise((resolve,reject)=>{
+      callbacks.set(id,{resolve,reject});
+      w._currentId=id;
+      w.postMessage(msg,transfer);
+    }).then(msg=>{
         const f=files[i];
         const now=Date.now();
         const decBytes=new Uint8Array(msg.result);
