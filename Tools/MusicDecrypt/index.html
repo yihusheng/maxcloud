@@ -37,69 +37,7 @@
     </div>
 
     <div class="ba" id="ba">
-      <a class="dla" id="dlAll">下载全部（zip）</a>
-      <a class="dla" id="dlBatch">批量下载</a>
-    </div>
-
-    <div class="er" id="er"></div>
-
-  </div>
-</div>
-
-<div class="card">
-  <div class="nt">
-    <strong>支持的格式</strong><br>
-    🟣 酷狗 KGM · 🟥 网易云 NCM · 🔵 QQ音乐 QMC / MFLAC / MGG<br>
-    🟠 酷我 KWM · 🟩 虾米 XM<br>
-    • 文件在浏览器本地处理，<strong>不会上传</strong>到任何服务器<br>
-    • 仅 KGM 需要从服务器获取密钥段（几十 KB）<br>
-    • 解密后自动识别格式，可单独下载 / 打包 zip / 批量下载
-  </div>
-</div>
-
-</div>
-
-<script>
-// ═══════════════════════════════════════════════════════════════
-<html lang="zh-CN">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>音乐解密 — Wise</title>
-<meta name="description" content="在浏览器端解密多种加密音乐格式，不上传文件，保护隐私">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&" rel="stylesheet">
-<link rel="stylesheet" href="/style/wise.css">
-</head>
-<body>
-<div class="wrap">
-
-<div class="card">
-  <div class="card-hdr">
-    <span class="dot"></span>
-    <span class="lb">音乐解密</span>
-    <span class="rt"><a href="/Music">← 音乐解锁</a></span>
-  </div>
-  <div class="card-pad">
-
-    <div class="drop-zone" id="dropZone">
-      <div class="ic">📂</div>
-      <div class="ds">拖拽加密音乐文件到此处</div>
-      <div class="ht">或点击选择 · 可多选</div>
-      <input type="file" id="fileInput" multiple
-        accept=".kgm,.kgma,.kgm.flac,.kgma.flac,.ncm,.qmc0,.qmc2,.qmc3,.qmcflac,.qmcogg,.mflac,.mgg,.mflac0,.mgg1,.tkm,.bkcmp3,.bkcflac,.kwm,.xm,.tm0,.tm2,.tm3,.tm6" hidden>
-    </div>
-
-    <div class="fl" id="fl"></div>
-
-    <button class="btn" id="goBtn" disabled>开始解密</button>
-
-    <div class="pg" id="pg">
-      <div class="pt" id="pt"></div>
-      <div class="pb"><div class="pf" id="pf"></div></div>
-    </div>
-
-    <div class="ba" id="ba">
-      <a class="dla" id="dlAll">下载全部（zip）</a>
+      <a class="dla" id="dlAll">下载zip</a>
       <a class="dla" id="dlBatch">批量下载</a>
     </div>
 
@@ -125,17 +63,6 @@
 // Worker 逻辑在独立的 worker.js 中
 const WORKER_URL = "worker.js";
 
-// ═══════════════════════════════════════════════════════════════
-// 主线程代码
-// ═══════════════════════════════════════════════════════════════
-const $=s=>document.querySelector(s);
-const dz=$('#dropZone'),fi=$('#fileInput'),fl=$('#fl'),go=$('#goBtn');
-const pg=$('#pg'),pt=$('#pt'),pf=$('#pf'),er=$('#er');
-const ba=$('#ba'),dlAll=$('#dlAll'),dlBatch=$('#dlBatch');
-
-let files=[];
-let isDecrypting=false;
-
 // ── Worker 池 ──
 let idleWorkers=[];
 let callbacks=new Map();
@@ -152,7 +79,6 @@ function createWorker(){
       if(msg.success) cb.resolve(msg);
       else cb.reject(new Error(msg.error||'解密失败'));
     }
-    // 回收 Worker 到空闲池
     if(!w._terminated) idleWorkers.push(w);
   };
   w.onerror=function(ev){
@@ -177,7 +103,14 @@ function runInWorker(arrayBuffer,format,fileName){
   });
 }
 
-// ── UI ──
+// ── DOM ──
+const $=s=>document.querySelector(s);
+const dz=$('#dropZone'),fi=$('#fileInput'),fl=$('#fl'),go=$('#goBtn');
+const pg=$('#pg'),pt=$('#pt'),pf=$('#pf'),er=$('#er');
+const ba=$('#ba'),dlAll=$('#dlAll'),dlBatch=$('#dlBatch');
+let files=[];
+let isDecrypting=false;
+
 dz.onclick=()=>fi.click();
 dz.ondragover=e=>{e.preventDefault();dz.classList.add('dragover')};
 dz.ondragleave=()=>dz.classList.remove('dragover');
@@ -185,7 +118,6 @@ dz.ondrop=e=>{e.preventDefault();dz.classList.remove('dragover');addFiles(e.data
 fi.onchange=()=>{if(fi.files.length)addFiles(fi.files);fi.value=''};
 go.onclick=decryptAll;
 
-// Event delegation: download, remove, batch download
 fl.onclick=e=>{
   const dl=e.target.closest('.dl');
   if(dl&&dl.classList.contains('ok')){const idx=parseInt(dl.dataset.idx);if(files[idx]&&files[idx].url) saveFile(files[idx].url,files[idx].dlName);return}
@@ -303,23 +235,13 @@ async function decryptAll(){
   er.classList.remove('show');ba.classList.remove('show');
   go.disabled=true;pg.classList.add('show');
 
-  // 重置状态
   for(let i=0;i<files.length;i++) if(files[i].status!=='done'){files[i].status='pending';files[i].blob=null;files[i].url=null;files[i].err=null}
   renderList();
 
   const total=files.length;
   let doneCount=0,errCount=0;
 
-  function updateProgress(){
-    const pct=total>0?(doneCount+errCount)/total*100:0;
-    pf.style.width=pct+'%';
-    const doing=files.filter(f=>f.status==='processing').length;
-    pt.textContent='已完成 '+doneCount+'/'+total+' 文件'+(errCount>0?', 失败 '+errCount:'')+(doing>0?', 解密中 '+doing+' 个':' ✓');
-  }
-
-  // ══════════════════════════════════════════════
-  // Phase 1: 并行读取所有文件 (异步 I/O, 浏览器并发)
-  // ══════════════════════════════════════════════
+  // Phase 1: 并行读取所有文件
   pt.textContent='读取文件中…';
   pf.style.width='10%';
   let fileBuffers;
@@ -331,18 +253,13 @@ async function decryptAll(){
     return;
   }
 
-  // ══════════════════════════════════════════════
-  // Phase 2: 标记所有文件为「处理中」— 一次性更新 UI
-  // ══════════════════════════════════════════════
+  // Phase 2: 标记所有文件为「处理中」
   for(let i=0;i<total;i++) files[i].status='processing';
   renderList();
   pf.style.width='20%';
   pt.textContent='解密中 0/'+total;
 
-  // ══════════════════════════════════════════════
-  // Phase 3: 同时派给所有 Worker — 真正并行解密
-  // ══════════════════════════════════════════════
-  // 立刻启动所有 Worker, 用 .then() 按完成顺序更新 UI
+  // Phase 3: 同时派给所有 Worker
   let completed=0;
   const workerPromises=fileBuffers.map((buf,i)=>
     runInWorker(buf,files[i].fmt,files[i].name)
@@ -354,17 +271,14 @@ async function decryptAll(){
         f.dlName=msg.dlName||f.name;
         f.status='done';
         doneCount++;
-        return true;
       })
       .catch(err=>{
         files[i].status='err';
         files[i].err=err.message||'解密异常';
         errCount++;
-        return false;
       })
       .finally(()=>{
         completed++;
-        // 谁先完成谁先更新 UI（不按数组顺序）
         renderList();
         pf.style.width=(20+(completed/total*80))+'%';
         pt.textContent='已完成 '+doneCount+'/'+total+' 文件'+(errCount>0?', 失败 '+errCount:'')+(completed<total?', 解密中 '+(total-completed)+' 个':'');
@@ -373,7 +287,6 @@ async function decryptAll(){
 
   await Promise.all(workerPromises);
 
-  // 清理空闲 Worker
   for(const w of idleWorkers){w.terminate();w._terminated=true}
   idleWorkers=[];
 
@@ -383,12 +296,11 @@ async function decryptAll(){
   const done=files.filter(f=>f.status==='done');
   if(done.length>0){
     ba.classList.add('show');
-    // zip 下载
     if(done.length===1){
-      dlAll.textContent='下载全部（1 个文件）';
+      dlAll.textContent='下载zip';
       dlAll.href='#';dlAll.onclick=e=>{e.preventDefault();saveFile(done[0].url,done[0].dlName)};
     }else{
-      dlAll.textContent='下载全部（'+done.length+' 个文件，zip）';
+      dlAll.textContent='下载zip';
       dlAll.href='#';dlAll.download='';
       dlAll.onclick=async(e)=>{
         e.preventDefault();
@@ -404,10 +316,9 @@ async function decryptAll(){
         const u=URL.createObjectURL(blob);
         const a=document.createElement('a');a.href=u;a.download='decrypted.zip';a.click();
         setTimeout(()=>URL.revokeObjectURL(u),60000);
-        dlAll.textContent='下载全部（'+done.length+' 个文件，zip）';
+        dlAll.textContent='下载zip';
       };
     }
-    // 批量下载按钮
     dlBatch.textContent='批量下载';
     dlBatch.style.pointerEvents='';
   }
