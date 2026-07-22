@@ -442,7 +442,6 @@ let files=[];
 let isDecrypting=false;
 
 // ── Worker 池 ──
-const MAX_WORKERS=4;
 let idleWorkers=[];
 let callbacks=new Map();
 let nextWorkerId=0;
@@ -622,42 +621,64 @@ async function decryptAll(){
     const pct=total>0?(doneCount+errCount)/total*100:0;
     pf.style.width=pct+'%';
     const doing=files.filter(f=>f.status==='processing').length;
-    pt.textContent='已完成 '+doneCount+'/'+total+' 文件'+(errCount>0?', 失败 '+errCount:'')+(doing>0?', 处理中 '+doing+' →':' ✓');
+    pt.textContent='已完成 '+doneCount+'/'+total+' 文件'+(errCount>0?', 失败 '+errCount:'')+(doing>0?', 解密中 '+doing+' 个':' ✓');
   }
 
-  // 并发链：每个链依次处理文件，多条链并行
-  let nextIdx=0;
+  // ══════════════════════════════════════════════
+  // Phase 1: 并行读取所有文件 (异步 I/O, 浏览器并发)
+  // ══════════════════════════════════════════════
+  pt.textContent='读取文件中…';
+  pf.style.width='10%';
+  let fileBuffers;
+  try{
+    fileBuffers=await Promise.all(files.map(f=>f.file.arrayBuffer()));
+  }catch(e){
+    errMsg('读取文件失败: '+e.message);
+    isDecrypting=false;go.disabled=false;pg.classList.remove('show');
+    return;
+  }
 
-  async function processChain(){
-    while(nextIdx<total){
-      const i=nextIdx++;
-      const f=files[i];
-      if(f.status==='done'){doneCount++;continue}
-      f.status='processing';
-      renderList();
-      updateProgress();
+  // ══════════════════════════════════════════════
+  // Phase 2: 标记所有文件为「处理中」— 一次性更新 UI
+  // ══════════════════════════════════════════════
+  for(let i=0;i<total;i++) files[i].status='processing';
+  renderList();
+  pf.style.width='20%';
+  pt.textContent='解密中 0/'+total;
 
-      try{
-        const buf=await f.file.arrayBuffer();
-        const msg=await runInWorker(buf,f.fmt,f.name);
+  // ══════════════════════════════════════════════
+  // Phase 3: 同时派给所有 Worker — 真正并行解密
+  // ══════════════════════════════════════════════
+  // 立刻启动所有 Worker, 用 .then() 按完成顺序更新 UI
+  let completed=0;
+  const workerPromises=fileBuffers.map((buf,i)=>
+    runInWorker(buf,files[i].fmt,files[i].name)
+      .then(msg=>{
+        const f=files[i];
         const decBytes=new Uint8Array(msg.result);
-        const bl=new Blob([decBytes],{type:msg.audioMime||'application/octet-stream'});
-        const u=URL.createObjectURL(bl);
-        f.blob=bl;f.url=u;f.dlName=msg.dlName||f.name;f.status='done';
+        f.blob=new Blob([decBytes],{type:msg.audioMime||'application/octet-stream'});
+        f.url=URL.createObjectURL(f.blob);
+        f.dlName=msg.dlName||f.name;
+        f.status='done';
         doneCount++;
-      }catch(e){
-        f.status='err';f.err=e.message||'解密异常';
+        return true;
+      })
+      .catch(err=>{
+        files[i].status='err';
+        files[i].err=err.message||'解密异常';
         errCount++;
-      }
-      renderList();
-      updateProgress();
-    }
-  }
+        return false;
+      })
+      .finally(()=>{
+        completed++;
+        // 谁先完成谁先更新 UI（不按数组顺序）
+        renderList();
+        pf.style.width=(20+(completed/total*80))+'%';
+        pt.textContent='已完成 '+doneCount+'/'+total+' 文件'+(errCount>0?', 失败 '+errCount:'')+(completed<total?', 解密中 '+(total-completed)+' 个':'');
+      })
+  );
 
-  const chainCount=Math.min(MAX_WORKERS,total);
-  const chains=[];
-  for(let c=0;c<chainCount;c++) chains.push(processChain());
-  await Promise.all(chains);
+  await Promise.all(workerPromises);
 
   // 清理空闲 Worker
   for(const w of idleWorkers){w.terminate();w._terminated=true}
