@@ -63,42 +63,47 @@
 // Worker 逻辑在独立的 worker.js 中
 const WORKER_URL = "worker.js";
 
-// ── Worker 池：参照 Music 的做法 ──
-const POOL_SIZE = navigator.hardwareConcurrency || 4;
-const KSS=16; // KGM 密钥段大小
+// ── Worker 池 ──
+const KSS=16;
 let workerPool=[];
 let callbacks=new Map();
 let nextMsgId=0;
-let poolRR=0; // round-robin 指针
 
-console.log('[Worker] 池大小:', POOL_SIZE, '(CPU核心数)');
+console.log('[Worker] CPU核心数:', navigator.hardwareConcurrency);
 
-function initWorkerPool(){
-  for(let i=0;i<POOL_SIZE;i++){
-    const w=new Worker(WORKER_URL);
-    w._id=i;
-    w.onmessage=function(ev){
-      const msg=ev.data;
-      if(msg.type==='ready') {console.log('[Worker]',i,'就绪');return}
-      const cb=callbacks.get(msg.id);
-      if(cb){
-        callbacks.delete(msg.id);
-        if(msg.success) cb.resolve(msg);
-        else cb.reject(new Error(msg.error||'解密失败'));
-      }else{
-        console.warn('[Worker]',i,'未知回调 id:',msg.id);
-      }
-    };
-    w.onerror=function(ev){
-      console.error('[Worker]',i,'错误:',ev.message);
-      const cb=callbacks.get(w._currentId);
-      if(cb){callbacks.delete(w._currentId);cb.reject(new Error('Worker '+i+' 错误: '+ev.message))}
-    };
-    workerPool.push(w);
-  }
-  console.log('[Worker] 全部已创建');
+function getWorker(){
+  const w=new Worker(WORKER_URL);
+  const idx=workerPool.length;
+  w._idx=idx;
+  w.onmessage=function(ev){
+    const msg=ev.data;
+    if(msg.type==='ready'){console.log('[Worker]',idx,'就绪');return}
+    const cb=callbacks.get(msg.id);
+    if(cb){callbacks.delete(msg.id);if(msg.success) cb.resolve(msg);else cb.reject(new Error(msg.error||'解密失败'))}
+    else console.warn('[Worker]',idx,'未知 msg id:',msg.id);
+  };
+  w.onerror=function(ev){
+    console.error('[Worker]',idx,'错误:',ev.message);
+    const cb=callbacks.get(w._currentId);
+    if(cb){callbacks.delete(w._currentId);cb.reject(new Error('Worker '+idx+' 错误: '+ev.message))}
+  };
+  workerPool.push(w);
+  return w;
 }
-initWorkerPool();
+
+function runInWorker(arrayBuffer,format,fileName,extra){
+  return new Promise((resolve,reject)=>{
+    const id=++nextMsgId;
+    callbacks.set(id,{resolve,reject});
+    const w=getWorker(); // 每个任务新建一个 Worker
+    w._currentId=id;
+    const msg={id,arrayBuffer,format,fileName,origin:location.origin};
+    const transfer=[arrayBuffer];
+    if(extra&&extra.keyData){msg.keyData=extra.keyData;transfer.push(extra.keyData)}
+    console.log('[Dispatch]',fileName,'→ Worker',w._idx,'id:',id);
+    w.postMessage(msg,transfer);
+  });
+}
 
 function runInWorker(arrayBuffer,format,fileName,extra){
   return new Promise((resolve,reject)=>{
@@ -122,16 +127,28 @@ let _lzmaLib=null;
 
 async function loadLzmaLib(){
   if(_lzmaLib) return _lzmaLib;
-  // 动态加载 LZMA-JS (纯 JS XZ/LZMA 解压器)
-  await new Promise((resolve,reject)=>{
-    const s=document.createElement('script');
-    s.src='https://cdnjs.cloudflare.com/ajax/libs/LZMA-JS/2.1.3/lzma.js';
-    s.onload=resolve;
-    s.onerror=()=>reject(new Error('LZMA 库加载失败'));
-    document.head.appendChild(s);
-  });
-  _lzmaLib=window.LZMA;
-  return _lzmaLib;
+  const urls=[
+    'https://cdnjs.cloudflare.com/ajax/libs/LZMA-JS/2.1.3/lzma.js',
+    'https://unpkg.com/lzma-js@2.1.3/src/lzma.js',
+    'https://cdn.jsdelivr.net/npm/lzma-js@2.1.3/src/lzma.js',
+  ];
+  for(const url of urls){
+    try{
+      await new Promise((resolve,reject)=>{
+        const s=document.createElement('script');
+        s.src=url;
+        s.onload=resolve;
+        s.onerror=reject;
+        document.head.appendChild(s);
+      });
+      _lzmaLib=window.LZMA;
+      console.log('[KGM] LZMA 库已加载:', url);
+      return _lzmaLib;
+    }catch(e){
+      console.warn('[KGM] LZMA CDN 失败:', url);
+    }
+  }
+  throw new Error('LZMA 库加载失败 (已尝试 3 个 CDN)');
 }
 
 async function getKugouKey(){
