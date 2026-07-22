@@ -65,6 +65,7 @@ const WORKER_URL = "worker.js";
 
 // ── Worker 池：页面加载时预创建 4 个 Worker ──
 const POOL_SIZE=4;
+const KSS=16; // KGM 密钥段大小，与 worker.js 一致
 let workerPool=[];
 let callbacks=new Map();
 let nextMsgId=0;
@@ -96,16 +97,63 @@ function initWorkerPool(){
 }
 initWorkerPool();
 
-function runInWorker(arrayBuffer,format,fileName){
+// ── KGM 密钥：下载 xz → 浏览器解压 → 内存缓存 ──
+let _kgmKey=null; // 解压后的完整密钥 (Uint8Array)
+let _lzmaLib=null;
+
+async function loadLzmaLib(){
+  if(_lzmaLib) return _lzmaLib;
+  // 动态加载 LZMA-JS (纯 JS XZ/LZMA 解压器)
+  await new Promise((resolve,reject)=>{
+    const s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/LZMA-JS/2.1.3/lzma.js';
+    s.onload=resolve;
+    s.onerror=()=>reject(new Error('LZMA 库加载失败'));
+    document.head.appendChild(s);
+  });
+  _lzmaLib=window.LZMA;
+  return _lzmaLib;
+}
+
+async function getKugouKey(){
+  if(_kgmKey) return _kgmKey;
+  // 下载 xz 文件 (92KB)
+  const resp=await fetch('kugou_key.xz');
+  if(!resp.ok) throw new Error('密钥文件下载失败');
+  const compressed=new Uint8Array(await resp.arrayBuffer());
+  // 加载 LZMA 库并解压
+  const LZMA=await loadLzmaLib();
+  const decompressed=await new Promise((resolve,reject)=>{
+    LZMA.decompress(compressed,function(result,error){
+      if(error) reject(new Error('密钥解压失败'));
+      else resolve(result);
+    });
+  });
+  _kgmKey=decompressed;
+  console.log('[KGM] 密钥已加载,',(_kgmKey.length/1048576).toFixed(1),'MB');
+  return _kgmKey;
+}
+
+function getKgmKeySlice(fileByteLength){
+  const al=fileByteLength-1024; // HL=1024
+  const sn=Math.ceil(al/KSS);
+  if(!_kgmKey) return null;
+  const len=Math.min(sn,_kgmKey.length);
+  return _kgmKey.slice(0,len).buffer; // 复制为 ArrayBuffer 用于 transfer
+}
+
+function runInWorker(arrayBuffer,format,fileName,extra){
   return new Promise((resolve,reject)=>{
     const id=++nextMsgId;
     callbacks.set(id,{resolve,reject});
-    // 找一个空闲 Worker，没有则等待（round-robin）
     let w=workerPool.find(w=>!w._busy);
-    if(!w) w=workerPool[0]; // 全部繁忙时用第一个（不会发生，因并发数=池大小）
+    if(!w) w=workerPool[0];
     w._busy=true;
     w._currentId=id;
-    w.postMessage({id,arrayBuffer,format,fileName,origin:location.origin},[arrayBuffer]);
+    const msg={id,arrayBuffer,format,fileName,origin:location.origin};
+    const transfer=[arrayBuffer];
+    if(extra&&extra.keyData){msg.keyData=extra.keyData;transfer.push(extra.keyData)}
+    w.postMessage(msg,transfer);
   });
 }
 
@@ -265,10 +313,29 @@ async function decryptAll(){
   pf.style.width='20%';
   pt.textContent='解密中 0/'+total;
 
+  // Phase 2.5: 如有 KGM 文件，预加载密钥（仅一次，后续 KGM 文件命中缓存）
+  const hasKgm=files.some(f=>f.fmt==='kgm');
+  if(hasKgm){
+    pt.textContent='加载 KGM 密钥…';
+    pf.style.width='15%';
+    try{
+      await getKugouKey(); // 预加载并缓存
+    }catch(e){
+      console.warn('[KGM] 本地密钥加载失败，回退 API:', e.message);
+    }
+    pf.style.width='20%';
+    pt.textContent='解密中 0/'+total;
+  }
+
   // Phase 3: 同时派给所有 Worker
   let completed=0;
-  const workerPromises=fileBuffers.map((buf,i)=>
-    runInWorker(buf,files[i].fmt,files[i].name)
+  const workerPromises=fileBuffers.map((buf,i)=>{
+    const extra={};
+    if(files[i].fmt==='kgm'){
+      const slice=getKgmKeySlice(buf.byteLength);
+      if(slice) extra.keyData=slice;
+    }
+    return runInWorker(buf,files[i].fmt,files[i].name,extra)
       .then(msg=>{
         const f=files[i];
         const decBytes=new Uint8Array(msg.result);

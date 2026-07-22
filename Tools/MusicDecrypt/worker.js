@@ -132,15 +132,20 @@ function aes128EcbDecrypt(cipherText,keyBytes){
   if(pad>0&&pad<=16) return pt.slice(0,pt.length-pad);
   return pt;
 }
-async function kgmDecrypt(fileBuf,origin){
+async function kgmDecrypt(fileBuf,origin,keyData){
   const d=u8(fileBuf);
   for(let i=0;i<28;i++) if(d[i]!==KGM_MAGIC[i]) throw new Error('无效 KGM 文件');
   const ok=new Uint8Array(OKL);ok.set(d.subarray(0x1c,0x2c));
   const al=d.length-HL,sn=Math.ceil(al/KSS);
-  const url=origin+'/api/decrypt-key?slots=0&count='+sn;
-  const kr=await fetch(url);
-  if(!kr.ok) throw new Error('密钥获取失败');
-  const kt=new Uint8Array(await kr.arrayBuffer());
+  let kt;
+  if(keyData){
+    kt=new Uint8Array(keyData);
+  }else{
+    const url=origin+'/api/decrypt-key?slots=0&count='+sn;
+    const kr=await fetch(url);
+    if(!kr.ok) throw new Error('密钥获取失败');
+    kt=new Uint8Array(await kr.arrayBuffer());
+  }
   const out=new Uint8Array(al);const CH=262144;let p=0;
   while(p<al){
     const e=Math.min(p+CH,al);
@@ -326,11 +331,11 @@ function tmDecrypt(fileBuf){
   return d;
 }
 self.onmessage=async function(e){
-  const {id,arrayBuffer,format,fileName,origin}=e.data;
+  const {id,arrayBuffer,format,fileName,origin,keyData}=e.data;
   try{
     let outRaw;
     switch(format){
-      case 'kgm':outRaw=await kgmDecrypt(arrayBuffer,origin);break;
+      case 'kgm':outRaw=await kgmDecrypt(arrayBuffer,origin,keyData||null);break;
       case 'ncm':outRaw=ncmDecrypt(arrayBuffer);break;
       case 'kwm':outRaw=kwmDecrypt(arrayBuffer);break;
       case 'xm':outRaw=xmDecrypt(arrayBuffer);break;
