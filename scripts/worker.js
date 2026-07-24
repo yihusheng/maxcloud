@@ -1,7 +1,19 @@
 /**
  * MaxCloud Web Worker — 并行处理
- * 处理：封面颜色提取、LRC 歌词解析
+ * 处理：封面颜色提取、LRC 歌词解析、音乐列表加载
+ *
+ * 所有消息处理都包裹 try-catch，确保始终回复主线程。
  */
+
+// ── 全局未捕获错误兜底（确保 Worker 不会静默死亡）──
+self.onerror = function(msg, src, line, col, err) {
+  console.error('[Worker] ⚠️ 全局错误:', msg, 'at', line + ':' + col);
+  // 无法回复主线程（不知道 id），只能 log
+};
+self.addEventListener('unhandledrejection', function(e) {
+  console.error('[Worker] ⚠️ 未处理的 Promise 拒绝:', e.reason ? (e.reason.message || e.reason) : e);
+});
+
 self.addEventListener('message', async function (e) {
   var msg = e.data;
   if (!msg || typeof msg !== 'object') return;
@@ -11,68 +23,62 @@ self.addEventListener('message', async function (e) {
   // 输入校验
   if (typeof type !== 'string' || typeof id !== 'number') return;
 
-  if (type === 'extractColor') {
-    if (typeof msg.url !== 'string' || msg.url.length > 2048) return;
-    try {
+  try {
+    if (type === 'extractColor') {
+      if (typeof msg.url !== 'string' || msg.url.length > 2048) throw new Error('invalid url');
       var rgb = await extractColorFromUrl(msg.url);
       self.postMessage({ type: 'extractColor', id: id, rgb: rgb, t: performance.now() });
-    } catch (err) {
-      self.postMessage({ type: 'extractColor', id: id, rgb: { r: 100, g: 145, b: 65 }, error: true, t: performance.now() });
-    }
-  } else if (type === 'parseLRC') {
-    if (typeof msg.text !== 'string' || msg.text.length > 1048576) return; // 最大 1MB
-    try {
+
+    } else if (type === 'parseLRC') {
+      if (typeof msg.text !== 'string' || msg.text.length > 1048576) throw new Error('invalid text');
       var result = parseLRC(msg.text);
       self.postMessage({ type: 'parseLRC', id: id, data: result, t: performance.now() });
-    } catch (err) {
-      self.postMessage({ type: 'parseLRC', id: id, data: [], error: true, t: performance.now() });
-    }
-  } else if (type === 'loadMusicList') {
-    // [Worker] 加载音乐列表：网络请求 + JSON 解析，不阻塞主线程
-    console.log('[Worker] loadMusicList: 开始请求 /music_list.js');
-    try {
-      var songs = await fetchMusicList();
+
+    } else if (type === 'loadMusicList') {
+      console.log('[Worker] loadMusicList: 开始请求 /music_list.js');
+      var songs = await fetchMusicListWithFallback();
       self.postMessage({ type: 'loadMusicList', id: id, data: songs, t: performance.now() });
       console.log('[Worker] loadMusicList: ✅ 成功加载 ' + songs.length + ' 首歌曲');
-    } catch (err) {
-      console.error('[Worker] loadMusicList 失败:', err.message);
-      try {
-        var songs = await fetchMusicListFallback();
-        self.postMessage({ type: 'loadMusicList', id: id, data: songs, t: performance.now() });
-        console.log('[Worker] loadMusicList 兜底成功: ' + songs.length + ' 首歌曲');
-      } catch (err2) {
-        console.error('[Worker] loadMusicList 全部失败:', err2.message);
-        self.postMessage({ type: 'loadMusicList', id: id, data: [], error: true, errorMsg: err2.message, t: performance.now() });
-      }
+
+    } else {
+      // 未知类型也回复，避免主线程悬空等待
+      self.postMessage({ type: type, id: id, data: [], error: true, errorMsg: 'unknown type: ' + type });
     }
+  } catch (err) {
+    console.error('[Worker] 处理失败 type=' + type + ':', err.message || err);
+    // 即使全部失败也回复空数组，让主线程知道可以降级
+    self.postMessage({ type: type, id: id, data: [], error: true, errorMsg: err.message || String(err), t: performance.now() });
   }
 });
 
-// ── 音乐列表加载（Worker 内 fetch + JSON 解析，释放主线程）──
-async function fetchMusicList() {
-  var r = await fetch('/music_list.js?' + Date.now(), {
-    signal: AbortSignal.timeout(8000)
-  });
-  if (!r.ok) throw new Error('HTTP ' + r.status);
-  var text = await r.text();
-  var start = text.indexOf('[');
-  var end = text.lastIndexOf(']');
-  if (start === -1 || end === -1 || end <= start) throw new Error('invalid format');
-  var songs = JSON.parse(text.substring(start, end + 1));
-  if (!songs.length) throw new Error('empty list');
-  return songs;
+// ── 音乐列表加载（带超时 + 兜底重试）──
+async function fetchMusicListWithFallback() {
+  try {
+    return await fetchMusicList('/music_list.js?' + Date.now(), 5000);
+  } catch (err) {
+    console.warn('[Worker] fetchMusicList 失败:', err.message, '→ 兜底重试');
+    return await fetchMusicList('/music_list.js', 5000);
+  }
 }
 
-async function fetchMusicListFallback() {
-  var r = await fetch('/music_list.js', { cache: 'reload' });
-  if (!r.ok) throw new Error('HTTP ' + r.status);
-  var text = await r.text();
-  var start = text.indexOf('[');
-  var end = text.lastIndexOf(']');
-  if (start === -1 || end === -1 || end <= start) throw new Error('invalid format');
-  var songs = JSON.parse(text.substring(start, end + 1));
-  if (!songs.length) throw new Error('empty list');
-  return songs;
+async function fetchMusicList(url, timeoutMs) {
+  var controller = new AbortController();
+  var timer = setTimeout(function() { controller.abort(); }, timeoutMs);
+  try {
+    var r = await fetch(url, { signal: controller.signal });
+    clearTimeout(timer);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    var text = await r.text();
+    var start = text.indexOf('[');
+    var end = text.lastIndexOf(']');
+    if (start === -1 || end === -1 || end <= start) throw new Error('invalid format');
+    var songs = JSON.parse(text.substring(start, end + 1));
+    if (!songs.length) throw new Error('empty list');
+    return songs;
+  } catch (e) {
+    clearTimeout(timer);
+    throw e;
+  }
 }
 
 // ── 颜色提取 (OffscreenCanvas) ──

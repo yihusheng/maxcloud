@@ -69,20 +69,22 @@ export async function loadMusicList() {
 
   // ── 方案 A: 先走 Worker 加载（不阻塞主线程 UI）──
   var loaded = await new Promise(function(resolve) {
+    // Worker 内 5s×2 次重试，主线程等 12s 给够时间
     var to = setTimeout(function() {
-      console.warn('[Player] Worker loadMusicList 超时(10s)，切主线程');
+      console.warn('[Player] Worker loadMusicList 超时(12s)，切主线程');
       resolve(false);
-    }, 10000);
+    }, 12000);
     wPost('loadMusicList', {}, function(m) {
       clearTimeout(to);
       // Worker 晚到但主线程已加载 → 忽略
-      if (state.songs && state.songs.length > 0) { resolve(true); return; }
+      if (state.songs && state.songs.length > 0) { console.log('[Player] Worker 晚到，忽略'); resolve(true); return; }
       if (m && m.data && Array.isArray(m.data) && m.data.length > 0) {
         state.songs = m.data;
-        console.log('[Player] ✅ Worker 加载成功: ' + state.songs.length + ' 首歌曲');
+        console.log('[Player] ✅ Worker 加载成功: ' + state.songs.length + ' 首歌曲 (t=' + (m.t ? (performance.now() - m.t).toFixed(0) + 'ms)' : '?)'));
         resolve(true);
       } else {
-        console.warn('[Player] Worker 返回空' + (m.error ? ' (' + (m.errorMsg || '?') + ')' : '') + '，切主线程');
+        var errInfo = m && m.error ? (' err=' + (m.errorMsg || '?')) : '';
+        console.warn('[Player] Worker 返回空' + errInfo + '，切主线程');
         resolve(false);
       }
     });
