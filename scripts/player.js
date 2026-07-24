@@ -51,7 +51,7 @@ playSong = function() {
 };
 
 export async function loadMusicList() {
-  // 读取单 Cookie 恢复状态
+  // ── 从 Cookie 恢复播放状态 ──
   try {
     var saved = JSON.parse(CookieUtils.get('player') || '{}');
     if (typeof saved.i === 'number' && !isNaN(saved.i)) {
@@ -62,52 +62,79 @@ export async function loadMusicList() {
       state._restorePlaying = saved.p !== null;
     }
   } catch(e) {}
+  console.log('[Player] loadMusicList: 恢复状态 i=' + state.currentSongIndex + ' shuffle=' + state.isShuffle + ' repeat=' + state.isRepeat + ' pos=' + state._restorePosition);
 
   // 立即同步按钮状态，不等歌单加载
   document.getElementById('shuffleBtn').classList.toggle('active', state.isShuffle);
 
-  try {
-    var r = await fetch('/music_list.js?' + Date.now(), {
-      signal: AbortSignal.timeout(8000)
+  // ── 方案 A: 先走 Worker 加载（不阻塞主线程 UI）──
+  var loaded = await new Promise(function(resolve) {
+    var to = setTimeout(function() {
+      console.warn('[Player] Worker loadMusicList 超时(10s)，切主线程');
+      resolve(false);
+    }, 10000);
+    wPost('loadMusicList', {}, function(m) {
+      clearTimeout(to);
+      // Worker 晚到但主线程已加载 → 忽略
+      if (state.songs && state.songs.length > 0) { resolve(true); return; }
+      if (m && m.data && Array.isArray(m.data) && m.data.length > 0) {
+        state.songs = m.data;
+        console.log('[Player] ✅ Worker 加载成功: ' + state.songs.length + ' 首歌曲');
+        resolve(true);
+      } else {
+        console.warn('[Player] Worker 返回空' + (m.error ? ' (' + (m.errorMsg || '?') + ')' : '') + '，切主线程');
+        resolve(false);
+      }
     });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    var text = await r.text();
-    var start = text.indexOf('[');
-    var end = text.lastIndexOf(']');
-    state.songs = (start !== -1 && end !== -1 && end > start) ? JSON.parse(text.substring(start, end + 1)) : [];
-    if (!state.songs.length) throw new Error('empty list');
-    console.log('🎵 已加载 ' + state.songs.length + ' 首歌曲');
-  } catch (e) {
-    console.warn('音乐列表加载失败:', e.message || e);
+  });
+
+  // ── 方案 B: Worker 失败 → 主线程直接加载 ──
+  if (!loaded) {
+    console.log('[Player] 主线程加载音乐列表...');
     try {
-      var r2 = await fetch('/music_list.js', { cache: 'reload' });
-      if (r2.ok) {
-        var text2 = await r2.text();
-        var s2 = text2.indexOf('[');
-        var e2 = text2.lastIndexOf(']');
-        state.songs = (s2 !== -1 && e2 !== -1 && e2 > s2) ? JSON.parse(text2.substring(s2, e2 + 1)) : [];
-        if (state.songs.length > 0) {
-          console.log('🎵 已加载 ' + state.songs.length + ' 首歌曲');
-        } else { throw new Error('empty'); }
-      } else { throw new Error('HTTP ' + r2.status); }
-    } catch(e2) {
-      console.error('全部加载失败:', e2);
-      state.songs = [];
+      var r = await fetch('/music_list.js?' + Date.now(), { signal: AbortSignal.timeout(8000) });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      var text = await r.text();
+      var start = text.indexOf('[');
+      var end = text.lastIndexOf(']');
+      state.songs = (start !== -1 && end !== -1 && end > start) ? JSON.parse(text.substring(start, end + 1)) : [];
+      if (!state.songs.length) throw new Error('empty list');
+      console.log('[Player] 主线程加载成功: ' + state.songs.length + ' 首歌曲');
+    } catch (e) {
+      console.warn('[Player] 主线程加载失败:', e.message || e);
+      try {
+        var r2 = await fetch('/music_list.js', { cache: 'reload' });
+        if (r2.ok) {
+          var text2 = await r2.text();
+          var s2 = text2.indexOf('[');
+          var e2 = text2.lastIndexOf(']');
+          state.songs = (s2 !== -1 && e2 !== -1 && e2 > s2) ? JSON.parse(text2.substring(s2, e2 + 1)) : [];
+          if (state.songs.length > 0) {
+            console.log('[Player] 主线程兜底成功: ' + state.songs.length + ' 首歌曲');
+          } else { throw new Error('empty'); }
+        } else { throw new Error('HTTP ' + r2.status); }
+      } catch(e2) {
+        console.error('[Player] 全部加载失败:', e2);
+        state.songs = [];
+      }
     }
   }
+
+  // ── 兜底占位 ──
   if (state.songs.length === 0) {
+    console.warn('[Player] 音乐列表为空，使用占位');
     state.songs = [{ title: '暂无歌曲', artist: '请添加 .mp3 文件到 public/music 目录', cover: '', src: '' }];
   }
-  // 恢复歌曲
+
+  // ── 恢复歌曲 ──
   if (state.songs[state.currentSongIndex]) {
     loadSong(state.songs[state.currentSongIndex]);
-    // 恢复播放进度
     if (state._restorePosition > 0) {
       var waitForLoad = setInterval(function() {
         if (state.currentHowl && state.currentHowl.state() === 'loaded') {
           clearInterval(waitForLoad);
-          try { state.currentHowl.seek(Math.min(state._restorePosition, state.currentHowl.duration() || 0)); } catch(e) {}
-          if (state._restorePlaying) setTimeout(function() { try { state.currentHowl.play(); } catch(e){} }, 200);
+          try { state.currentHowl.seek(Math.min(state._restorePosition, state.currentHowl.duration() || 0)); } catch(e) { console.warn('[Player] seek恢复失败', e); }
+          if (state._restorePlaying) setTimeout(function() { try { state.currentHowl.play(); console.log('[Player] 恢复播放'); } catch(e){} }, 200);
           state._restorePosition = 0;
           state._restorePlaying = false;
         }
@@ -116,6 +143,7 @@ export async function loadMusicList() {
     }
   } else {
     state.currentSongIndex = Math.floor(Math.random() * state.songs.length);
+    console.log('[Player] 随机选歌: 索引=' + state.currentSongIndex);
     loadSong(state.songs[state.currentSongIndex]);
   }
 }
@@ -186,16 +214,43 @@ document.getElementById('playBtn').addEventListener('click',function(){ if (!sta
 export function toggleShuffle() {
   state.isShuffle = !state.isShuffle;
   document.getElementById('shuffleBtn').classList.toggle('active', state.isShuffle);
+  console.log('[Player] 🔀 随机播放: ' + (state.isShuffle ? 'ON' : 'OFF'));
   savePlayerState();
 }
 document.getElementById('shuffleBtn').addEventListener('click', toggleShuffle);
 document.getElementById('playlistBtn').addEventListener('click', openPlaylist);
 
+// ── 随机索引（避免与当前重复）──
+function getRandomIndex() {
+  if (state.songs.length <= 1) return 0;
+  var idx;
+  do { idx = Math.floor(Math.random() * state.songs.length); }
+  while (idx === state.currentSongIndex);
+  return idx;
+}
+
 function getNextIndex() { if (state.isRepeat) return state.currentSongIndex; return state.isShuffle ? getRandomIndex() : (state.currentSongIndex + 1) % state.songs.length; }
 function getPrevIndex() { if (state.isRepeat) return state.currentSongIndex; if (state.isShuffle) return getRandomIndex(); return (state.currentSongIndex - 1 + state.songs.length) % state.songs.length; }
 
-document.getElementById('nextBtn').addEventListener('click', function(){ if(!state.songs.length) return; state.currentSongIndex = getNextIndex(); loadSong(state.songs[state.currentSongIndex]); playSong(); savePlayerState(); });
-document.getElementById('prevBtn').addEventListener('click', function(){ if(!state.songs.length) return; state.currentSongIndex = getPrevIndex(); loadSong(state.songs[state.currentSongIndex]); playSong(); savePlayerState(); });
+document.getElementById('nextBtn').addEventListener('click', function(){
+  if(!state.songs.length) return;
+  state.currentSongIndex = getNextIndex();
+  var song = state.songs[state.currentSongIndex];
+  console.log('[Player] ▶ 下一曲: [' + state.currentSongIndex + '] ' + (song ? (song.artist + ' - ' + song.title) : '?'));
+  loadSong(song);
+  playSong();
+  savePlayerState();
+});
+
+document.getElementById('prevBtn').addEventListener('click', function(){
+  if(!state.songs.length) return;
+  state.currentSongIndex = getPrevIndex();
+  var song = state.songs[state.currentSongIndex];
+  console.log('[Player] ◀ 上一曲: [' + state.currentSongIndex + '] ' + (song ? (song.artist + ' - ' + song.title) : '?'));
+  loadSong(song);
+  playSong();
+  savePlayerState();
+});
 
 function parseLRC(lrcText) {
   var lines = lrcText.split('\n');
@@ -338,8 +393,9 @@ function updateLyricHighlight() {
 }
 
 export function loadSong(song){
-  if (!song || !song.src) { console.warn('loadSong: 无效歌曲'); return; }
-  if (!state.songs || state.songs.length === 0) { console.warn('loadSong: 歌曲列表为空'); return; }
+  if (!song || !song.src) { console.warn('[Player] loadSong: 无效歌曲'); return; }
+  if (!state.songs || state.songs.length === 0) { console.warn('[Player] loadSong: 歌曲列表为空'); return; }
+  console.log('[Player] loadSong: ' + (song.artist ? song.artist + ' - ' : '') + song.title + ' [' + state.currentSongIndex + '/' + state.songs.length + ']');
   if (state.currentHowl) { state.currentHowl.unload(); state.currentHowl = null; }
 
   var songId = Date.now(); state.currentSongId = songId;
@@ -422,6 +478,7 @@ export function loadSong(song){
     },
     onplay: function() {
       if (songId !== state.currentSongId) return;
+      console.log('[Player] ▶ 播放中: ' + song.title);
       updateThemePlayState(true);
       document.getElementById('playIcon').innerText = 'pause';
       document.getElementById('playBtn').style.opacity = '';
@@ -429,16 +486,18 @@ export function loadSong(song){
     },
     onpause: function() {
       if (songId !== state.currentSongId) return;
+      console.log('[Player] ⏸ 暂停');
       updateThemePlayState(false);
       document.getElementById('playIcon').innerText = 'play_arrow';
       setPlaybackState('paused');
     },
     onend: function() {
       if (songId !== state.currentSongId) return;
+      console.log('[Player] ⏹ 歌曲结束，自动下一曲');
       document.getElementById('nextBtn').click();
     },
     onloaderror: function(id, err) {
-      console.error('加载失败:', song.src, err);
+      console.error('[Player] 加载失败:', song.src, err);
       if (songId !== state.currentSongId) return;
       document.getElementById('playIcon').innerText = 'play_arrow';
       document.getElementById('playBtn').style.opacity = '';
@@ -633,5 +692,6 @@ document.getElementById('playlistHandle').addEventListener('click', closePlaylis
 document.getElementById('playlistRepeatBtn').addEventListener('click', function() {
   state.isRepeat = !state.isRepeat;
   this.classList.toggle('active', state.isRepeat);
+  console.log('[Player] 🔁 单曲循环: ' + (state.isRepeat ? 'ON' : 'OFF'));
   savePlayerState();
 });

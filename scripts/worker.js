@@ -27,8 +27,53 @@ self.addEventListener('message', async function (e) {
     } catch (err) {
       self.postMessage({ type: 'parseLRC', id: id, data: [], error: true, t: performance.now() });
     }
+  } else if (type === 'loadMusicList') {
+    // [Worker] 加载音乐列表：网络请求 + JSON 解析，不阻塞主线程
+    console.log('[Worker] loadMusicList: 开始请求 /music_list.js');
+    try {
+      var songs = await fetchMusicList();
+      self.postMessage({ type: 'loadMusicList', id: id, data: songs, t: performance.now() });
+      console.log('[Worker] loadMusicList: ✅ 成功加载 ' + songs.length + ' 首歌曲');
+    } catch (err) {
+      console.error('[Worker] loadMusicList 失败:', err.message);
+      try {
+        var songs = await fetchMusicListFallback();
+        self.postMessage({ type: 'loadMusicList', id: id, data: songs, t: performance.now() });
+        console.log('[Worker] loadMusicList 兜底成功: ' + songs.length + ' 首歌曲');
+      } catch (err2) {
+        console.error('[Worker] loadMusicList 全部失败:', err2.message);
+        self.postMessage({ type: 'loadMusicList', id: id, data: [], error: true, errorMsg: err2.message, t: performance.now() });
+      }
+    }
   }
 });
+
+// ── 音乐列表加载（Worker 内 fetch + JSON 解析，释放主线程）──
+async function fetchMusicList() {
+  var r = await fetch('/music_list.js?' + Date.now(), {
+    signal: AbortSignal.timeout(8000)
+  });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  var text = await r.text();
+  var start = text.indexOf('[');
+  var end = text.lastIndexOf(']');
+  if (start === -1 || end === -1 || end <= start) throw new Error('invalid format');
+  var songs = JSON.parse(text.substring(start, end + 1));
+  if (!songs.length) throw new Error('empty list');
+  return songs;
+}
+
+async function fetchMusicListFallback() {
+  var r = await fetch('/music_list.js', { cache: 'reload' });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  var text = await r.text();
+  var start = text.indexOf('[');
+  var end = text.lastIndexOf(']');
+  if (start === -1 || end === -1 || end <= start) throw new Error('invalid format');
+  var songs = JSON.parse(text.substring(start, end + 1));
+  if (!songs.length) throw new Error('empty list');
+  return songs;
+}
 
 // ── 颜色提取 (OffscreenCanvas) ──
 async function extractColorFromUrl(url) {
