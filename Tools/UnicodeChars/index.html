@@ -235,6 +235,8 @@ function isEmojiChar(cp){
   if(cp>=0x1F560&&cp<=0x1F57F)return 1;if(cp>=0x1F580&&cp<=0x1F59F)return 1;if(cp>=0x1F5A0&&cp<=0x1F5FF)return 1;
   return 0;
 }
+// twemoji-parser 方案: 剥离异体选择符 VS16(U+FE0F)/VS15(U+FE0E)，保留 ZWJ 序列中的
+function removeVS16s(s){return s.indexOf("\u200D")<0?s.replace(/[\uFE0F\uFE0E]/g,""):s;}
 function loadHistory(){try{var r=getCookie('unicode_history');if(r){state.history=JSON.parse(r);if(!Array.isArray(state.history))state.history=[]}}catch(e){state.history=[]}}
 function saveHistory(){if(state.history.length>50)state.history=state.history.slice(0,50);setCookie('unicode_history',JSON.stringify(state.history),365)}
 function addHistory(item){for(var i=0;i<state.history.length;i++){if(state.history[i].cp===item.cp){state.history.splice(i,1);break}}state.history.unshift(item);saveHistory();renderHistory()}
@@ -444,14 +446,17 @@ function filterPublicEmoji(cat,search){
   var f=cat&&cat!=='all'?all.filter(function(it){return it.cat===cat}):all;
   var sl=(search||'').toLowerCase().trim();
   if(sl){
+    // twemoji-parser: 归一化搜索词（剥离 VS16/VS15，但保留 ZWJ 序列中的）
+    var nsl=removeVS16s(sl);
     var sc=parseInt(sl,16);
     f=f.filter(function(it){
       var h=it.cp.toString(16).toUpperCase();
-      // Search by: name, hex code, decimal cp, emoji char, seqHex
+      // 搜索时也归一化 it.ch，解决 🌫️vs🌫 含 FE0F 搜不到的问题
+      var ch=it.ch?removeVS16s(it.ch):'';
       return it.name.toLowerCase().indexOf(sl)!==-1 ||
              h.indexOf(sl.toUpperCase())!==-1 ||
              (sc&&it.cp===sc) ||
-             (it.ch&&it.ch.indexOf(sl)!==-1) ||
+             (ch&&ch.indexOf(nsl)!==-1) ||
              (it.seqHex&&it.seqHex.indexOf(sl.toUpperCase())!==-1);
     });
   }
