@@ -454,7 +454,8 @@ tideDlAudio.onclick=async function(){
   tideDlAudio.textContent='下载中…';tideDlAudio.disabled=true;
   try{
     const blob=await fetchAudioBlob(tideData.audio);
-    const name=(tideData.title||'tide_audio')+'.mp3';
+    const ext=blob.type.includes('mp4')||blob.type.includes('m4a')?'m4a':'mp3';
+    const name=(tideData.title||'tide_audio')+'.'+ext;
     saveFile(URL.createObjectURL(blob),name);
   }catch(e){showTideError('音频下载失败: '+e.message)}
   finally{tideDlAudio.textContent='下载音频';tideDlAudio.disabled=false}
@@ -490,23 +491,25 @@ tideDlEmbed.onclick=async function(){
       const coverBlob=await coverResp.blob();
       coverData=await blobToBase64(coverBlob);
     }
-    // Embed cover into audio ID3 tags
+    // Embed cover into audio metadata tags
     const result=await embedCover(audioBuf,coverData,tideData.title);
-    const name=(tideData.title||'tide_audio')+'.mp3';
-    saveFile(URL.createObjectURL(new Blob([result],{type:'audio/mpeg'})),name);
+    // Detect actual format for file extension
+    const magic=new Uint8Array(result.slice(0,12));
+    const ext=(magic[4]===0x66&&magic[5]===0x74)?'m4a':'mp3';
+    const name=(tideData.title||'tide_audio')+'.'+ext;
+    const mime=(ext==='m4a')?'audio/mp4':'audio/mpeg';
+    saveFile(URL.createObjectURL(new Blob([result],{type:mime})),name);
   }catch(e){showTideError('处理失败: '+e.message);console.error('[Tide]',e)}
   finally{tideDlEmbed.textContent='下载(含封面)';tideDlEmbed.disabled=false}
 };
 
 // ── Helper functions ──
 async function fetchAudioBlob(audioUrl){
-  // Try direct fetch first (works if CORS allows)
+  // Try direct fetch first (tide.fm audio URLs have CORS: *)
   try{
     const resp=await fetch(audioUrl);
     if(resp.ok) return await resp.blob();
   }catch(e){}
-  // Fallback: use a proxy/relay approach via the API
-  // For tide.fm audio URLs, they typically allow cross-origin
   throw new Error('音频下载失败，可能受跨域限制');
 }
 
