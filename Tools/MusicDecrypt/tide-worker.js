@@ -91,56 +91,64 @@ function embedM4A(audioBuf, coverBuf, title) {
 }
 
 function makeHdlrPayload() {
-  // version(1) + flags(3) + pre_defined(4) + handler_type(4) + reserved(12) + name(null-terminated)
-  const name = 'MetadataHandler';
-  const p = new Uint8Array(4 + 4 + 4 + 12 + name.length + 1);
-  // p[0..3] = version+flags = 0x00000000 (already zero)
+  // version(1) + flags(3) + pre_defined(4) + handler_type(4) + reserved(12) + name(null-term + pad to even)
+  const name = 'MetadataHandler'; // 15 bytes → need +1 pad = 16 bytes total for name
+  const nameLen = name.length + 1; // null terminator
+  const paddedNameLen = nameLen + (nameLen % 2); // pad to even
+  const p = new Uint8Array(4 + 4 + 4 + 12 + paddedNameLen);
+  // p[0..3] = version+flags = 0x00000000
   // handler_type = 'mdir' at offset 8
   p[8] = 0x6D; p[9] = 0x64; p[10] = 0x69; p[11] = 0x72;
   // name at offset 24
   for (let i = 0; i < name.length; i++) p[24 + i] = name.charCodeAt(i);
-  p[24 + name.length] = 0;
+  p[24 + name.length] = 0; // null terminator
+  // padding byte(s) already zero from Uint8Array init
   return p;
 }
 
 function makeTextItem(key, value) {
   const valBytes = encodeUTF8(value);
-  // data atom: size(4) + 'data'(4) + type(2) + reserved(2) + value
-  const dataAtomSize = 8 + 4 + valBytes.length; // header + type+reserved + value
+  // data atom: size(4) + 'data'(4) + type(4) + locale(4) + value
+  const dataAtomSize = 16 + valBytes.length;
   const keySize = 8;
   const itemSize = keySize + dataAtomSize;
   const item = new Uint8Array(itemSize);
 
-  // key atom
-  item[0] = 0; item[1] = 0; item[2] = 0; item[3] = 8;
+  // key atom: size(4) + key_name(4)
+  writeBE32(item, 0, 8);
   item[4] = key.charCodeAt(0); item[5] = key.charCodeAt(1);
   item[6] = key.charCodeAt(2); item[7] = key.charCodeAt(3);
 
   // data atom
   writeBE32(item, 8, dataAtomSize);
   item[12] = 0x64; item[13] = 0x61; item[14] = 0x74; item[15] = 0x61; // 'data'
-  item[16] = 0x00; item[17] = 0x01; // type: UTF-8
-  // item[18..19] = reserved = 0
-  item.set(valBytes, 20);
+  // type: 4 bytes — 0x00000001 for UTF-8 text
+  item[16] = 0x00; item[17] = 0x00; item[18] = 0x00; item[19] = 0x01;
+  // locale: 4 bytes — all zeros
+  // item[20..23] = 0 (already zero)
+  item.set(valBytes, 24);
   return item;
 }
 
 function makeCovrItem(imgBytes, mime) {
-  const imgType = mime === 'image/png' ? 14 : 13; // 13=JPEG, 14=PNG
-  const dataAtomSize = 8 + 4 + imgBytes.length;
+  // data atom: size(4) + 'data'(4) + type(4) + locale(4) + image_data
+  const dataAtomSize = 16 + imgBytes.length;
   const keySize = 8;
   const itemSize = keySize + dataAtomSize;
   const item = new Uint8Array(itemSize);
 
   // key: 'covr'
-  item[0] = 0; item[1] = 0; item[2] = 0; item[3] = 8;
+  writeBE32(item, 0, 8);
   item[4] = 0x63; item[5] = 0x6F; item[6] = 0x76; item[7] = 0x72;
 
   // data atom
   writeBE32(item, 8, dataAtomSize);
-  item[12] = 0x64; item[13] = 0x61; item[14] = 0x74; item[15] = 0x61;
-  item[16] = (imgType >> 8) & 0xFF; item[17] = imgType & 0xFF;
-  item.set(imgBytes, 20);
+  item[12] = 0x64; item[13] = 0x61; item[14] = 0x74; item[15] = 0x61; // 'data'
+  // type: 4 bytes — 0x0000000D for JPEG, 0x0000000E for PNG
+  const imgType = mime === 'image/png' ? 0x0E : 0x0D;
+  item[16] = 0x00; item[17] = 0x00; item[18] = 0x00; item[19] = imgType;
+  // locale: 4 bytes — zeros
+  item.set(imgBytes, 24);
   return item;
 }
 
