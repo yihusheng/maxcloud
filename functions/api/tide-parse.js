@@ -62,14 +62,35 @@ export async function onRequestPost(context) {
 
     // Extract audio URL from <audio> tag
     let audio = '';
-    const audioMatch = html.match(/<audio[^>]*src=["']([^"']+)["']/i);
-    if (audioMatch) audio = audioMatch[1];
+    // Try multiple patterns for robustness
+    const audioPatterns = [
+      /<audio[^>]*\bsrc=["']([^"']+)["']/i,              // src="url"
+      /<audio[^>]*\bsrc=\\?"([^"\\]+)\\?"/i,             // src=\"url\" (escaped)
+      /<source[^>]*\bsrc=["']([^"']+)["'][^>]*type=["']audio/i, // source with type
+      /["'](https?:\/\/[^"']*resources\.tide\.moreless\.io[^"']+)["']/i, // fallback: any tide resource URL
+    ];
+    for (const pat of audioPatterns) {
+      const m = html.match(pat);
+      if (m) { audio = m[1]; break; }
+    }
+    // Decode HTML entities in URL
+    if (audio) {
+      audio = audio.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"');
+      // Ensure URL is absolute
+      if (audio.startsWith('//')) audio = 'https:' + audio;
+      else if (!audio.startsWith('http')) audio = 'https://' + audio;
+    }
 
     if (!audio) {
       return jsonResp({ error: '未找到音频文件，该链接可能需要会员权限' }, 404);
     }
 
-    return jsonResp({ title, cover, audio });
+    // Validate audio URL is from tide resources
+    if (!audio.includes('resources.tide.moreless.io') && !audio.includes('tide.moreless.io')) {
+      console.warn('[Tide] Unexpected audio URL domain:', audio);
+    }
+
+    return jsonResp({ title, cover, audio, debug: { htmlLen: html.length } });
 
   } catch (err) {
     return jsonResp({ error: '解析失败: ' + err.message }, 500);
