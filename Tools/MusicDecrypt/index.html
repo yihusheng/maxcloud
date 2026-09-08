@@ -453,8 +453,11 @@ tideDlAudio.onclick=async function(){
   if(!tideData||!tideData.audio) return;
   tideDlAudio.textContent='下载中…';tideDlAudio.disabled=true;
   try{
-    const blob=await fetchAudioBlob(tideData.audio);
-    const ext=blob.type.includes('mp4')||blob.type.includes('m4a')?'m4a':'mp3';
+    const proxyUrl=location.origin+'/api/tide-parse?proxy='+encodeURIComponent(tideData.audio);
+    const resp=await fetch(proxyUrl);
+    if(!resp.ok) throw new Error('音频获取失败: '+resp.status);
+    const blob=await resp.blob();
+    const ext=(blob.type.includes('mp4')||blob.type.includes('m4a'))?'m4a':'mp3';
     const name=(tideData.title||'tide_audio')+'.'+ext;
     saveFile(URL.createObjectURL(blob),name);
   }catch(e){showTideError('音频下载失败: '+e.message)}
@@ -466,8 +469,9 @@ tideDlCover.onclick=async function(){
   if(!tideData||!tideData.cover) return;
   tideDlCover.textContent='下载中…';tideDlCover.disabled=true;
   try{
-    const resp=await fetch(tideData.cover);
-    if(!resp.ok) throw new Error('封面获取失败');
+    const proxyUrl=location.origin+'/api/tide-parse?proxy='+encodeURIComponent(tideData.cover);
+    const resp=await fetch(proxyUrl);
+    if(!resp.ok) throw new Error('封面获取失败: '+resp.status);
     const blob=await resp.blob();
     const ext=blob.type.includes('png')?'png':'jpg';
     const name=(tideData.title||'tide_cover')+'.'+ext;
@@ -481,11 +485,14 @@ tideDlEmbed.onclick=async function(){
   if(!tideData||!tideData.audio) return;
   tideDlEmbed.textContent='处理中…';tideDlEmbed.disabled=true;
   try{
-    // Fetch audio and cover in parallel
-    const [audioBuf,coverResp]=await Promise.all([
-      fetchAudioArrayBuffer(tideData.audio),
-      tideData.cover ? fetch(tideData.cover) : Promise.resolve(null)
+    const audioProxy=location.origin+'/api/tide-parse?proxy='+encodeURIComponent(tideData.audio);
+    const coverProxy=tideData.cover?location.origin+'/api/tide-parse?proxy='+encodeURIComponent(tideData.cover):null;
+    const [audioResp,coverResp]=await Promise.all([
+      fetch(audioProxy),
+      coverProxy?fetch(coverProxy):Promise.resolve(null)
     ]);
+    if(!audioResp.ok) throw new Error('音频获取失败: '+audioResp.status);
+    const audioBuf=await audioResp.arrayBuffer();
     let coverData=null;
     if(coverResp&&coverResp.ok){
       const coverBlob=await coverResp.blob();
@@ -504,20 +511,6 @@ tideDlEmbed.onclick=async function(){
 };
 
 // ── Helper functions ──
-async function fetchAudioBlob(audioUrl){
-  // Try direct fetch first (tide.fm audio URLs have CORS: *)
-  try{
-    const resp=await fetch(audioUrl);
-    if(resp.ok) return await resp.blob();
-  }catch(e){}
-  throw new Error('音频下载失败，可能受跨域限制');
-}
-
-async function fetchAudioArrayBuffer(audioUrl){
-  const blob=await fetchAudioBlob(audioUrl);
-  return await blob.arrayBuffer();
-}
-
 function blobToBase64(blob){
   return new Promise((resolve,reject)=>{
     const reader=new FileReader();
