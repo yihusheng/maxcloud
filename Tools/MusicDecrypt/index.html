@@ -525,39 +525,219 @@ function blobToBase64(blob){
 }
 
 function embedCover(audioArrayBuffer,coverDataUrl,title){
-  // Build ID3v2.3 tags manually and prepend to audio
-  const enc=new TextEncoder();
-  const frames=[];
+  // Detect format from magic bytes
+  const magic=new Uint8Array(audioArrayBuffer.slice(0,12));
+  const isM4A=magic[4]===0x66&&magic[5]===0x74&&magic[6]===0x79&&magic[7]===0x70; // ftyp
+  const isMP3=(magic[0]===0xFF&&(magic[1]&0xE0)===0xE0)||(magic[0]===0x49&&magic[1]===0x44&&magic[2]===0x33); // ID3
 
-  // TIT2 (title)
-  if(title){
-    frames.push(buildTextFrame('TIT2',title));
+  if(isM4A){
+    return embedCoverM4A(audioArrayBuffer,coverDataUrl,title);
+  }else{
+    return embedCoverMP3(audioArrayBuffer,coverDataUrl,title);
   }
+}
 
-  // TPE1 (artist)
+function embedCoverM4A(audioArrayBuffer,coverDataUrl,title){
+  // For M4A/MP4, insert metadata into moov>udta>meta>ilst
+  // Strategy: build new atoms and replace the moov atom
+  try{
+    const data=new Uint8Array(audioArrayBuffer);
+    const moovAtom=findTopLevelAtom(data,'moov');
+    if(!moovAtom){console.warn('[Tide] moov atom not found');return audioArrayBuffer}
+
+    // Check if moov has udta>meta>ilst already
+    const moovChildren=parseChildren(data,moovAtom.start+8,moovAtom.start+moovAtom.size);
+    const existingUdta=findChild(moovChildren,'udta');
+    let hasIlst=false;
+    if(existingUdta){
+      const udtaChildren=parseChildren(data,existingUdta.start+8,existingUdta.start+existingUdta.size);
+      const existingMeta=findChild(udtaChildren,'meta');
+      if(existingMeta){
+        const metaChildren=parseChildren(data,existingMeta.start+8,existingMeta.start+existingMeta.size);
+        if(findChild(metaChildren,'ilst')) hasIlst=true;
+      }
+    }
+
+    // Build new metadata atoms
+    const ilstPayload=buildIlstPayload(title,coverDataUrl);
+    const newIlst=wrapAtom('ilst',ilstPayload);
+
+    const hdlrPayload=buildHdlrPayload();
+    const newHdlr=wrapAtom('hdlr',hdlrPayload);
+
+    // Build new meta: hdlr + ilst
+    const newMetaPayload=concatArrays([newHdlr,newIlst]);
+    const newMeta=wrapAtom('meta',newMetaPayload);
+
+    // Build new udta with meta
+    const newUdta=wrapAtom('udta',newMeta);
+
+    // Rebuild moov: keep existing children except udta, add new udta
+    const newMoovChildren=[];
+    for(const child of moovChildren){
+      if(child.name==='udta') continue; // skip old udta
+      newMoovChildren.push(data.slice(child.start,child.start+child.size));
+    }
+    newMoovChildren.push(newUdta);
+    const newMoovPayload=concatArrays(newMoovChildren);
+    const newMoov=wrapAtom('moov',newMoovPayload);
+
+    // Rebuild file: before_moov + new_moov + after_moov
+    const beforeMoov=data.slice(0,moovAtom.start);
+    const afterMoov=data.slice(moovAtom.start+moovAtom.size);
+    const result=new Uint8Array(beforeMoov.length+newMoov.length+afterMoov.length);
+    result.set(beforeMoov,0);
+    result.set(newMoov,beforeMoov.length);
+    result.set(afterMoov,beforeMoov.length+newMoov.length);
+
+    console.log('[Tide] M4A metadata embedded:',title?'title='+title:'no title');
+    return result.buffer;
+  }catch(e){
+    console.error('[Tide] M4A embed failed:',e);
+    return audioArrayBuffer;
+  }
+}
+
+// ── MP4 Atom Helpers ──
+function findTopLevelAtom(data,name){
+  let off=0;
+  while(off<data.length-8){
+    const size=data[off]<<24|data[off+1]<<16|data[off+2]<<8|data[off+3];
+    const atomName=String.fromCharCode(data[off+4],data[off+5],data[off+6],data[off+7]);
+    if(size<8) break;
+    if(atomName===name) return {start:off,size};
+    off+=size;
+  }
+  return null;
+}
+
+function parseChildren(data,start,end){
+  const children=[];
+  let off=start;
+  while(off<end-8){
+    const size=data[off]<<24|data[off+1]<<16|data[off+2]<<8|data[off+3];
+    const name=String.fromCharCode(data[off+4],data[off+5],data[off+6],data[off+7]);
+    if(size<8||off+size>end) break;
+    children.push({name,start:off,size});
+    off+=size;
+  }
+  return children;
+}
+
+function findChild(children,name){
+  for(const c of children) if(c.name===name) return c;
+  return null;
+}
+
+function wrapAtom(name,payload){
+  const size=8+payload.length;
+  const atom=new Uint8Array(size);
+  atom[0]=(size>>>24)&0xFF;atom[1]=(size>>>16)&0xFF;atom[2]=(size>>>8)&0xFF;atom[3]=size&0xFF;
+  for(let i=0;i<4;i++) atom[4+i]=name.charCodeAt(i);
+  atom.set(payload instanceof Uint8Array?payload:new Uint8Array(payload),8);
+  return atom;
+}
+
+function concatArrays(arrays){
+  let totalLen=0;
+  for(const a of arrays) totalLen+=a.length;
+  const result=new Uint8Array(totalLen);
+  let off=0;
+  for(const a of arrays){result.set(a instanceof Uint8Array?a:new Uint8Array(a),off);off+=a.length}
+  return result;
+}
+
+function buildHdlrPayload(){
+  // hdlr: version(1) + flags(3) + component_type(4) + component_subtype(4) + reserved(12) + name
+  const name='MetadataHandler';
+  const p=new Uint8Array(4+4+4+12+name.length+1);
+  p[0]=0; // version
+  // component_subtype: mdir
+  p[8]=0x6D;p[9]=0x64;p[10]=0x69;p[11]=0x72;
+  // name string (null-terminated, padded to even)
+  for(let i=0;i<name.length;i++) p[24+i]=name.charCodeAt(i);
+  p[24+name.length]=0;
+  return p;
+}
+
+function buildIlstPayload(title,coverDataUrl){
+  const items=[];
+  if(title) items.push(buildIlstTextItem('©nam',title));
+  items.push(buildIlstTextItem('©ART','Tide'));
+  if(coverDataUrl){
+    const img=parseBase64DataUrl(coverDataUrl);
+    if(img) items.push(buildIlstCovrItem(img));
+  }
+  return concatArrays(items);
+}
+
+function buildIlstTextItem(key,value){
+  const valBytes=new TextEncoder().encode(value);
+  // data atom: size(4) + 'data'(4) + type(2) + locale(2) + value
+  const dataSize=4+valBytes.length;
+  const dataAtom=new Uint8Array(8+dataSize);
+  const ds=dataAtom.length;
+  dataAtom[0]=(ds>>>24)&0xFF;dataAtom[1]=(ds>>>16)&0xFF;dataAtom[2]=(ds>>>8)&0xFF;dataAtom[3]=ds&0xFF;
+  dataAtom[4]=0x64;dataAtom[5]=0x61;dataAtom[6]=0x74;dataAtom[7]=0x61; // data
+  dataAtom[8]=0x00;dataAtom[9]=0x01; // type: UTF-8
+  dataAtom.set(valBytes,12);
+
+  // key atom: size(4) + key(4)
+  const keyAtom=new Uint8Array(8);
+  keyAtom[0]=0;keyAtom[1]=0;keyAtom[2]=0;keyAtom[3]=8;
+  for(let i=0;i<4;i++) keyAtom[4+i]=key.charCodeAt(i);
+
+  // item: key + data
+  const item=new Uint8Array(keyAtom.length+dataAtom.length);
+  item.set(keyAtom,0);
+  item.set(dataAtom,keyAtom.length);
+  return item;
+}
+
+function buildIlstCovrItem(imgInfo){
+  const imgType=imgInfo.mime==='image/png'?14:13; // 13=JPEG, 14=PNG
+  // data atom: size(4) + 'data'(4) + type(2) + locale(2) + image_data
+  const dataSize=4+imgInfo.data.length;
+  const dataAtom=new Uint8Array(8+dataSize);
+  const ds=dataAtom.length;
+  dataAtom[0]=(ds>>>24)&0xFF;dataAtom[1]=(ds>>>16)&0xFF;dataAtom[2]=(ds>>>8)&0xFF;dataAtom[3]=ds&0xFF;
+  dataAtom[4]=0x64;dataAtom[5]=0x61;dataAtom[6]=0x74;dataAtom[7]=0x61; // data
+  dataAtom[8]=(imgType>>>8)&0xFF;dataAtom[9]=imgType&0xFF;
+  dataAtom.set(imgInfo.data,12);
+
+  // key: 'covr'
+  const keyAtom=new Uint8Array(8);
+  keyAtom[0]=0;keyAtom[1]=0;keyAtom[2]=0;keyAtom[3]=8;
+  keyAtom[4]=0x63;keyAtom[5]=0x6F;keyAtom[6]=0x76;keyAtom[7]=0x72;
+
+  const item=new Uint8Array(keyAtom.length+dataAtom.length);
+  item.set(keyAtom,0);
+  item.set(dataAtom,keyAtom.length);
+  return item;
+}
+
+function embedCoverMP3(audioArrayBuffer,coverDataUrl,title){
+  // Build ID3v2.3 tags manually and prepend to audio
+  const frames=[];
+  if(title) frames.push(buildTextFrame('TIT2',title));
   frames.push(buildTextFrame('TPE1','Tide'));
-
-  // APIC (cover image)
   if(coverDataUrl){
     const imgData=parseBase64DataUrl(coverDataUrl);
-    if(imgData){
-      frames.push(buildApicFrame(imgData));
-    }
+    if(imgData) frames.push(buildApicFrame(imgData));
   }
-
   if(!frames.length) return audioArrayBuffer;
 
-  // Assemble ID3v2.3 header + frames
   const frameData=concatUint8Arrays(frames);
   const id3Header=buildId3v2Header(frameData.length);
 
-  // Combine: ID3v2 header + frames + original audio
   const result=new Uint8Array(id3Header.length+frameData.length+audioArrayBuffer.byteLength);
   result.set(id3Header,0);
   result.set(frameData,id3Header.length);
   result.set(new Uint8Array(audioArrayBuffer),id3Header.length+frameData.length);
   return result.buffer;
 }
+
+// ── MP4 Atom Helpers ──
 
 function parseBase64DataUrl(dataUrl){
   const match=dataUrl.match(/^data:([^;]+);base64,(.+)$/);
