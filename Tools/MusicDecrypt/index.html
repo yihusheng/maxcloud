@@ -557,32 +557,26 @@ tideBtn.onclick=async function(){
 };
 tideUrl.onkeydown=e=>{if(e.key==='Enter')tideBtn.click()};
 
-// Download audio (raw)
-tideDlAudio.onclick=async function(){
+// Download audio — direct browser download (no memory buffer)
+tideDlAudio.onclick=function(){
   if(!tideData||!tideData.audio) return;
-  tideDlAudio.textContent='下载中…';tideDlAudio.disabled=true;
-  try{
-    const resp=await fetch(proxyUrl(tideData.audio));
-    if(!resp.ok) throw new Error('获取失败: '+resp.status);
-    const blob=await resp.blob();
-    const ext=(blob.type.includes('mp4')||blob.type.includes('m4a'))?'m4a':'mp3';
-    saveFile(URL.createObjectURL(blob),(tideData.title||'tide_audio')+'.'+ext);
-  }catch(e){showTideError('音频下载失败: '+e.message)}
-  finally{tideDlAudio.textContent='下载音频';tideDlAudio.disabled=false}
+  hideTideError();
+  const a=document.createElement('a');
+  a.href=proxyUrl(tideData.audio);
+  a.download=(tideData.title||'tide_audio')+'.m4a';
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>document.body.removeChild(a),2000);
 };
 
-// Download cover
-tideDlCover.onclick=async function(){
+// Download cover — direct browser download
+tideDlCover.onclick=function(){
   if(!tideData||!tideData.cover) return;
-  tideDlCover.textContent='下载中…';tideDlCover.disabled=true;
-  try{
-    const resp=await fetch(proxyUrl(tideData.cover));
-    if(!resp.ok) throw new Error('获取失败: '+resp.status);
-    const blob=await resp.blob();
-    const ext=blob.type.includes('png')?'png':'jpg';
-    saveFile(URL.createObjectURL(blob),(tideData.title||'tide_cover')+'.'+ext);
-  }catch(e){showTideError('封面下载失败: '+e.message)}
-  finally{tideDlCover.textContent='下载封面';tideDlCover.disabled=false}
+  hideTideError();
+  const a=document.createElement('a');
+  a.href=proxyUrl(tideData.cover);
+  a.download=(tideData.title||'tide_cover')+'.jpg';
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>document.body.removeChild(a),2000);
 };
 
 // Download with embedded cover+title (parallel fetch → Worker embed)
