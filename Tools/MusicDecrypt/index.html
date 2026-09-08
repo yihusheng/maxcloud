@@ -8,26 +8,79 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&" rel="stylesheet">
 <link rel="stylesheet" href="/style/wise.css">
 <style>
-/* Tide.fm section */
-.tide-section{margin-bottom:16px;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;background:rgba(255,255,255,.03)}
-.tide-row{display:flex;gap:8px}
-.tide-input{flex:1;padding:10px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.25);color:#eee;font-size:14px;outline:none;transition:border-color .2s}
-.tide-input:focus{border-color:rgba(100,200,160,.5)}
-.tide-input::placeholder{color:rgba(255,255,255,.3)}
-.tide-btn{white-space:nowrap;padding:10px 20px;border-radius:8px;border:none;background:linear-gradient(135deg,#3aa87a,#2d8a63);color:#fff;font-weight:600;cursor:pointer;font-size:14px;transition:opacity .2s}
-.tide-btn:hover{opacity:.85}
-.tide-btn:disabled{opacity:.4;cursor:not-allowed}
-.tide-preview{display:flex;gap:14px;margin-top:12px;align-items:flex-start}
-.tide-cover{width:120px;height:120px;border-radius:8px;object-fit:cover;flex-shrink:0;background:rgba(255,255,255,.05)}
-.tide-info{flex:1;min-width:0}
-.tide-title{font-size:16px;font-weight:600;color:#eee;margin-bottom:10px;line-height:1.4}
-.tide-actions{display:flex;gap:8px;flex-wrap:wrap}
-.tide-dl-btn{padding:8px 16px;border-radius:6px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:#ccc;font-size:13px;cursor:pointer;transition:all .2s}
-.tide-dl-btn:hover{background:rgba(255,255,255,.12);color:#fff}
-.tide-dl-cover{border-color:rgba(200,160,100,.3)}
-.tide-dl-embed{border-color:rgba(100,180,255,.3)}
-.tide-loading{color:rgba(255,255,255,.5);font-size:13px;margin-top:8px}
-.tide-error{color:#e88;font-size:13px;margin-top:8px}
+/* Tide.fm section — Wise design tokens */
+.tide-box{
+  background:var(--s);
+  border:1px solid rgba(14,15,12,.06);
+  border-radius:var(--rx);
+  padding:var(--sxl);
+  margin-bottom:var(--sxl);
+}
+.tide-box-label{
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;
+  color:var(--m);margin-bottom:var(--sm);display:flex;align-items:center;gap:var(--ss)
+}
+.tide-row{display:flex;gap:var(--ss)}
+.tide-input{
+  flex:1;padding:var(--sm) var(--sl);
+  border-radius:var(--rm);border:1px solid rgba(14,15,12,.15);
+  background:var(--c);color:var(--k);
+  font:inherit;font-size:14px;outline:none;transition:border-color .2s
+}
+.tide-input:focus{border-color:var(--p)}
+.tide-input::placeholder{color:var(--m)}
+.tide-parse-btn{
+  white-space:nowrap;padding:var(--sm) var(--sxl);
+  border-radius:var(--rx);border:none;
+  background:var(--p);color:var(--op);
+  font:inherit;font-size:14px;font-weight:600;
+  cursor:pointer;transition:background .2s
+}
+.tide-parse-btn:hover{background:var(--pa)}
+.tide-parse-btn:disabled{opacity:.4;cursor:not-allowed}
+.tide-preview{
+  display:flex;gap:var(--sl);margin-top:var(--sl);
+  align-items:flex-start;
+  background:var(--c);border-radius:var(--rl);padding:var(--sl);
+  border:1px solid rgba(14,15,12,.06)
+}
+.tide-cover{
+  width:108px;height:108px;border-radius:var(--rm);object-fit:cover;
+  flex-shrink:0;background:var(--s)
+}
+.tide-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:var(--ss)}
+.tide-title{
+  font-size:15px;font-weight:600;color:var(--k);
+  line-height:1.4;margin-bottom:var(--ss);
+  overflow:hidden;text-overflow:ellipsis;display:-webkit-box;
+  -webkit-line-clamp:2;-webkit-box-orient:vertical
+}
+.tide-actions{display:flex;gap:var(--ss);flex-wrap:wrap}
+.tide-dl-btn{
+  padding:var(--ss) var(--sl);border-radius:var(--rx);
+  border:1px solid rgba(14,15,12,.12);
+  background:var(--c);color:var(--k);
+  font:inherit;font-size:13px;font-weight:500;
+  cursor:pointer;transition:all .2s
+}
+.tide-dl-btn:hover{background:var(--s);border-color:rgba(14,15,12,.2)}
+.tide-dl-btn:disabled{opacity:.4;cursor:not-allowed}
+.tide-dl-btn.primary{background:var(--p);color:var(--op);border-color:var(--p);font-weight:600}
+.tide-dl-btn.primary:hover{background:var(--pa)}
+.tide-status{
+  font-size:12px;color:var(--m);margin-top:var(--ss);
+  display:flex;align-items:center;gap:var(--ss)
+}
+.tide-status .spinner{
+  width:14px;height:14px;border:2px solid var(--s);border-top-color:var(--p);
+  border-radius:50%;animation:spin .6s linear infinite
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.tide-error-box{
+  margin-top:var(--ss);padding:var(--ss) var(--sl);
+  border-radius:var(--rm);background:var(--nbg);color:var(--neg);
+  font-size:13px
+}
 </style>
 </head>
 <body>
@@ -41,19 +94,20 @@
   </div>
   <div class="card-pad">
 
-    <div class="tide-section" id="tideSection">
+    <div class="tide-box" id="tideSection">
+      <div class="tide-box-label">🌊 潮汐 · Tide.fm</div>
       <div class="tide-row">
-        <input type="text" class="tide-input" id="tideUrl" placeholder="粘贴潮汐分享链接，如 https://tide.fm/zh_CN/share/sleep-stories/...">
-        <button class="btn tide-btn" id="tideBtn">解析</button>
+        <input type="text" class="tide-input" id="tideUrl" placeholder="粘贴潮汐分享链接…">
+        <button class="btn tide-parse-btn" id="tideBtn">解析</button>
       </div>
       <div class="tide-preview" id="tidePreview" style="display:none">
         <img class="tide-cover" id="tideCoverImg">
         <div class="tide-info">
           <div class="tide-title" id="tideTitle"></div>
           <div class="tide-actions">
-            <button class="btn tide-dl-btn" id="tideDlAudio">下载音频</button>
-            <button class="btn tide-dl-btn tide-dl-cover" id="tideDlCover">下载封面</button>
-            <button class="btn tide-dl-btn tide-dl-embed" id="tideDlEmbed">下载(含封面)</button>
+            <button class="btn tide-dl-btn primary" id="tideDlAudio">下载音频</button>
+            <button class="btn tide-dl-btn" id="tideDlCover">下载封面</button>
+            <button class="btn tide-dl-btn primary" id="tideDlEmbed">下载 (含封面)</button>
           </div>
         </div>
       </div>
@@ -413,10 +467,71 @@ function errMsg(m){er.textContent='❌ '+m;er.classList.add('show')}
 // ════════════════════════════════════════════════════════
 // Tide.fm 支持
 // ════════════════════════════════════════════════════════
+// Tide.fm — Worker-based metadata embedding
+// ════════════════════════════════════════════════════════
 const tideUrl=$('#tideUrl'),tideBtn=$('#tideBtn'),tidePreview=$('#tidePreview');
 const tideCoverImg=$('#tideCoverImg'),tideTitle=$('#tideTitle');
 const tideDlAudio=$('#tideDlAudio'),tideDlCover=$('#tideDlCover'),tideDlEmbed=$('#tideDlEmbed');
-let tideData=null; // {title, cover, audio}
+let tideData=null;
+let tideWorker=null;
+let tideWorkerId=0;
+let tideWorkerCallbacks=new Map();
+
+function getTideWorker(){
+  if(tideWorker) return tideWorker;
+  tideWorker=new Worker('tide-worker.js');
+  tideWorker.onmessage=function(e){
+    const msg=e.data;
+    const cb=tideWorkerCallbacks.get(msg.id);
+    if(cb){
+      tideWorkerCallbacks.delete(msg.id);
+      if(msg.error) cb.reject(new Error(msg.error));
+      else cb.resolve(msg);
+    }
+  };
+  tideWorker.onerror=function(e){
+    console.error('[TideWorker]',e.message);
+    tideWorkerCallbacks.forEach((cb)=>cb.reject(new Error('Worker error')));
+    tideWorkerCallbacks.clear();
+    tideWorker=null;
+  };
+  return tideWorker;
+}
+
+function runTideWorkerTask(audio,cover,title){
+  return new Promise((resolve,reject)=>{
+    const id=++tideWorkerId;
+    tideWorkerCallbacks.set(id,{resolve,reject});
+    const w=getTideWorker();
+    const transfer=[audio];
+    if(cover) transfer.push(cover);
+    w.postMessage({id,audio,cover,title},transfer);
+  });
+}
+
+// Show/hide tide status
+function showTideStatus(msg){
+  let el=document.getElementById('tideStatus');
+  if(!el){el=document.createElement('div');el.id='tideStatus';el.className='tide-status';
+    tidePreview.parentNode.insertBefore(el,tidePreview.nextSibling)}
+  el.innerHTML='<span class="spinner"></span> '+msg;el.style.display='flex';
+}
+function hideTideStatus(){
+  const el=document.getElementById('tideStatus');if(el)el.style.display='none';
+}
+function showTideError(msg){
+  hideTideStatus();
+  let el=document.getElementById('tideError');
+  if(!el){el=document.createElement('div');el.id='tideError';el.className='tide-error-box';
+    tidePreview.parentNode.insertBefore(el,tidePreview.nextSibling)}
+  el.textContent=msg;el.style.display='block';
+}
+function hideTideError(){
+  const el=document.getElementById('tideError');if(el)el.style.display='none';
+}
+
+// Proxy URL helper
+function proxyUrl(raw){return location.origin+'/api/tide-parse?proxy='+encodeURIComponent(raw)}
 
 // Parse tide URL
 tideBtn.onclick=async function(){
@@ -426,8 +541,7 @@ tideBtn.onclick=async function(){
   hideTideError();
   try{
     const resp=await fetch('/api/tide-parse',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
+      method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({url})
     });
     const data=await resp.json();
@@ -437,406 +551,70 @@ tideBtn.onclick=async function(){
     tideCoverImg.src=data.cover||'';
     tideCoverImg.style.display=data.cover?'block':'none';
     tidePreview.style.display='flex';
-    console.log('[Tide] 解析完成:',data);
-  }catch(e){
-    showTideError(e.message);
-  }finally{
-    tideBtn.disabled=false;tideBtn.textContent='解析';
-  }
+    console.log('[Tide] parsed:',data);
+  }catch(e){showTideError(e.message)}
+  finally{tideBtn.disabled=false;tideBtn.textContent='解析'}
 };
-
-// Enter key to parse
 tideUrl.onkeydown=e=>{if(e.key==='Enter')tideBtn.click()};
 
-// Download audio (raw, no cover embed)
+// Download audio (raw)
 tideDlAudio.onclick=async function(){
   if(!tideData||!tideData.audio) return;
   tideDlAudio.textContent='下载中…';tideDlAudio.disabled=true;
   try{
-    const proxyUrl=location.origin+'/api/tide-parse?proxy='+encodeURIComponent(tideData.audio);
-    const resp=await fetch(proxyUrl);
-    if(!resp.ok) throw new Error('音频获取失败: '+resp.status);
+    const resp=await fetch(proxyUrl(tideData.audio));
+    if(!resp.ok) throw new Error('获取失败: '+resp.status);
     const blob=await resp.blob();
     const ext=(blob.type.includes('mp4')||blob.type.includes('m4a'))?'m4a':'mp3';
-    const name=(tideData.title||'tide_audio')+'.'+ext;
-    saveFile(URL.createObjectURL(blob),name);
+    saveFile(URL.createObjectURL(blob),(tideData.title||'tide_audio')+'.'+ext);
   }catch(e){showTideError('音频下载失败: '+e.message)}
   finally{tideDlAudio.textContent='下载音频';tideDlAudio.disabled=false}
 };
 
-// Download cover image
+// Download cover
 tideDlCover.onclick=async function(){
   if(!tideData||!tideData.cover) return;
   tideDlCover.textContent='下载中…';tideDlCover.disabled=true;
   try{
-    const proxyUrl=location.origin+'/api/tide-parse?proxy='+encodeURIComponent(tideData.cover);
-    const resp=await fetch(proxyUrl);
-    if(!resp.ok) throw new Error('封面获取失败: '+resp.status);
+    const resp=await fetch(proxyUrl(tideData.cover));
+    if(!resp.ok) throw new Error('获取失败: '+resp.status);
     const blob=await resp.blob();
     const ext=blob.type.includes('png')?'png':'jpg';
-    const name=(tideData.title||'tide_cover')+'.'+ext;
-    saveFile(URL.createObjectURL(blob),name);
+    saveFile(URL.createObjectURL(blob),(tideData.title||'tide_cover')+'.'+ext);
   }catch(e){showTideError('封面下载失败: '+e.message)}
   finally{tideDlCover.textContent='下载封面';tideDlCover.disabled=false}
 };
 
-// Download audio with embedded cover
+// Download with embedded cover+title (parallel fetch → Worker embed)
 tideDlEmbed.onclick=async function(){
   if(!tideData||!tideData.audio) return;
   tideDlEmbed.textContent='处理中…';tideDlEmbed.disabled=true;
+  hideTideError();
   try{
-    const audioProxy=location.origin+'/api/tide-parse?proxy='+encodeURIComponent(tideData.audio);
-    const coverProxy=tideData.cover?location.origin+'/api/tide-parse?proxy='+encodeURIComponent(tideData.cover):null;
+    showTideStatus('并行获取音频和封面…');
+    // Parallel fetch audio + cover
     const [audioResp,coverResp]=await Promise.all([
-      fetch(audioProxy),
-      coverProxy?fetch(coverProxy):Promise.resolve(null)
+      fetch(proxyUrl(tideData.audio)),
+      tideData.cover ? fetch(proxyUrl(tideData.cover)) : Promise.resolve(null)
     ]);
     if(!audioResp.ok) throw new Error('音频获取失败: '+audioResp.status);
-    const audioBuf=await audioResp.arrayBuffer();
-    let coverData=null;
-    if(coverResp&&coverResp.ok){
-      const coverBlob=await coverResp.blob();
-      coverData=await blobToBase64(coverBlob);
-    }
-    // Embed cover into audio metadata tags
-    const result=await embedCover(audioBuf,coverData,tideData.title);
-    // Detect actual format for file extension
-    const magic=new Uint8Array(result.slice(0,12));
-    const ext=(magic[4]===0x66&&magic[5]===0x74)?'m4a':'mp3';
-    const name=(tideData.title||'tide_audio')+'.'+ext;
-    const mime=(ext==='m4a')?'audio/mp4':'audio/mpeg';
-    saveFile(URL.createObjectURL(new Blob([result],{type:mime})),name);
+    const [audioBuf,coverBuf]=await Promise.all([
+      audioResp.arrayBuffer(),
+      coverResp&&coverResp.ok ? coverResp.arrayBuffer() : Promise.resolve(null)
+    ]);
+
+    showTideStatus('Worker 嵌入元数据…');
+    // Offload to Web Worker (non-blocking)
+    const result=await runTideWorkerTask(audioBuf,coverBuf,tideData.title);
+
+    showTideStatus('保存文件…');
+    const blob=new Blob([result.result],{type:result.mime});
+    saveFile(URL.createObjectURL(blob),(tideData.title||'tide_audio')+'.'+result.ext);
+    hideTideStatus();
+    console.log('[Tide] embedded:',result.ext);
   }catch(e){showTideError('处理失败: '+e.message);console.error('[Tide]',e)}
-  finally{tideDlEmbed.textContent='下载(含封面)';tideDlEmbed.disabled=false}
+  finally{tideDlEmbed.textContent='下载 (含封面)';tideDlEmbed.disabled=false;hideTideStatus()}
 };
-
-// ── Helper functions ──
-function blobToBase64(blob){
-  return new Promise((resolve,reject)=>{
-    const reader=new FileReader();
-    reader.onload=()=>resolve(reader.result); // data:image/xxx;base64,...
-    reader.onerror=()=>reject(reader.error);
-    reader.readAsDataURL(blob);
-  });
-}
-
-function embedCover(audioArrayBuffer,coverDataUrl,title){
-  // Detect format from magic bytes
-  const magic=new Uint8Array(audioArrayBuffer.slice(0,12));
-  const isM4A=magic[4]===0x66&&magic[5]===0x74&&magic[6]===0x79&&magic[7]===0x70; // ftyp
-  const isMP3=(magic[0]===0xFF&&(magic[1]&0xE0)===0xE0)||(magic[0]===0x49&&magic[1]===0x44&&magic[2]===0x33); // ID3
-
-  if(isM4A){
-    return embedCoverM4A(audioArrayBuffer,coverDataUrl,title);
-  }else{
-    return embedCoverMP3(audioArrayBuffer,coverDataUrl,title);
-  }
-}
-
-function embedCoverM4A(audioArrayBuffer,coverDataUrl,title){
-  // For M4A/MP4, insert metadata into moov>udta>meta>ilst
-  // Strategy: build new atoms and replace the moov atom
-  try{
-    const data=new Uint8Array(audioArrayBuffer);
-    const moovAtom=findTopLevelAtom(data,'moov');
-    if(!moovAtom){console.warn('[Tide] moov atom not found');return audioArrayBuffer}
-
-    // Check if moov has udta>meta>ilst already
-    const moovChildren=parseChildren(data,moovAtom.start+8,moovAtom.start+moovAtom.size);
-    const existingUdta=findChild(moovChildren,'udta');
-    let hasIlst=false;
-    if(existingUdta){
-      const udtaChildren=parseChildren(data,existingUdta.start+8,existingUdta.start+existingUdta.size);
-      const existingMeta=findChild(udtaChildren,'meta');
-      if(existingMeta){
-        const metaChildren=parseChildren(data,existingMeta.start+8,existingMeta.start+existingMeta.size);
-        if(findChild(metaChildren,'ilst')) hasIlst=true;
-      }
-    }
-
-    // Build new metadata atoms
-    const ilstPayload=buildIlstPayload(title,coverDataUrl);
-    const newIlst=wrapAtom('ilst',ilstPayload);
-
-    const hdlrPayload=buildHdlrPayload();
-    const newHdlr=wrapAtom('hdlr',hdlrPayload);
-
-    // Build new meta: hdlr + ilst
-    const newMetaPayload=concatArrays([newHdlr,newIlst]);
-    const newMeta=wrapAtom('meta',newMetaPayload);
-
-    // Build new udta with meta
-    const newUdta=wrapAtom('udta',newMeta);
-
-    // Rebuild moov: keep existing children except udta, add new udta
-    const newMoovChildren=[];
-    for(const child of moovChildren){
-      if(child.name==='udta') continue; // skip old udta
-      newMoovChildren.push(data.slice(child.start,child.start+child.size));
-    }
-    newMoovChildren.push(newUdta);
-    const newMoovPayload=concatArrays(newMoovChildren);
-    const newMoov=wrapAtom('moov',newMoovPayload);
-
-    // Rebuild file: before_moov + new_moov + after_moov
-    const beforeMoov=data.slice(0,moovAtom.start);
-    const afterMoov=data.slice(moovAtom.start+moovAtom.size);
-    const result=new Uint8Array(beforeMoov.length+newMoov.length+afterMoov.length);
-    result.set(beforeMoov,0);
-    result.set(newMoov,beforeMoov.length);
-    result.set(afterMoov,beforeMoov.length+newMoov.length);
-
-    console.log('[Tide] M4A metadata embedded:',title?'title='+title:'no title');
-    return result.buffer;
-  }catch(e){
-    console.error('[Tide] M4A embed failed:',e);
-    return audioArrayBuffer;
-  }
-}
-
-// ── MP4 Atom Helpers ──
-function findTopLevelAtom(data,name){
-  let off=0;
-  while(off<data.length-8){
-    const size=data[off]<<24|data[off+1]<<16|data[off+2]<<8|data[off+3];
-    const atomName=String.fromCharCode(data[off+4],data[off+5],data[off+6],data[off+7]);
-    if(size<8) break;
-    if(atomName===name) return {start:off,size};
-    off+=size;
-  }
-  return null;
-}
-
-function parseChildren(data,start,end){
-  const children=[];
-  let off=start;
-  while(off<end-8){
-    const size=data[off]<<24|data[off+1]<<16|data[off+2]<<8|data[off+3];
-    const name=String.fromCharCode(data[off+4],data[off+5],data[off+6],data[off+7]);
-    if(size<8||off+size>end) break;
-    children.push({name,start:off,size});
-    off+=size;
-  }
-  return children;
-}
-
-function findChild(children,name){
-  for(const c of children) if(c.name===name) return c;
-  return null;
-}
-
-function wrapAtom(name,payload){
-  const size=8+payload.length;
-  const atom=new Uint8Array(size);
-  atom[0]=(size>>>24)&0xFF;atom[1]=(size>>>16)&0xFF;atom[2]=(size>>>8)&0xFF;atom[3]=size&0xFF;
-  for(let i=0;i<4;i++) atom[4+i]=name.charCodeAt(i);
-  atom.set(payload instanceof Uint8Array?payload:new Uint8Array(payload),8);
-  return atom;
-}
-
-function concatArrays(arrays){
-  let totalLen=0;
-  for(const a of arrays) totalLen+=a.length;
-  const result=new Uint8Array(totalLen);
-  let off=0;
-  for(const a of arrays){result.set(a instanceof Uint8Array?a:new Uint8Array(a),off);off+=a.length}
-  return result;
-}
-
-function buildHdlrPayload(){
-  // hdlr: version(1) + flags(3) + component_type(4) + component_subtype(4) + reserved(12) + name
-  const name='MetadataHandler';
-  const p=new Uint8Array(4+4+4+12+name.length+1);
-  p[0]=0; // version
-  // component_subtype: mdir
-  p[8]=0x6D;p[9]=0x64;p[10]=0x69;p[11]=0x72;
-  // name string (null-terminated, padded to even)
-  for(let i=0;i<name.length;i++) p[24+i]=name.charCodeAt(i);
-  p[24+name.length]=0;
-  return p;
-}
-
-function buildIlstPayload(title,coverDataUrl){
-  const items=[];
-  if(title) items.push(buildIlstTextItem('©nam',title));
-  items.push(buildIlstTextItem('©ART','Tide'));
-  if(coverDataUrl){
-    const img=parseBase64DataUrl(coverDataUrl);
-    if(img) items.push(buildIlstCovrItem(img));
-  }
-  return concatArrays(items);
-}
-
-function buildIlstTextItem(key,value){
-  const valBytes=new TextEncoder().encode(value);
-  // data atom: size(4) + 'data'(4) + type(2) + locale(2) + value
-  const dataSize=4+valBytes.length;
-  const dataAtom=new Uint8Array(8+dataSize);
-  const ds=dataAtom.length;
-  dataAtom[0]=(ds>>>24)&0xFF;dataAtom[1]=(ds>>>16)&0xFF;dataAtom[2]=(ds>>>8)&0xFF;dataAtom[3]=ds&0xFF;
-  dataAtom[4]=0x64;dataAtom[5]=0x61;dataAtom[6]=0x74;dataAtom[7]=0x61; // data
-  dataAtom[8]=0x00;dataAtom[9]=0x01; // type: UTF-8
-  dataAtom.set(valBytes,12);
-
-  // key atom: size(4) + key(4)
-  const keyAtom=new Uint8Array(8);
-  keyAtom[0]=0;keyAtom[1]=0;keyAtom[2]=0;keyAtom[3]=8;
-  for(let i=0;i<4;i++) keyAtom[4+i]=key.charCodeAt(i);
-
-  // item: key + data
-  const item=new Uint8Array(keyAtom.length+dataAtom.length);
-  item.set(keyAtom,0);
-  item.set(dataAtom,keyAtom.length);
-  return item;
-}
-
-function buildIlstCovrItem(imgInfo){
-  const imgType=imgInfo.mime==='image/png'?14:13; // 13=JPEG, 14=PNG
-  // data atom: size(4) + 'data'(4) + type(2) + locale(2) + image_data
-  const dataSize=4+imgInfo.data.length;
-  const dataAtom=new Uint8Array(8+dataSize);
-  const ds=dataAtom.length;
-  dataAtom[0]=(ds>>>24)&0xFF;dataAtom[1]=(ds>>>16)&0xFF;dataAtom[2]=(ds>>>8)&0xFF;dataAtom[3]=ds&0xFF;
-  dataAtom[4]=0x64;dataAtom[5]=0x61;dataAtom[6]=0x74;dataAtom[7]=0x61; // data
-  dataAtom[8]=(imgType>>>8)&0xFF;dataAtom[9]=imgType&0xFF;
-  dataAtom.set(imgInfo.data,12);
-
-  // key: 'covr'
-  const keyAtom=new Uint8Array(8);
-  keyAtom[0]=0;keyAtom[1]=0;keyAtom[2]=0;keyAtom[3]=8;
-  keyAtom[4]=0x63;keyAtom[5]=0x6F;keyAtom[6]=0x76;keyAtom[7]=0x72;
-
-  const item=new Uint8Array(keyAtom.length+dataAtom.length);
-  item.set(keyAtom,0);
-  item.set(dataAtom,keyAtom.length);
-  return item;
-}
-
-function embedCoverMP3(audioArrayBuffer,coverDataUrl,title){
-  // Build ID3v2.3 tags manually and prepend to audio
-  const frames=[];
-  if(title) frames.push(buildTextFrame('TIT2',title));
-  frames.push(buildTextFrame('TPE1','Tide'));
-  if(coverDataUrl){
-    const imgData=parseBase64DataUrl(coverDataUrl);
-    if(imgData) frames.push(buildApicFrame(imgData));
-  }
-  if(!frames.length) return audioArrayBuffer;
-
-  const frameData=concatUint8Arrays(frames);
-  const id3Header=buildId3v2Header(frameData.length);
-
-  const result=new Uint8Array(id3Header.length+frameData.length+audioArrayBuffer.byteLength);
-  result.set(id3Header,0);
-  result.set(frameData,id3Header.length);
-  result.set(new Uint8Array(audioArrayBuffer),id3Header.length+frameData.length);
-  return result.buffer;
-}
-
-// ── MP4 Atom Helpers ──
-
-function parseBase64DataUrl(dataUrl){
-  const match=dataUrl.match(/^data:([^;]+);base64,(.+)$/);
-  if(!match) return null;
-  const mime=match[1];
-  const b64=match[2];
-  const binary=atob(b64);
-  const bytes=new Uint8Array(binary.length);
-  for(let i=0;i<binary.length;i++) bytes[i]=binary.charCodeAt(i);
-  return {mime,data:bytes};
-}
-
-function buildId3v2Header(size){
-  // ID3v2.3 header: 10 bytes
-  const header=new Uint8Array(10);
-  header[0]=0x49; // I
-  header[1]=0x44; // D
-  header[2]=0x33; // 3
-  header[3]=0x03; // version 2.3
-  header[4]=0x00; // revision
-  header[5]=0x00; // flags (none)
-  // Size as synchsafe integer (7 bits per byte)
-  header[6]=(size>>21)&0x7F;
-  header[7]=(size>>14)&0x7F;
-  header[8]=(size>>7)&0x7F;
-  header[9]=size&0x7F;
-  return header;
-}
-
-function buildTextFrame(frameId,text){
-  const enc=new TextEncoder();
-  const textBytes=enc.encode(text);
-  // Frame: ID(4) + size(4) + flags(2) + encoding(1) + text
-  const frameSize=textBytes.length+1;
-  const frame=new Uint8Array(10+frameSize);
-  // Frame ID
-  frame[0]=frameId.charCodeAt(0);
-  frame[1]=frameId.charCodeAt(1);
-  frame[2]=frameId.charCodeAt(2);
-  frame[3]=frameId.charCodeAt(3);
-  // Size (big-endian, non-synchsafe for frame size in v2.3)
-  frame[4]=(frameSize>>24)&0xFF;
-  frame[5]=(frameSize>>16)&0xFF;
-  frame[6]=(frameSize>>8)&0xFF;
-  frame[7]=frameSize&0xFF;
-  // Flags
-  frame[8]=0;frame[9]=0;
-  // Encoding: UTF-8
-  frame[10]=0x03;
-  // Text
-  frame.set(textBytes,11);
-  return frame;
-}
-
-function buildApicFrame(imgInfo){
-  const enc=new TextEncoder();
-  const mime=enc.encode(imgInfo.mime);
-  const desc=enc.encode(''); // empty description
-  // Frame content: encoding(1) + mime(null-terminated) + picture type(1) + description(null-terminated) + data
-  const contentLen=1+mime.length+1+1+desc.length+1+imgInfo.data.length;
-  const frame=new Uint8Array(10+contentLen);
-  // Frame ID: APIC
-  frame[0]=0x41;frame[1]=0x50;frame[2]=0x49;frame[3]=0x43;
-  // Size
-  frame[4]=(contentLen>>24)&0xFF;
-  frame[5]=(contentLen>>16)&0xFF;
-  frame[6]=(contentLen>>8)&0xFF;
-  frame[7]=contentLen&0xFF;
-  // Flags
-  frame[8]=0;frame[9]=0;
-  // Encoding
-  frame[10]=0x03; // UTF-8
-  // MIME type (null-terminated)
-  let off=11;
-  frame.set(mime,off);off+=mime.length;frame[off++]=0;
-  // Picture type: 0x03 = front cover
-  frame[off++]=0x03;
-  // Description (null-terminated)
-  frame.set(desc,off);off+=desc.length;frame[off++]=0;
-  // Image data
-  frame.set(imgInfo.data,off);
-  return frame;
-}
-
-function concatUint8Arrays(arrays){
-  let totalLen=0;
-  for(const a of arrays) totalLen+=a.length;
-  const result=new Uint8Array(totalLen);
-  let off=0;
-  for(const a of arrays){result.set(a,off);off+=a.length}
-  return result;
-}
-
-function showTideError(msg){
-  let el=document.getElementById('tideError');
-  if(!el){el=document.createElement('div');el.id='tideError';el.className='tide-error';
-    tidePreview.parentNode.insertBefore(el,tidePreview.nextSibling)}
-  el.textContent='❌ '+msg;el.style.display='block';
-}
-function hideTideError(){
-  const el=document.getElementById('tideError');
-  if(el) el.style.display='none';
-}
 </script>
 </body>
 </html>
