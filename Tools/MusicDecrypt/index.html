@@ -568,13 +568,15 @@ tideDlEmbed.onclick=async function(){
     mp3tag.read();
     if(mp3tag.error) throw new Error('读取音频失败: '+mp3tag.error);
 
+    mp3tag.tags.v2=mp3tag.tags.v2||{};
+    mp3tag.tags.v2Details=mp3tag.tags.v2Details||{version:[3,0]};
     mp3tag.tags.v2.TIT2=tideData.title||'';
     mp3tag.tags.v2.TPE1='Tide';
-    if(tideData.description) mp3tag.tags.v2.COMM={language:'zho',shortDesc:'',text:tideData.description};
+    if(tideData.description) mp3tag.tags.v2.COMM=[{language:'zho',descriptor:'',text:tideData.description}];
     if(coverBuf){
       const coverBytes=new Uint8Array(coverBuf);
-      const mime=coverBytes[0]===0x89?'image/png':'image/jpeg';
-      mp3tag.tags.v2.APIC={type:3,data:coverBytes,mimeType:mime,description:''};
+      const fmt=coverBytes[0]===0x89?'image/png':'image/jpeg';
+      mp3tag.tags.v2.APIC=[{format:fmt,type:3,description:'',data:coverBytes}];
     }
 
     const saveOpts=mp3tag.isMP4
