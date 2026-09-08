@@ -7,6 +7,7 @@
 <meta name="description" content="在浏览器端解密多种加密音乐格式，不上传文件，保护隐私">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&" rel="stylesheet">
 <link rel="stylesheet" href="/style/wise.css">
+<script src="https://cdn.jsdelivr.net/npm/mp3tag.js@latest/dist/mp3tag.min.js"></script>
 <style>
 /* Tide.fm — Wise Design System */
 .tide-box{
@@ -105,7 +106,7 @@
         <img class="tide-cover" id="tideCoverImg">
         <div class="tide-info">
           <div class="tide-dls">
-            <button class="btn tide-dl primary" id="tideDlAudio">下载音频</button>
+            <button class="btn tide-dl" id="tideDlAudio">下载音频</button>
             <button class="btn tide-dl" id="tideDlCover">下载图片</button>
             <button class="btn tide-dl primary" id="tideDlEmbed">含元数据</button>
           </div>
@@ -465,49 +466,12 @@ async function decryptAll(){
 function errMsg(m){er.textContent='❌ '+m;er.classList.add('show')}
 
 // ════════════════════════════════════════════════════════
-// Tide.fm 支持
-// ════════════════════════════════════════════════════════
-// Tide.fm — Worker-based metadata embedding
+// Tide.fm — mp3tag.js metadata embedding
 // ════════════════════════════════════════════════════════
 const tideUrl=$('#tideUrl'),tideBtn=$('#tideBtn'),tidePreview=$('#tidePreview');
 const tideCoverImg=$('#tideCoverImg'),tideTitle=$('#tideTitle');
 const tideDlAudio=$('#tideDlAudio'),tideDlCover=$('#tideDlCover'),tideDlEmbed=$('#tideDlEmbed');
 let tideData=null;
-let tideWorker=null;
-let tideWorkerId=0;
-let tideWorkerCallbacks=new Map();
-
-function getTideWorker(){
-  if(tideWorker) return tideWorker;
-  tideWorker=new Worker('tide-worker.js');
-  tideWorker.onmessage=function(e){
-    const msg=e.data;
-    const cb=tideWorkerCallbacks.get(msg.id);
-    if(cb){
-      tideWorkerCallbacks.delete(msg.id);
-      if(msg.error) cb.reject(new Error(msg.error));
-      else cb.resolve(msg);
-    }
-  };
-  tideWorker.onerror=function(e){
-    console.error('[TideWorker]',e.message);
-    tideWorkerCallbacks.forEach((cb)=>cb.reject(new Error('Worker error')));
-    tideWorkerCallbacks.clear();
-    tideWorker=null;
-  };
-  return tideWorker;
-}
-
-function runTideWorkerTask(audio,cover,title,description){
-  return new Promise((resolve,reject)=>{
-    const id=++tideWorkerId;
-    tideWorkerCallbacks.set(id,{resolve,reject});
-    const w=getTideWorker();
-    const transfer=[audio];
-    if(cover) transfer.push(cover);
-    w.postMessage({id,audio,cover,title,description},transfer);
-  });
-}
 
 // Show/hide tide status
 function showTideStatus(msg){
@@ -582,14 +546,13 @@ tideDlCover.onclick=function(){
   setTimeout(()=>document.body.removeChild(a),2000);
 };
 
-// Download with embedded cover+title (parallel fetch → Worker embed)
+// Download with embedded metadata (mp3tag.js)
 tideDlEmbed.onclick=async function(){
   if(!tideData||!tideData.audio) return;
   tideDlEmbed.textContent='处理中…';tideDlEmbed.disabled=true;
   hideTideError();
   try{
     showTideStatus('并行获取音频和封面…');
-    // Parallel fetch audio + cover
     const [audioResp,coverResp]=await Promise.all([
       fetch(proxyUrl(tideData.audio)),
       tideData.cover ? fetch(proxyUrl(tideData.cover)) : Promise.resolve(null)
@@ -600,15 +563,32 @@ tideDlEmbed.onclick=async function(){
       coverResp&&coverResp.ok ? coverResp.arrayBuffer() : Promise.resolve(null)
     ]);
 
-    showTideStatus('Worker 嵌入元数据…');
-    // Offload to Web Worker (non-blocking)
-    const result=await runTideWorkerTask(audioBuf,coverBuf,tideData.title,tideData.description);
+    showTideStatus('嵌入元数据…');
+    const mp3tag=new MP3Tag(audioBuf);
+    mp3tag.read();
+    if(mp3tag.error) throw new Error('读取音频失败: '+mp3tag.error);
 
-    showTideStatus('保存文件…');
-    const blob=new Blob([result.result],{type:result.mime});
-    saveFile(URL.createObjectURL(blob),(tideData.title||'tide_audio')+'.'+result.ext);
+    mp3tag.tags.v2.TIT2=tideData.title||'';
+    mp3tag.tags.v2.TPE1='Tide';
+    if(tideData.description) mp3tag.tags.v2.COMM={language:'zho',shortDesc:'',text:tideData.description};
+    if(coverBuf){
+      const coverBytes=new Uint8Array(coverBuf);
+      const mime=coverBytes[0]===0x89?'image/png':'image/jpeg';
+      mp3tag.tags.v2.APIC={type:3,data:coverBytes,mimeType:mime,description:''};
+    }
+
+    const saveOpts=mp3tag.isMP4
+      ?{id3v2:{include:false},mp4:{language:'zho'}}
+      :{id3v2:{include:true,padding:0}};
+    mp3tag.save(saveOpts);
+    if(mp3tag.error) throw new Error('保存失败: '+mp3tag.error);
+
+    const ext=mp3tag.isMP4?'m4a':'mp3';
+    const mime=mp3tag.isMP4?'audio/mp4':'audio/mpeg';
+    const blob=new Blob([mp3tag.buffer],{type:mime});
+    saveFile(URL.createObjectURL(blob),(tideData.title||'tide_audio')+'.'+ext);
     hideTideStatus();
-    console.log('[Tide] embedded:',result.ext);
+    console.log('[Tide] embedded:',ext);
   }catch(e){showTideError('处理失败: '+e.message);console.error('[Tide]',e)}
   finally{tideDlEmbed.textContent='含元数据';tideDlEmbed.disabled=false;hideTideStatus()}
 };
