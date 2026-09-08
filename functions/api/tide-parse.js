@@ -50,12 +50,28 @@ export async function onRequestPost(context) {
       if (h2Match) title = h2Match[1].trim();
     }
 
-    // Extract cover image from og:image
+    // Extract cover image from og:image — keep original (no query params) for Worker download
     let cover = '';
     const ogImageMatch = html.match(/<meta\s+[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i)
       || html.match(/<meta\s+[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
     if (ogImageMatch) {
       cover = ogImageMatch[1].replace(/\?imageView2.*$/, '').trim();
+    }
+
+    // Extract description — try og:description, then p.content-desc, fallback empty
+    let description = '';
+    const ogDescMatch = html.match(/<meta\s+[^>]*property=["']og:description["'][^>]*content=["']([^"']+)["']/i)
+      || html.match(/<meta\s+[^>]*content=["']([^"']+)["'][^>]*property=["']og:description["']/i);
+    if (ogDescMatch) {
+      description = ogDescMatch[1].trim();
+    }
+    if (!description) {
+      const descMatch = html.match(/<p\s+[^>]*class=["'][^"']*content-desc[^"']*["'][^>]*>([^<]+)<\/p>/i);
+      if (descMatch) description = descMatch[1].trim();
+    }
+    if (!description) {
+      const metaDescMatch = html.match(/<meta\s+[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i);
+      if (metaDescMatch) description = metaDescMatch[1].trim();
     }
 
     // Extract audio URL — multiple patterns for robustness
@@ -80,7 +96,7 @@ export async function onRequestPost(context) {
       return jsonResp({ error: '未找到音频文件，该链接可能需要会员权限' }, 404);
     }
 
-    return jsonResp({ title, cover, audio });
+    return jsonResp({ title, cover, audio, description });
 
   } catch (err) {
     return jsonResp({ error: '解析失败: ' + err.message }, 500);
