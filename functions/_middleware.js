@@ -68,18 +68,61 @@ const MIME_MAP = {
   svg: 'image/svg+xml', js: 'application/javascript', json: 'application/json',
 };
 
+/**
+ * 生成 R2 key 候选列表（解决 URL 双重编码问题）
+ *
+ * 背景：music_list.js 中部分历史记录的 src 已经是 encodeURIComponent 编码过的
+ * 形态（如 `%E9%99%88...MP3`），浏览器请求时 `%` 又被转义为 `%25`，
+ * middleware 只解一次仍得到字面量 `%E9%99%88...`，与 R2 中真实 key
+ * （中文原文件名）不匹配 → 404 → 播放器报「歌曲加载失败」。
+ *
+ * 策略：依次尝试「解码 1 次 → 解码 2 次 → 原始值」，任一命中即用。
+ * 对本来正常的歌曲，第 1 个候选即命中，行为与修复前完全一致。
+ */
+function buildKeyCandidates(rawPath) {
+  const candidates = [];
+  const push = (v) => {
+    if (typeof v === 'string' && v.length > 0 && candidates.indexOf(v) === -1) {
+      candidates.push(v);
+    }
+  };
+
+  push(rawPath);
+
+  try {
+    const once = decodeURIComponent(rawPath);
+    push(once);
+    try {
+      const twice = decodeURIComponent(once);
+      push(twice);
+    } catch (e) {
+      /* 二次解码失败 → 忽略该候选 */
+    }
+  } catch (e) {
+    /* 原始值不是合法 URI 序列 → 只用原始值 */
+  }
+
+  return candidates;
+}
+
 async function handleMusicProxy(pathname, request, env) {
   if (!env.MUSIC_BUCKET) return null;
 
-  const decodedPath = decodeURIComponent(pathname.replace('/public/music/', ''));
-  if (!decodedPath) return null;
+  // 注意：不能用 decodeURIComponent 直接解码失败就退出，
+  // 需按候选列表逐个探测（见 buildKeyCandidates 注释）。
+  const rawPath = pathname.replace('/public/music/', '');
+  if (!rawPath) return null;
 
   const prefix = 'public/music/';
-  const r2Key = prefix + decodedPath;
+  const candidates = buildKeyCandidates(rawPath);
 
-  try {
-    let object = await env.MUSIC_BUCKET.get(r2Key);
-    if (object) {
+  for (const decodedPath of candidates) {
+    const r2Key = prefix + decodedPath;
+
+    try {
+      const object = await env.MUSIC_BUCKET.get(r2Key);
+      if (!object) continue;
+
       const headers = new Headers();
       headers.set('Access-Control-Allow-Origin', '*');
       headers.set('Accept-Ranges', 'bytes');
@@ -101,9 +144,9 @@ async function handleMusicProxy(pathname, request, env) {
 
       headers.set('Content-Length', String(object.size));
       return new Response(object.body, { status: 200, headers });
+    } catch (e) {
+      console.error('[proxy]', r2Key, e);
     }
-  } catch (e) {
-    console.error('[proxy]', decodedPath, e);
   }
 
   return null; // fallback to Pages static assets
