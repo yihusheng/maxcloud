@@ -2,12 +2,13 @@ name: Music Pipeline
 on:
   push:
     paths:
-      - 'public/music/*.mp3'
-      - 'public/music/*.flac'
-      - 'public/music/*.m4a'
-      - 'public/music/*.ogg'
-      - 'public/music/*.wav'
-      - 'public/music/*.aac'
+      # 音频：大小写都要匹配（.mp3 / .MP3 / .Mp3 ...）
+      - 'public/music/*.[mM][pP]3'
+      - 'public/music/*.[fF][lL][aA][cC]'
+      - 'public/music/*.[mM]4[aA]'
+      - 'public/music/*.[oO][gG][gG]'
+      - 'public/music/*.[wW][aA][vV]'
+      - 'public/music/*.[aA][aA][cC]'
       - 'public/music/*.kgm'
       - 'public/music/*.kgm.flac'
       - '.github/scripts/generate-music.js'
@@ -43,11 +44,14 @@ jobs:
 
       - name: Decrypt KGM files
         run: |
-          count=$(ls public/music/*.kgm public/music/*.kgm.flac 2>/dev/null | wc -l)
+          # 大小写不敏感匹配（macOS/Windows 上传的 .KGM 也要处理）
+          mapfile -t kgm_files < <(find public/music -maxdepth 1 -type f \
+            \( -iname '*.kgm' -o -iname '*.kgm.flac' \) 2>/dev/null | sort)
+          count=${#kgm_files[@]}
           if [ "$count" -gt 0 ]; then
             echo "Found $count KGM file(s), decrypting..."
-            python3 .github/scripts/decrypt_kgm.py public/music/*.kgm public/music/*.kgm.flac
-            rm -f public/music/*.kgm public/music/*.kgm.flac
+            python3 .github/scripts/decrypt_kgm.py "${kgm_files[@]}"
+            rm -f "${kgm_files[@]}"
             echo "kgm_decrypted=true" >> "$GITHUB_ENV"
           else
             echo "No KGM files found"
@@ -57,11 +61,16 @@ jobs:
       - name: Check for local audio files
         id: check
         run: |
-          count=$(ls public/music/*.mp3 public/music/*.flac public/music/*.m4a public/music/*.wav public/music/*.ogg public/music/*.aac 2>/dev/null | wc -l)
+          # 大小写不敏感：.mp3 / .MP3 / .Mp3 / .FLAC / .M4A ... 全部计入
+          mapfile -t audio_files < <(find public/music -maxdepth 1 -type f \
+            \( -iname '*.mp3' -o -iname '*.flac' -o -iname '*.m4a' \
+               -o -iname '*.wav' -o -iname '*.ogg' -o -iname '*.aac' \) 2>/dev/null | sort)
+          count=${#audio_files[@]}
           has_new=false
           [ "$count" -gt 0 ] && has_new=true
           echo "has_new=$has_new" >> "$GITHUB_OUTPUT"
           echo "Found $count local audio files"
+          printf '  %s\n' "${audio_files[@]:-}"
 
       - name: Sync & verify from R2
         id: sync
@@ -101,7 +110,9 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           set -euo pipefail
-          shopt -s nullglob
+          # nocaseglob：让 *.mp3 同时匹配 .MP3 / .Mp3 等，
+          # 修复「大写扩展名文件跳过上传，随后被清理步骤删除」导致音频丢失的问题
+          shopt -s nullglob nocaseglob
           TOKEN="$CLOUDFLARE_API_TOKEN"
           ACCOUNT_ID="$CLOUDFLARE_ACCOUNT_ID"
 
@@ -119,21 +130,34 @@ jobs:
               --data-binary @"${file}" \
               "${url}")
             if [ "$http_code" != "200" ]; then
-              wrangler r2 object put "${BUCKET}/${file}" --file="${file}" >/dev/null 2>&1 || true
+              # curl 直传失败 → 尝试 wrangler，仍失败则记录
+              if ! wrangler r2 object put "${BUCKET}/${file}" --file="${file}" >/dev/null 2>&1; then
+                echo "  ❌ upload failed: ${file} (curl HTTP ${http_code})" >&2
+                return 1
+              fi
             fi
             echo "  uploaded $file"
           }
           export -f upload
           export TOKEN ACCOUNT_ID BUCKET
 
+          failed=0
           for ext in mp3:audio/mpeg flac:audio/flac m4a:audio/mp4 ogg:audio/ogg wav:audio/wav aac:audio/aac \
                      lrc:text/plain\;\ charset=utf-8 jpg:image/jpeg jpeg:image/jpeg png:image/png json:application/json; do
             ext_name="${ext%%:*}"
             content_type="${ext#*:}"
             for f in public/music/*."$ext_name"; do
-              [ -f "$f" ] && upload "$f" "$content_type"
+              [ -f "$f" ] || continue
+              upload "$f" "$content_type" || failed=$((failed+1))
             done
           done
+
+          # 上传失败 → 中止，避免随后的清理步骤把未上传的文件删掉
+          if [ "$failed" -gt 0 ]; then
+            echo "❌ ${failed} 个文件上传失败，中止以免丢失文件" >&2
+            exit 1
+          fi
+          echo "✅ 全部文件上传完成"
 
       - name: Upload music_list.js to R2
         if: steps.check.outputs.has_new == 'true' || steps.sync.outputs.synced == 'true' || env.kgm_decrypted == 'true'
@@ -142,12 +166,41 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: python3 .github/scripts/sync-r2.py upload
 
+      - name: Verify every audio file landed in R2
+        if: steps.check.outputs.has_new == 'true' || steps.sync.outputs.synced == 'true' || env.kgm_decrypted == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          # 清理前先确认每个本地音频都已在 R2，防止「删了但没传」
+          set -uo pipefail
+          shopt -s nullglob nocaseglob
+          missing=0
+          for f in public/music/*.mp3 public/music/*.flac public/music/*.m4a \
+                   public/music/*.ogg public/music/*.wav public/music/*.aac; do
+            [ -f "$f" ] || continue
+            encoded=$(python3 -c "import urllib.parse, sys; print(urllib.parse.quote(sys.argv[1], safe='/'))" "$f")
+            code=$(curl -s -o /dev/null -w "%{http_code}" -I \
+              -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+              "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/r2/buckets/${BUCKET}/objects/${encoded}")
+            if [ "$code" != "200" ]; then
+              echo "❌ 未在 R2 找到: ${f} (HTTP ${code})" >&2
+              missing=$((missing+1))
+            fi
+          done
+          if [ "$missing" -gt 0 ]; then
+            echo "❌ ${missing} 个音频未成功入库，跳过清理以免丢失" >&2
+            exit 1
+          fi
+          echo "✅ R2 校验通过，可以安全清理本地文件"
+
       - name: Clean repo — delete all processed files (audio/covers/lyrics/music_list)
         if: steps.check.outputs.has_new == 'true' || steps.sync.outputs.synced == 'true' || env.kgm_decrypted == 'true'
         run: |
-          # 全部已上传 R2 并生成 music_list.js → 从 repo 彻底删除
-          rm -f public/music/*.mp3 public/music/*.MP3
-          rm -f public/music/*.flac public/music/*.FLAC
+          # 全部已上传 R2 并通过校验 → 从 repo 彻底删除
+          shopt -s nullglob nocaseglob
+          rm -f public/music/*.mp3
+          rm -f public/music/*.flac
           rm -f public/music/*.m4a
           rm -f public/music/*.ogg
           rm -f public/music/*.wav
