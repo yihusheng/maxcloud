@@ -119,7 +119,7 @@
       <div class="ds">拖拽加密音乐文件到此处</div>
       <div class="ht">或点击选择 · 可多选</div>
       <input type="file" id="fileInput" multiple
-        accept=".kgm,.kgma,.kgm.flac,.kgma.flac,.ncm,.qmc0,.qmc2,.qmc3,.qmcflac,.qmcogg,.mflac,.mgg,.mflac0,.mgg1,.tkm,.bkcmp3,.bkcflac,.kwm,.xm,.tm0,.tm2,.tm3,.tm6" hidden>
+        accept=".kgm,.kgma,.kgg,.kgg.flac,.kgg.mp3,.kgm.flac,.kgma.flac,.ncm,.qmc0,.qmc2,.qmc3,.qmcflac,.qmcogg,.mflac,.mgg,.mflac0,.mgg1,.tkm,.bkcmp3,.bkcflac,.kwm,.xm,.tm0,.tm2,.tm3,.tm6" hidden>
     </div>
 
     <div class="fl" id="fl"></div>
@@ -144,7 +144,7 @@
 <div class="card">
   <div class="nt">
     <strong>支持的格式</strong><br>
-    🟣 酷狗 KGM · 🟥 网易云 NCM · 🔵 QQ音乐 QMC / MFLAC / MGG<br>
+    🟣 酷狗 KGM / KGG · 🟥 网易云 NCM · 🔵 QQ音乐 QMC / MFLAC / MGG<br>
     🟠 酷我 KWM · 🟩 虾米 XM · 🌊 潮汐 Tide.fm (URL)<br>
     • 文件在浏览器本地处理，<strong>不会上传</strong>到任何服务器<br>
     • 仅 KGM 需要从服务器获取密钥段（几十 KB）<br>
@@ -297,7 +297,7 @@ function addFiles(list){
   }
   if(rejected.length){
     errMsg('已跳过 '+rejected.length+' 个不支持的文件：'+rejected.map(f=>f.name).join('、')
-      +'（支持 .kgm/.ncm/.qmc/.mflac/.mgg/.kwm/.xm/.tm 等，详见页底说明）');
+      +'（支持 .kgm/.kgg/.ncm/.qmc/.mflac/.mgg/.kwm/.xm/.tm 等，详见页底说明）');
   }
   renderList();
   go.disabled=files.filter(f=>!f.unsupported).length===0;
@@ -308,7 +308,6 @@ function addFiles(list){
 // 给出更具体的拒绝原因，帮助用户判断
 function explainUnsupported(name){
   const n=(name||'').toLowerCase();
-  if(/\.kgg(\.(flac|mp3))?$/.test(n)) return '暂不支持 .kgg（酷狗新格式，与 .kgm 算法不同）';
   if(/\.mp3$|\.flac$|\.m4a$|\.wav$|\.ogg$|\.aac$/.test(n)) return '这不是加密文件，无需解密';
   const ext=(n.match(/\.[^.\/]+$/)||[''])[0];
   return '不支持的格式'+(ext?'：'+ext:'');
@@ -339,7 +338,8 @@ function renderList(){
 
 function detectFormat(name){
   const n=name.toLowerCase();
-  if(/\.kgm(\.(flac|mp3))?$|\.kgma/i.test(n)) return 'kgm';
+  // 酷狗：.kgm / .kgma / .kgg（kgg 与 kgm 同族，走同一解密算法）
+  if(/\.kgm(\.(flac|mp3))?$|\.kgma|\.kgg(\.(flac|mp3))?$/i.test(n)) return 'kgm';
   if(/\.ncm$/i.test(n)) return 'ncm';
   if(/\.qmc0$/i.test(n)) return 'qmc';
   if(/\.qmc2$/i.test(n)) return 'qmc';
